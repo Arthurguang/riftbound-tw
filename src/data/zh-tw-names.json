@@ -1,0 +1,2753 @@
+{
+ "OGN-001": {
+  "name": "烈焰灼魂者",
+  "alternates": [
+   "Blazing Scorcher",
+   "灼焰飞龙",
+   "灼焰飛龍"
+  ]
+ },
+ "OGN-002": {
+  "name": "無懼海盜",
+  "alternates": [
+   "Brazen Buccaneer",
+   "粗鲁的海盗",
+   "粗魯的海盜"
+  ]
+ },
+ "OGN-003": {
+  "name": "生化科技執法者",
+  "alternates": [
+   "Chemtech Enforcer",
+   "炼金太保",
+   "鍊金太保"
+  ]
+ },
+ "OGN-004": {
+  "name": "劈砍",
+  "alternates": [
+   "Cleave",
+   "顺劈",
+   "順劈"
+  ]
+ },
+ "OGN-005": {
+  "name": "瓦解怒焰",
+  "alternates": [
+   "Disintegrate",
+   "碎裂之火"
+  ]
+ },
+ "OGN-006": {
+  "name": "咬咬燃燒彈",
+  "alternates": [
+   "Flame Chompers",
+   "嚼火者手雷"
+  ]
+ },
+ "OGN-007": {
+  "name": "狂怒符文",
+  "alternates": [
+   "Fury Rune",
+   "炽烈符文",
+   "熾烈符文"
+  ]
+ },
+ "OGN-008": {
+  "name": "嗨起來！",
+  "alternates": [
+   "Get Excited!",
+   "罪恶快感",
+   "罪惡快感"
+  ]
+ },
+ "OGN-009": {
+  "name": "海克斯科技射線",
+  "alternates": [
+   "Hextech Ray",
+   "海克斯射线",
+   "海克斯射線"
+  ]
+ },
+ "OGN-010": {
+  "name": "軍團後衛",
+  "alternates": [
+   "Legion Rearguard",
+   "军团后卫"
+  ]
+ },
+ "OGN-011": {
+  "name": "熔岩蟲",
+  "alternates": [
+   "Magma Wurm",
+   "熔浆巨龙",
+   "熔漿巨龍"
+  ]
+ },
+ "OGN-012": {
+  "name": "諾克薩斯志士",
+  "alternates": [
+   "Noxus Hopeful",
+   "诺克萨斯新兵",
+   "諾克薩斯新兵"
+  ]
+ },
+ "OGN-013": {
+  "name": "氣噗普羅",
+  "alternates": [
+   "Pouty Poro",
+   "呸呸魄罗",
+   "呸呸魄羅"
+  ]
+ },
+ "OGN-014": {
+  "name": "蒼穹裂隙",
+  "alternates": [
+   "Sky Splitter",
+   "霹天雳地",
+   "霹天靂地"
+  ]
+ },
+ "OGN-015": {
+  "name": "法隆上尉",
+  "alternates": [
+   "Captain Farron",
+   "法荣队长",
+   "法榮隊長"
+  ]
+ },
+ "OGN-016": {
+  "name": "危險雙人組",
+  "alternates": [
+   "Dangerous Duo",
+   "危险二人组",
+   "危險二人組"
+  ]
+ },
+ "OGN-017": {
+  "name": "鋼鐵弩砲",
+  "alternates": [
+   "Iron Ballista",
+   "钢铁弩炮",
+   "鋼鐵弩炮"
+  ]
+ },
+ "OGN-018": {
+  "name": "諾克薩斯破壞者",
+  "alternates": [
+   "Noxus Saboteur",
+   "诺克萨斯破坏者"
+  ]
+ },
+ "OGN-019": {
+  "name": "狂怒之魂",
+  "alternates": [
+   "Raging Soul",
+   "肆虐狂魂"
+  ]
+ },
+ "OGN-020": {
+  "name": "廢料場英雄",
+  "alternates": [
+   "Scrapyard Champion",
+   "垃圾场小霸王",
+   "垃圾場小霸王"
+  ]
+ },
+ "OGN-021": {
+  "name": "烈日巨環",
+  "alternates": [
+   "Sun Disc",
+   "太阳圆盘",
+   "太陽圓盤"
+  ]
+ },
+ "OGN-022": {
+  "name": "熱能光束",
+  "alternates": [
+   "Thermo Beam",
+   "热电光束",
+   "熱電光束"
+  ]
+ },
+ "OGN-023": {
+  "name": "無照軍火庫",
+  "alternates": [
+   "Unlicensed Armory",
+   "来路不明的武器",
+   "來路不明的武器"
+  ]
+ },
+ "OGN-024": {
+  "name": "虛空探索者",
+  "alternates": [
+   "Void Seeker",
+   "虚空索敌",
+   "虛空索敵"
+  ]
+ },
+ "OGN-025": {
+  "name": "盲目怒火",
+  "alternates": [
+   "Blind Fury",
+   "暴怒冲动",
+   "暴怒衝動"
+  ]
+ },
+ "OGN-026": {
+  "name": "布琳希爾．雷霆之歌",
+  "alternates": [
+   "Brynhir Thundersong",
+   "颂雷者 布林希尔",
+   "頌雷者 布林希爾",
+   "布林希爾 雷霆之歌"
+  ]
+ },
+ "OGN-027": {
+  "name": "達瑞斯-特菲利安",
+  "alternates": [
+   "Darius, Trifarian",
+   "德莱厄斯",
+   "德萊厄斯",
+   "達瑞斯",
+   "Darius"
+  ]
+ },
+ "OGN-028": {
+  "name": "達瑞文-炫技",
+  "alternates": [
+   "Draven, Showboat",
+   "德莱文",
+   "德萊文",
+   "達瑞文",
+   "Draven"
+  ]
+ },
+ "OGN-029": {
+  "name": "降世星辰",
+  "alternates": [
+   "Falling Star",
+   "星落"
+  ]
+ },
+ "OGN-030": {
+  "name": "吉茵珂絲-爆破專家",
+  "alternates": [
+   "Jinx, Demolitionist",
+   "金克丝",
+   "金克絲",
+   "吉茵珂絲",
+   "Jinx"
+  ]
+ },
+ "OGN-031": {
+  "name": "怒焰龍怪",
+  "alternates": [
+   "Raging Firebrand",
+   "狂暴龙怪",
+   "狂暴龍怪"
+  ]
+ },
+ "OGN-032": {
+  "name": "闇鴉典籍",
+  "alternates": [
+   "Ravenborn Tome",
+   "邪鸦魔典",
+   "邪鴉魔典"
+  ]
+ },
+ "OGN-033": {
+  "name": "勒索",
+  "alternates": [
+   "Shakedown",
+   "巧取豪夺",
+   "巧取豪奪"
+  ]
+ },
+ "OGN-034": {
+  "name": "泰達米爾-野蠻人",
+  "alternates": [
+   "Tryndamere, Barbarian",
+   "泰达米尔",
+   "泰達米爾",
+   "Tryndamere"
+  ]
+ },
+ "OGN-035": {
+  "name": "汎-獵人",
+  "alternates": [
+   "Vayne, Hunter",
+   "薇恩",
+   "汎",
+   "Vayne"
+  ]
+ },
+ "OGN-036": {
+  "name": "菲艾-破壞",
+  "alternates": [
+   "Vi, Destructive",
+   "蔚",
+   "菲艾",
+   "Vi"
+  ]
+ },
+ "OGN-037": {
+  "name": "不死鳳凰",
+  "alternates": [
+   "Immortal Phoenix",
+   "不朽凤凰",
+   "不朽鳳凰"
+  ]
+ },
+ "OGN-038": {
+  "name": "煉燄飛龍 卡卓格林",
+  "alternates": [
+   "Kadregrin the Infernal",
+   "邪焰巨龙 卡德雷格林",
+   "邪焰巨龍 卡德雷格林"
+  ]
+ },
+ "OGN-039": {
+  "name": "凱莎-生還者",
+  "alternates": [
+   "Kai'Sa, Survivor",
+   "卡莎",
+   "凱莎",
+   "Kai'Sa"
+  ]
+ },
+ "OGN-040": {
+  "name": "狂怒之印",
+  "alternates": [
+   "Seal of Rage",
+   "暴怒之印"
+  ]
+ },
+ "OGN-041": {
+  "name": "弗力貝爾-狂怒",
+  "alternates": [
+   "Volibear, Furious",
+   "沃利贝尔",
+   "沃利貝爾",
+   "弗力貝爾",
+   "Volibear"
+  ]
+ },
+ "OGN-042": {
+  "name": "止靜符文",
+  "alternates": [
+   "Calm Rune",
+   "翠意符文"
+  ]
+ },
+ "OGN-043": {
+  "name": "傾城",
+  "alternates": [
+   "Charm",
+   "魅惑妖术",
+   "魅惑妖術"
+  ]
+ },
+ "OGN-044": {
+  "name": "發條管理員",
+  "alternates": [
+   "Clockwork Keeper",
+   "小小守护者",
+   "小小守護者"
+  ]
+ },
+ "OGN-045": {
+  "name": "抗爭",
+  "alternates": [
+   "Defy",
+   "蔑视",
+   "蔑視"
+  ]
+ },
+ "OGN-046": {
+  "name": "準備應戰",
+  "alternates": [
+   "En Garde",
+   "决斗架势",
+   "決鬥架勢"
+  ]
+ },
+ "OGN-047": {
+  "name": "尋得自我",
+  "alternates": [
+   "Find Your Center",
+   "御衡守念"
+  ]
+ },
+ "OGN-048": {
+  "name": "冥想",
+  "alternates": [
+   "Meditation"
+  ]
+ },
+ "OGN-049": {
+  "name": "嬉鬧幽靈",
+  "alternates": [
+   "Playful Phantom",
+   "贪玩的小鬼",
+   "貪玩的小鬼"
+  ]
+ },
+ "OGN-050": {
+  "name": "符文禁錮",
+  "alternates": [
+   "Rune Prison",
+   "符文禁锢"
+  ]
+ },
+ "OGN-051": {
+  "name": "日輪持盾者",
+  "alternates": [
+   "Solari Shieldbearer",
+   "烈阳盾卫",
+   "烈陽盾衛"
+  ]
+ },
+ "OGN-052": {
+  "name": "堅毅普羅",
+  "alternates": [
+   "Stalwart Poro",
+   "强强魄罗",
+   "強強魄羅"
+  ]
+ },
+ "OGN-053": {
+  "name": "並肩作戰",
+  "alternates": [
+   "Stand United",
+   "秘奥义！慈悲度魂落",
+   "秘奧義！慈悲度魂落"
+  ]
+ },
+ "OGN-054": {
+  "name": "日輝守衛",
+  "alternates": [
+   "Sunlit Guardian",
+   "日耀卫队",
+   "日耀衛隊"
+  ]
+ },
+ "OGN-055": {
+  "name": "御水者",
+  "alternates": [
+   "Wielder of Water",
+   "驭水者",
+   "馭水者"
+  ]
+ },
+ "OGN-056": {
+  "name": "適應器",
+  "alternates": [
+   "Adaptatron",
+   "自适应机器人",
+   "自適應機器人"
+  ]
+ },
+ "OGN-057": {
+  "name": "格擋",
+  "alternates": [
+   "Block",
+   "格挡"
+  ]
+ },
+ "OGN-058": {
+  "name": "紀律",
+  "alternates": [
+   "Discipline",
+   "训练有素",
+   "訓練有素"
+  ]
+ },
+ "OGN-059": {
+  "name": "日蝕使者",
+  "alternates": [
+   "Eclipse Herald",
+   "星蚀先锋",
+   "星蝕先鋒",
+   "日蝕先鋒"
+  ]
+ },
+ "OGN-060": {
+  "name": "洞察面具",
+  "alternates": [
+   "Mask of Foresight",
+   "远见面具",
+   "遠見面具"
+  ]
+ },
+ "OGN-061": {
+  "name": "普羅牧人",
+  "alternates": [
+   "Poro Herder",
+   "魄罗牧者",
+   "魄羅牧者"
+  ]
+ },
+ "OGN-062": {
+  "name": "增援",
+  "alternates": [
+   "Reinforce"
+  ]
+ },
+ "OGN-063": {
+  "name": "靈氣庇護",
+  "alternates": [
+   "Spirit's Refuge",
+   "奥义！魂佑",
+   "奧義！魂佑"
+  ]
+ },
+ "OGN-064": {
+  "name": "風牆鐵壁",
+  "alternates": [
+   "Wind Wall",
+   "风之障壁",
+   "風之障壁"
+  ]
+ },
+ "OGN-065": {
+  "name": "睿智長者",
+  "alternates": [
+   "Wizened Elder",
+   "睿智长者"
+  ]
+ },
+ "OGN-066": {
+  "name": "阿璃-誘人",
+  "alternates": [
+   "Ahri, Alluring",
+   "阿狸",
+   "阿璃",
+   "Ahri"
+  ]
+ },
+ "OGN-067": {
+  "name": "布里茨-漠然",
+  "alternates": [
+   "Blitzcrank, Impassive",
+   "布里茨",
+   "Blitzcrank"
+  ]
+ },
+ "OGN-068": {
+  "name": "凱特琳-巡邏",
+  "alternates": [
+   "Caitlyn, Patrolling",
+   "凯特琳",
+   "凱特琳",
+   "Caitlyn"
+  ]
+ },
+ "OGN-069": {
+  "name": "背水一戰",
+  "alternates": [
+   "Last Stand",
+   "背水一战"
+  ]
+ },
+ "OGN-070": {
+  "name": "狙魔衛士",
+  "alternates": [
+   "Mageseeker Warden",
+   "搜魔人典狱长",
+   "搜魔人典獄長",
+   "狙魔術士"
+  ]
+ },
+ "OGN-071": {
+  "name": "派對禮物",
+  "alternates": [
+   "Party Favors",
+   "次元门狂欢",
+   "次元門狂歡"
+  ]
+ },
+ "OGN-072": {
+  "name": "日輪神殿",
+  "alternates": [
+   "Solari Shrine",
+   "烈阳圣坛",
+   "烈陽聖壇"
+  ]
+ },
+ "OGN-073": {
+  "name": "索娜-和諧",
+  "alternates": [
+   "Sona, Harmonious",
+   "娑娜",
+   "索娜",
+   "Sona"
+  ]
+ },
+ "OGN-074": {
+  "name": "塔里克-保護者",
+  "alternates": [
+   "Taric, Protector",
+   "塔里克",
+   "塔裡克",
+   "Taric"
+  ]
+ },
+ "OGN-075": {
+  "name": "美味茄妖",
+  "alternates": [
+   "Tasty Faefolk",
+   "美味仙灵",
+   "美味仙靈"
+  ]
+ },
+ "OGN-076": {
+  "name": "犽宿-悔恨",
+  "alternates": [
+   "Yasuo, Remorseful",
+   "亚索",
+   "亞索",
+   "犽宿",
+   "Yasuo"
+  ]
+ },
+ "OGN-077": {
+  "name": "中婭沙漏",
+  "alternates": [
+   "Zhonya's Hourglass",
+   "中娅沙漏"
+  ]
+ },
+ "OGN-078": {
+  "name": "李星-苦行僧",
+  "alternates": [
+   "Lee Sin, Ascetic",
+   "李青",
+   "李星",
+   "Lee Sin"
+  ]
+ },
+ "OGN-079": {
+  "name": "雷歐娜-狂信者",
+  "alternates": [
+   "Leona, Zealot",
+   "蕾欧娜",
+   "蕾歐娜",
+   "雷歐娜",
+   "Leona"
+  ]
+ },
+ "OGN-080": {
+  "name": "逆轉祕術",
+  "alternates": [
+   "Mystic Reversal",
+   "倒转神通",
+   "倒轉神通"
+  ]
+ },
+ "OGN-081": {
+  "name": "專注之印",
+  "alternates": [
+   "Seal of Focus",
+   "专注之印"
+  ]
+ },
+ "OGN-082": {
+  "name": "白燄衛龍",
+  "alternates": [
+   "Whiteflame Protector",
+   "苍炎守护者",
+   "蒼炎守護者"
+  ]
+ },
+ "OGN-083": {
+  "name": "追憶過往",
+  "alternates": [
+   "Consult the Past",
+   "借鉴历史",
+   "借鑑歷史"
+  ]
+ },
+ "OGN-084": {
+  "name": "勤奮的學徒",
+  "alternates": [
+   "Eager Apprentice",
+   "踊跃的学徒",
+   "踴躍的學徒"
+  ]
+ },
+ "OGN-085": {
+  "name": "彗星墜擊",
+  "alternates": [
+   "Falling Comet",
+   "彗星坠击"
+  ]
+ },
+ "OGN-086": {
+  "name": "寶飾巨像",
+  "alternates": [
+   "Jeweled Colossus",
+   "宝石巨像",
+   "寶石巨像"
+  ]
+ },
+ "OGN-087": {
+  "name": "約德爾說教魔人",
+  "alternates": [
+   "Lecturing Yordle",
+   "约德尔教官",
+   "約德爾教官"
+  ]
+ },
+ "OGN-088": {
+  "name": "超能機甲",
+  "alternates": [
+   "Mega-Mech",
+   "超能机甲"
+  ]
+ },
+ "OGN-089": {
+  "name": "心智符文",
+  "alternates": [
+   "Mind Rune",
+   "灵光符文",
+   "靈光符文"
+  ]
+ },
+ "OGN-090": {
+  "name": "悔恨之珠",
+  "alternates": [
+   "Orb of Regret",
+   "懊悔法球"
+  ]
+ },
+ "OGN-091": {
+  "name": "鬥坑小隊",
+  "alternates": [
+   "Pit Crew",
+   "竞技场勤务小队",
+   "競技場勤務小隊"
+  ]
+ },
+ "OGN-092": {
+  "name": "怒濤狂鯊砲",
+  "alternates": [
+   "Riptide Rex",
+   "怒海大鲨炮",
+   "怒海大鯊炮"
+  ]
+ },
+ "OGN-093": {
+  "name": "隻手遮天",
+  "alternates": [
+   "Smoke Screen",
+   "烟幕弹",
+   "煙幕彈"
+  ]
+ },
+ "OGN-094": {
+  "name": "精靈召喚",
+  "alternates": [
+   "Sprite Call",
+   "精灵召唤"
+  ]
+ },
+ "OGN-095": {
+  "name": "頭暈腦脹",
+  "alternates": [
+   "Stupefy",
+   "“敲”诈",
+   "“敲”詐"
+  ]
+ },
+ "OGN-096": {
+  "name": "警戒哨兵",
+  "alternates": [
+   "Watchful Sentry",
+   "警觉的哨兵",
+   "警覺的哨兵"
+  ]
+ },
+ "OGN-097": {
+  "name": "爆破毯果妖精",
+  "alternates": [
+   "Blastcone Fae",
+   "爆裂球果仙灵",
+   "爆裂球果仙靈"
+  ]
+ },
+ "OGN-098": {
+  "name": "能量引導",
+  "alternates": [
+   "Energy Conduit",
+   "能量通道"
+  ]
+ },
+ "OGN-099": {
+  "name": "垃圾收集器",
+  "alternates": [
+   "Garbage Grabber",
+   "拾荒小能手"
+  ]
+ },
+ "OGN-100": {
+  "name": "寶鑄先知",
+  "alternates": [
+   "Gemcraft Seer",
+   "宝石真知者",
+   "寶石真知者"
+  ]
+ },
+ "OGN-101": {
+  "name": "蘑菇袋",
+  "alternates": [
+   "Mushroom Pouch"
+  ]
+ },
+ "OGN-102": {
+  "name": "傳送救援",
+  "alternates": [
+   "Portal Rescue",
+   "传送门大营救",
+   "傳送門大營救"
+  ]
+ },
+ "OGN-103": {
+  "name": "雷文布魯學徒",
+  "alternates": [
+   "Ravenbloom Student",
+   "拉文布鲁姆学生",
+   "拉文布魯姆學生"
+  ]
+ },
+ "OGN-104": {
+  "name": "撤退",
+  "alternates": [
+   "Retreat",
+   "择日再战",
+   "擇日再戰"
+  ]
+ },
+ "OGN-105": {
+  "name": "宇宙奇點",
+  "alternates": [
+   "Singularity",
+   "星芒凝汇",
+   "星芒凝匯"
+  ]
+ },
+ "OGN-106": {
+  "name": "精靈之母",
+  "alternates": [
+   "Sprite Mother",
+   "精灵之母"
+  ]
+ },
+ "OGN-107": {
+  "name": "優等生艾娃",
+  "alternates": [
+   "Ava Achiever",
+   "斥候标兵 艾娃",
+   "斥候標兵 艾娃"
+  ]
+ },
+ "OGN-108": {
+  "name": "趨同變異",
+  "alternates": [
+   "Convergent Mutation",
+   "聚合变异",
+   "聚合變異"
+  ]
+ },
+ "OGN-109": {
+  "name": "蒙多醫生-專家",
+  "alternates": [
+   "Dr. Mundo, Expert",
+   "蒙多医生",
+   "蒙多醫生",
+   "Dr. Mundo"
+  ]
+ },
+ "OGN-110": {
+  "name": "艾克-回溯",
+  "alternates": [
+   "Ekko, Recurrent",
+   "艾克",
+   "Ekko"
+  ]
+ },
+ "OGN-111": {
+  "name": "漢默丁格-發明家",
+  "alternates": [
+   "Heimerdinger, Inventor",
+   "黑默丁格",
+   "漢默丁格",
+   "Heimerdinger"
+  ]
+ },
+ "OGN-112": {
+  "name": "凱莎-進化",
+  "alternates": [
+   "Kai'Sa, Evolutionary",
+   "卡莎",
+   "凱莎",
+   "Kai'Sa"
+  ]
+ },
+ "OGN-113": {
+  "name": "馬爾札哈-狂熱者",
+  "alternates": [
+   "Malzahar, Fanatic",
+   "玛尔扎哈",
+   "瑪爾扎哈",
+   "馬爾札哈",
+   "Malzahar"
+  ]
+ },
+ "OGN-114": {
+  "name": "進步日",
+  "alternates": [
+   "Progress Day",
+   "进化日",
+   "進化日"
+  ]
+ },
+ "OGN-115": {
+  "name": "光明未來",
+  "alternates": [
+   "Promising Future",
+   "光明未来"
+  ]
+ },
+ "OGN-116": {
+  "name": "千尾守望者",
+  "alternates": [
+   "Thousand-Tailed Watcher",
+   "千尾监视者",
+   "千尾監視者"
+  ]
+ },
+ "OGN-117": {
+  "name": "維克特-創新者",
+  "alternates": [
+   "Viktor, Innovator",
+   "维克托",
+   "維克托",
+   "維克特",
+   "Viktor"
+  ]
+ },
+ "OGN-118": {
+  "name": "回音幽靈",
+  "alternates": [
+   "Wraith of Echoes",
+   "残响之魂",
+   "殘響之魂",
+   "迴音幽靈"
+  ]
+ },
+ "OGN-119": {
+  "name": "阿璃-好奇",
+  "alternates": [
+   "Ahri, Inquisitive",
+   "阿狸",
+   "阿璃",
+   "Ahri"
+  ]
+ },
+ "OGN-120": {
+  "name": "洞察之印",
+  "alternates": [
+   "Seal of Insight"
+  ]
+ },
+ "OGN-121": {
+  "name": "提摩-戰略家",
+  "alternates": [
+   "Teemo, Strategist",
+   "提莫",
+   "提摩",
+   "Teemo"
+  ]
+ },
+ "OGN-122": {
+  "name": "時空扭曲",
+  "alternates": [
+   "Time Warp",
+   "时间扭曲",
+   "時間扭曲"
+  ]
+ },
+ "OGN-123": {
+  "name": "無制之力",
+  "alternates": [
+   "Unchecked Power",
+   "过载能量",
+   "過載能量"
+  ]
+ },
+ "OGN-124": {
+  "name": "競技場酒吧",
+  "alternates": [
+   "Arena Bar",
+   "竞技场酒吧"
+  ]
+ },
+ "OGN-125": {
+  "name": "比爾吉沃特惡霸",
+  "alternates": [
+   "Bilgewater Bully",
+   "比尔吉沃特恶霸"
+  ]
+ },
+ "OGN-126": {
+  "name": "身軀符文",
+  "alternates": [
+   "Body Rune",
+   "摧破符文"
+  ]
+ },
+ "OGN-127": {
+  "name": "砲火彈幕",
+  "alternates": [
+   "Cannon Barrage",
+   "加农炮幕",
+   "加農炮幕"
+  ]
+ },
+ "OGN-128": {
+  "name": "挑戰",
+  "alternates": [
+   "Challenge",
+   "决斗",
+   "決鬥"
+  ]
+ },
+ "OGN-129": {
+  "name": "迎敵之息",
+  "alternates": [
+   "Confront",
+   "迎敌号令",
+   "迎敵號令"
+  ]
+ },
+ "OGN-130": {
+  "name": "神射海盜",
+  "alternates": [
+   "Crackshot Corsair",
+   "神射海盗"
+  ]
+ },
+ "OGN-131": {
+  "name": "沙丘飛龍",
+  "alternates": [
+   "Dune Drake",
+   "沙丘亚龙",
+   "沙丘亞龍"
+  ]
+ },
+ "OGN-132": {
+  "name": "大副",
+  "alternates": [
+   "First Mate"
+  ]
+ },
+ "OGN-133": {
+  "name": "刀光亂舞",
+  "alternates": [
+   "Flurry of Blades",
+   "剑刃飓风",
+   "劍刃颶風"
+  ]
+ },
+ "OGN-134": {
+  "name": "組織動員",
+  "alternates": [
+   "Mobilize",
+   "动员",
+   "動員"
+  ]
+ },
+ "OGN-135": {
+  "name": "帕卡幼豹",
+  "alternates": [
+   "Pakaa Cub",
+   "帕卡幼崽"
+  ]
+ },
+ "OGN-136": {
+  "name": "鬥坑新秀",
+  "alternates": [
+   "Pit Rookie",
+   "竞技场新人",
+   "競技場新人"
+  ]
+ },
+ "OGN-137": {
+  "name": "雷爪巨熊",
+  "alternates": [
+   "Stormclaw Ursine",
+   "雷爪氏族熊人"
+  ]
+ },
+ "OGN-138": {
+  "name": "永恆催化",
+  "alternates": [
+   "Catalyst of Aeons",
+   "万世催化石",
+   "萬世催化石"
+  ]
+ },
+ "OGN-139": {
+  "name": "雲之地的希莉亞",
+  "alternates": [
+   "Cithria of Cloudfield",
+   "云丛的希思莉亚",
+   "雲叢的希思莉亞"
+  ]
+ },
+ "OGN-140": {
+  "name": "鱗之使者",
+  "alternates": [
+   "Herald of Scales",
+   "唤龙使者",
+   "喚龍使者"
+  ]
+ },
+ "OGN-141": {
+  "name": "均衡派僧侶",
+  "alternates": [
+   "Kinkou Monk",
+   "均衡僧侣",
+   "均衡僧侶"
+  ]
+ },
+ "OGN-142": {
+  "name": "裂地飛龍",
+  "alternates": [
+   "Mountain Drake",
+   "山脉亚龙",
+   "山脈亞龍"
+  ]
+ },
+ "OGN-143": {
+  "name": "海盜避風港",
+  "alternates": [
+   "Pirate's Haven",
+   "海盗避风港"
+  ]
+ },
+ "OGN-144": {
+  "name": "戰利品",
+  "alternates": [
+   "Spoils of War",
+   "以战养战",
+   "以戰養戰"
+  ]
+ },
+ "OGN-145": {
+  "name": "不滅之靈",
+  "alternates": [
+   "Unyielding Spirit",
+   "坚毅不倒",
+   "堅毅不倒"
+  ]
+ },
+ "OGN-146": {
+  "name": "原始衝撞",
+  "alternates": [
+   "Wallop",
+   "痛殴",
+   "痛毆"
+  ]
+ },
+ "OGN-147": {
+  "name": "狂爪薩滿",
+  "alternates": [
+   "Wildclaw Shaman",
+   "野爪萨满",
+   "野爪薩滿",
+   "狂抓薩滿"
+  ]
+ },
+ "OGN-148": {
+  "name": "艾妮維亞-原始",
+  "alternates": [
+   "Anivia, Primal",
+   "艾尼维亚",
+   "艾尼維亞",
+   "艾妮維亞",
+   "Anivia"
+  ]
+ },
+ "OGN-149": {
+  "name": "食人蔓藤",
+  "alternates": [
+   "Carnivorous Snapvine",
+   "食肉蛇藤"
+  ]
+ },
+ "OGN-150": {
+  "name": "海怪獵人",
+  "alternates": [
+   "Kraken Hunter",
+   "海妖猎手",
+   "海妖獵手"
+  ]
+ },
+ "OGN-151": {
+  "name": "李星-沉穩",
+  "alternates": [
+   "Lee Sin, Centered",
+   "李青",
+   "李星",
+   "Lee Sin"
+  ]
+ },
+ "OGN-152": {
+  "name": "霧瀑",
+  "alternates": [
+   "Mistfall",
+   "雾临剑冢",
+   "霧臨劍冢"
+  ]
+ },
+ "OGN-153": {
+  "name": "公開行動",
+  "alternates": [
+   "Overt Operation",
+   "公开行动"
+  ]
+ },
+ "OGN-154": {
+  "name": "原初力量",
+  "alternates": [
+   "Primal Strength",
+   "洪荒巨力"
+  ]
+ },
+ "OGN-155": {
+  "name": "姬亞娜-勝利",
+  "alternates": [
+   "Qiyana, Victorious",
+   "奇亚娜",
+   "奇亞娜",
+   "姬亞娜",
+   "Qiyana"
+  ]
+ },
+ "OGN-156": {
+  "name": "破壞行動",
+  "alternates": [
+   "Sabotage",
+   "暗中破坏",
+   "暗中破壞"
+  ]
+ },
+ "OGN-157": {
+  "name": "烏迪爾-野人",
+  "alternates": [
+   "Udyr, Wildman",
+   "乌迪尔",
+   "烏迪爾",
+   "Udyr"
+  ]
+ },
+ "OGN-158": {
+  "name": "弗力貝爾-宏偉",
+  "alternates": [
+   "Volibear, Imposing",
+   "沃利贝尔",
+   "沃利貝爾",
+   "弗力貝爾",
+   "Volibear"
+  ]
+ },
+ "OGN-159": {
+  "name": "沃維克-獵人",
+  "alternates": [
+   "Warwick, Hunter",
+   "沃里克",
+   "沃裡克",
+   "沃維克",
+   "Warwick"
+  ]
+ },
+ "OGN-160": {
+  "name": "耀眼極光",
+  "alternates": [
+   "Dazzling Aurora",
+   "闪耀极光",
+   "閃耀極光"
+  ]
+ },
+ "OGN-161": {
+  "name": "死綻掠食者",
+  "alternates": [
+   "Deadbloom Predator",
+   "亡花掠食者"
+  ]
+ },
+ "OGN-162": {
+  "name": "好運姐-船長",
+  "alternates": [
+   "Miss Fortune, Captain",
+   "厄运小姐",
+   "厄運小姐",
+   "好運姐",
+   "Miss Fortune"
+  ]
+ },
+ "OGN-163": {
+  "name": "力量之印",
+  "alternates": [
+   "Seal of Strength"
+  ]
+ },
+ "OGN-164": {
+  "name": "賽特-鬥士",
+  "alternates": [
+   "Sett, Brawler",
+   "瑟提",
+   "賽特",
+   "Sett"
+  ]
+ },
+ "OGN-165": {
+  "name": "墓園侍從",
+  "alternates": [
+   "Cemetery Attendant",
+   "牧灵犬",
+   "牧靈犬"
+  ]
+ },
+ "OGN-166": {
+  "name": "渾沌符文",
+  "alternates": [
+   "Chaos Rune",
+   "混沌符文"
+  ]
+ },
+ "OGN-167": {
+  "name": "餘燼僧",
+  "alternates": [
+   "Ember Monk",
+   "余火修士",
+   "餘火修士"
+  ]
+ },
+ "OGN-168": {
+  "name": "戰或逃",
+  "alternates": [
+   "Fight or Flight",
+   "战或逃"
+  ]
+ },
+ "OGN-169": {
+  "name": "疾風",
+  "alternates": [
+   "Gust",
+   "罡风",
+   "罡風"
+  ]
+ },
+ "OGN-170": {
+  "name": "陰鬱歸來",
+  "alternates": [
+   "Morbid Return",
+   "亡者复生",
+   "亡者復生"
+  ]
+ },
+ "OGN-171": {
+  "name": "秘術普羅",
+  "alternates": [
+   "Mystic Poro",
+   "叨叨魄罗",
+   "叨叨魄羅"
+  ]
+ },
+ "OGN-172": {
+  "name": "懲戒",
+  "alternates": [
+   "Rebuke",
+   "责退",
+   "責退"
+  ]
+ },
+ "OGN-173": {
+  "name": "乘風",
+  "alternates": [
+   "Ride the Wind",
+   "驭风而行",
+   "馭風而行"
+  ]
+ },
+ "OGN-174": {
+  "name": "大煞偵察兵",
+  "alternates": [
+   "Sai Scout",
+   "大塞斥候",
+   "大熬偵察兵"
+  ]
+ },
+ "OGN-175": {
+  "name": "碼頭潛行者",
+  "alternates": [
+   "Shipyard Skulker",
+   "船坞潜伏者",
+   "船塢潛伏者"
+  ]
+ },
+ "OGN-176": {
+  "name": "狡詐水手",
+  "alternates": [
+   "Sneaky Deckhand",
+   "鬼祟的水手"
+  ]
+ },
+ "OGN-177": {
+  "name": "匿蹤追獵者",
+  "alternates": [
+   "Stealthy Pursuer",
+   "隐秘追踪者",
+   "隱秘追蹤者"
+  ]
+ },
+ "OGN-178": {
+  "name": "臥底特工",
+  "alternates": [
+   "Undercover Agent",
+   "卧底特工"
+  ]
+ },
+ "OGN-179": {
+  "name": "塞翁失馬",
+  "alternates": [
+   "Acceptable Losses",
+   "折戟再战",
+   "折戟再戰"
+  ]
+ },
+ "OGN-180": {
+  "name": "逝去回憶",
+  "alternates": [
+   "Fading Memories",
+   "逝水如镜",
+   "逝水如鏡"
+  ]
+ },
+ "OGN-181": {
+  "name": "驚喜包",
+  "alternates": [
+   "Pack of Wonders",
+   "奇妙行囊"
+  ]
+ },
+ "OGN-182": {
+  "name": "廢料堆",
+  "alternates": [
+   "Scrapheap",
+   "废料堆"
+  ]
+ },
+ "OGN-183": {
+  "name": "千術牌組",
+  "alternates": [
+   "Stacked Deck",
+   "卡牌骗术",
+   "卡牌騙術"
+  ]
+ },
+ "OGN-184": {
+  "name": "賽蓮號",
+  "alternates": [
+   "The Syren",
+   "塞壬号",
+   "塞壬號"
+  ]
+ },
+ "OGN-185": {
+  "name": "旅行商人",
+  "alternates": [
+   "Traveling Merchant"
+  ]
+ },
+ "OGN-186": {
+  "name": "寶藏之星",
+  "alternates": [
+   "Treasure Trove",
+   "无主宝藏",
+   "無主寶藏"
+  ]
+ },
+ "OGN-187": {
+  "name": "旋風斬",
+  "alternates": [
+   "Whirlwind",
+   "飓风席卷",
+   "颶風席捲"
+  ]
+ },
+ "OGN-188": {
+  "name": "佐恩打手",
+  "alternates": [
+   "Zaunite Bouncer",
+   "祖安保镖",
+   "祖安保鏢"
+  ]
+ },
+ "OGN-189": {
+  "name": "慨影-解放",
+  "alternates": [
+   "Kayn, Unleashed",
+   "凯隐",
+   "凱隱",
+   "慨影",
+   "Kayn"
+  ]
+ },
+ "OGN-190": {
+  "name": "寇格魔-腐蝕",
+  "alternates": [
+   "Kog'Maw, Caustic",
+   "克格莫",
+   "寇格魔",
+   "Kog'Maw"
+  ]
+ },
+ "OGN-191": {
+  "name": "暴走劫掠者",
+  "alternates": [
+   "Maddened Marauder",
+   "疯狂海寇",
+   "瘋狂海寇"
+  ]
+ },
+ "OGN-192": {
+  "name": "岐心龍",
+  "alternates": [
+   "Mindsplitter",
+   "辟心玄龙",
+   "闢心玄龍"
+  ]
+ },
+ "OGN-193": {
+  "name": "好運姐-海盜",
+  "alternates": [
+   "Miss Fortune, Buccaneer",
+   "厄运小姐",
+   "厄運小姐",
+   "好運姐",
+   "Miss Fortune"
+  ]
+ },
+ "OGN-194": {
+  "name": "夜曲-夢魘",
+  "alternates": [
+   "Nocturne, Horrifying",
+   "魔腾",
+   "魔騰",
+   "夜曲",
+   "Nocturne"
+  ]
+ },
+ "OGN-195": {
+  "name": "割魂手喇煞",
+  "alternates": [
+   "Rhasa the Sunderer",
+   "裂魂者喇煞"
+  ]
+ },
+ "OGN-196": {
+  "name": "食魂巨魔",
+  "alternates": [
+   "Soulgorger",
+   "咂魂者"
+  ]
+ },
+ "OGN-197": {
+  "name": "提摩-偵察兵",
+  "alternates": [
+   "Teemo, Scout",
+   "提莫",
+   "提摩",
+   "Teemo"
+  ]
+ },
+ "OGN-198": {
+  "name": "哈洛威",
+  "alternates": [
+   "The Harrowing",
+   "蚀魂夜",
+   "蝕魂夜"
+  ]
+ },
+ "OGN-199": {
+  "name": "改潮者",
+  "alternates": [
+   "Tideturner",
+   "控潮者"
+  ]
+ },
+ "OGN-200": {
+  "name": "逆命-賭徒",
+  "alternates": [
+   "Twisted Fate, Gambler",
+   "崔斯特",
+   "逆命",
+   "Twisted Fate"
+  ]
+ },
+ "OGN-201": {
+  "name": "時間倒轉",
+  "alternates": [
+   "Invert Timelines",
+   "反转时间线",
+   "反轉時間線"
+  ]
+ },
+ "OGN-202": {
+  "name": "吉茵珂絲-反叛軍",
+  "alternates": [
+   "Jinx, Rebel",
+   "金克丝",
+   "金克絲",
+   "吉茵珂絲",
+   "Jinx"
+  ]
+ },
+ "OGN-203": {
+  "name": "附身",
+  "alternates": [
+   "Possession",
+   "据为己有",
+   "據為己有"
+  ]
+ },
+ "OGN-204": {
+  "name": "紛爭之印",
+  "alternates": [
+   "Seal of Discord",
+   "不和之印"
+  ]
+ },
+ "OGN-205": {
+  "name": "犽宿-御風者",
+  "alternates": [
+   "Yasuo, Windrider",
+   "亚索",
+   "亞索",
+   "犽宿",
+   "Yasuo"
+  ]
+ },
+ "OGN-206": {
+  "name": "背水相依",
+  "alternates": [
+   "Back to Back",
+   "背靠背"
+  ]
+ },
+ "OGN-207": {
+  "name": "榮耀召喚",
+  "alternates": [
+   "Call to Glory",
+   "荣耀召唤"
+  ]
+ },
+ "OGN-208": {
+  "name": "殘酷贊助者",
+  "alternates": [
+   "Cruel Patron",
+   "冷血贵族",
+   "冷血貴族"
+  ]
+ },
+ "OGN-209": {
+  "name": "剷除弱者",
+  "alternates": [
+   "Cull the Weak",
+   "清理门户",
+   "清理門戶"
+  ]
+ },
+ "OGN-210": {
+  "name": "大膽普羅",
+  "alternates": [
+   "Daring Poro",
+   "莽莽魄罗",
+   "莽莽魄羅"
+  ]
+ },
+ "OGN-211": {
+  "name": "忠誠工匠",
+  "alternates": [
+   "Faithful Manufactor",
+   "忠实的工坊主",
+   "忠實的工坊主"
+  ]
+ },
+ "OGN-212": {
+  "name": "未來鍛爐",
+  "alternates": [
+   "Forge of the Future",
+   "未来熔炉",
+   "未來熔爐"
+  ]
+ },
+ "OGN-213": {
+  "name": "袖劍",
+  "alternates": [
+   "Hidden Blade",
+   "暗刃"
+  ]
+ },
+ "OGN-214": {
+  "name": "秩序符文",
+  "alternates": [
+   "Order Rune",
+   "序理符文"
+  ]
+ },
+ "OGN-215": {
+  "name": "肖狗水手",
+  "alternates": [
+   "Petty Officer",
+   "躁烈的副官"
+  ]
+ },
+ "OGN-216": {
+  "name": "翱翔斥候",
+  "alternates": [
+   "Soaring Scout",
+   "侦察飞鹰",
+   "偵察飛鷹"
+  ]
+ },
+ "OGN-217": {
+  "name": "特菲利安求譽者",
+  "alternates": [
+   "Trifarian Gloryseeker",
+   "崔法利求战者",
+   "崔法利求戰者"
+  ]
+ },
+ "OGN-218": {
+  "name": "先鋒隊長",
+  "alternates": [
+   "Vanguard Captain",
+   "先锋队长"
+  ]
+ },
+ "OGN-219": {
+  "name": "先鋒中士",
+  "alternates": [
+   "Vanguard Sergeant",
+   "先锋中士"
+  ]
+ },
+ "OGN-220": {
+  "name": "碎顱猛擊",
+  "alternates": [
+   "Facebreaker",
+   "强手裂颅",
+   "強手裂顱"
+  ]
+ },
+ "OGN-221": {
+  "name": "帝王聖旨",
+  "alternates": [
+   "Imperial Decree",
+   "帝国谕令",
+   "帝國諭令"
+  ]
+ },
+ "OGN-222": {
+  "name": "諾克薩斯鼓手",
+  "alternates": [
+   "Noxian Drummer",
+   "诺克萨斯鼓手"
+  ]
+ },
+ "OGN-223": {
+  "name": "峰巔守衛",
+  "alternates": [
+   "Peak Guardian",
+   "巅峰守护者",
+   "巔峰守護者"
+  ]
+ },
+ "OGN-224": {
+  "name": "打撈",
+  "alternates": [
+   "Salvage",
+   "废物利用",
+   "廢物利用"
+  ]
+ },
+ "OGN-225": {
+  "name": "日輪首領",
+  "alternates": [
+   "Solari Chief",
+   "烈阳首领",
+   "烈陽首領"
+  ]
+ },
+ "OGN-226": {
+  "name": "幽魂女戒護官",
+  "alternates": [
+   "Spectral Matron",
+   "幽灵主母",
+   "幽靈主母"
+  ]
+ },
+ "OGN-227": {
+  "name": "日輪之徽",
+  "alternates": [
+   "Symbol of the Solari",
+   "烈阳徽记",
+   "烈陽徽記"
+  ]
+ },
+ "OGN-228": {
+  "name": "先鋒頭盔",
+  "alternates": [
+   "Vanguard Helm",
+   "先锋之盔",
+   "先鋒之盔"
+  ]
+ },
+ "OGN-229": {
+  "name": "復仇",
+  "alternates": [
+   "Vengeance",
+   "复仇"
+  ]
+ },
+ "OGN-230": {
+  "name": "亞布斯．斐羅仕",
+  "alternates": [
+   "Albus Ferros",
+   "阿不思·菲罗斯",
+   "阿不思·菲羅斯",
+   "亞布斯 斐羅仕"
+  ]
+ },
+ "OGN-231": {
+  "name": "萊卓斯指揮官",
+  "alternates": [
+   "Commander Ledros",
+   "莱卓斯指挥官"
+  ]
+ },
+ "OGN-232": {
+  "name": "菲歐拉-勝利",
+  "alternates": [
+   "Fiora, Victorious",
+   "菲奥娜",
+   "菲奧娜",
+   "菲歐拉",
+   "菲歐拉-所向披靡",
+   "Fiora"
+  ]
+ },
+ "OGN-233": {
+  "name": "至高謀略",
+  "alternates": [
+   "Grand Strategem",
+   "宏伟战略",
+   "宏偉戰略"
+  ]
+ },
+ "OGN-234": {
+  "name": "馴化飛龍",
+  "alternates": [
+   "Harnessed Dragon",
+   "龙骑兵",
+   "龍騎兵"
+  ]
+ },
+ "OGN-235": {
+  "name": "卡瑪-引導者",
+  "alternates": [
+   "Karma, Channeler",
+   "卡尔玛",
+   "卡爾瑪",
+   "卡瑪",
+   "Karma"
+  ]
+ },
+ "OGN-236": {
+  "name": "卡爾瑟斯-不死之靈",
+  "alternates": [
+   "Karthus, Eternal",
+   "卡尔萨斯",
+   "卡爾薩斯",
+   "卡爾瑟斯",
+   "Karthus"
+  ]
+ },
+ "OGN-237": {
+  "name": "國王詔令",
+  "alternates": [
+   "King's Edict",
+   "国王诏令"
+  ]
+ },
+ "OGN-238": {
+  "name": "雷歐娜-決心",
+  "alternates": [
+   "Leona, Determined",
+   "蕾欧娜",
+   "蕾歐娜",
+   "雷歐娜",
+   "Leona"
+  ]
+ },
+ "OGN-239": {
+  "name": "機械傳道者",
+  "alternates": [
+   "Machine Evangel",
+   "机械戏法师",
+   "機械戲法師"
+  ]
+ },
+ "OGN-240": {
+  "name": "賽特-黑街霸主",
+  "alternates": [
+   "Sett, Kingpin",
+   "瑟提",
+   "賽特",
+   "Sett"
+  ]
+ },
+ "OGN-241": {
+  "name": "慎-均衡",
+  "alternates": [
+   "Shen, Kinkou",
+   "慎",
+   "Shen"
+  ]
+ },
+ "OGN-242": {
+  "name": "誘餌鉤",
+  "alternates": [
+   "Baited Hook",
+   "海兽钓钩",
+   "海獸釣鉤"
+  ]
+ },
+ "OGN-243": {
+  "name": "達瑞斯-處刑者",
+  "alternates": [
+   "Darius, Executioner",
+   "德莱厄斯",
+   "德萊厄斯",
+   "達瑞斯",
+   "Darius"
+  ]
+ },
+ "OGN-244": {
+  "name": "聖劍審判",
+  "alternates": [
+   "Divine Judgment",
+   "圣裁之刻",
+   "聖裁之刻"
+  ]
+ },
+ "OGN-245": {
+  "name": "團結之印",
+  "alternates": [
+   "Seal of Unity",
+   "团结之印"
+  ]
+ },
+ "OGN-246": {
+  "name": "維克特-領袖",
+  "alternates": [
+   "Viktor, Leader",
+   "维克托",
+   "維克托",
+   "維克特",
+   "Viktor"
+  ]
+ },
+ "OGN-247": {
+  "name": "凱莎-虛空之女",
+  "alternates": [
+   "Kai'Sa, Daughter of the Void",
+   "虚空之女",
+   "虛空之女",
+   "Kai'Sa",
+   "凱莎-生還者",
+   "卡莎"
+  ]
+ },
+ "OGN-248": {
+  "name": "伊卡西亞魔雨",
+  "alternates": [
+   "Icathian Rain",
+   "艾卡西亚暴雨",
+   "艾卡西亞暴雨"
+  ]
+ },
+ "OGN-249": {
+  "name": "弗力貝爾-無情風暴",
+  "alternates": [
+   "Volibear, Relentless Storm",
+   "不灭狂雷",
+   "不滅狂雷",
+   "無情風暴",
+   "Volibear",
+   "弗力貝爾-狂怒",
+   "沃利贝尔"
+  ]
+ },
+ "OGN-250": {
+  "name": "風暴使者",
+  "alternates": [
+   "Stormbringer",
+   "天声震落",
+   "天聲震落"
+  ]
+ },
+ "OGN-251": {
+  "name": "吉茵珂絲-暴走重砲",
+  "alternates": [
+   "Jinx, Loose Cannon",
+   "暴走萝莉",
+   "暴走蘿莉",
+   "暴走重砲",
+   "Jinx",
+   "吉茵珂絲-反叛軍",
+   "金克丝"
+  ]
+ },
+ "OGN-252": {
+  "name": "超威能死亡火箭！",
+  "alternates": [
+   "Super Mega Death Rocket!",
+   "超究极死神飞弹！",
+   "超究極死神飛彈！"
+  ]
+ },
+ "OGN-253": {
+  "name": "達瑞斯-諾克薩斯之力",
+  "alternates": [
+   "Darius, Hand of Noxus",
+   "诺克萨斯之手",
+   "諾克薩斯之手",
+   "諾克薩斯之力",
+   "Darius",
+   "達瑞斯-處刑者",
+   "德莱厄斯"
+  ]
+ },
+ "OGN-254": {
+  "name": "諾克薩斯斷頭台",
+  "alternates": [
+   "Noxian Guillotine",
+   "诺克萨斯断头台",
+   "諾克薩斯斷頭臺"
+  ]
+ },
+ "OGN-255": {
+  "name": "阿璃-九尾妖狐",
+  "alternates": [
+   "Ahri, Nine-Tailed Fox",
+   "九尾妖狐",
+   "Ahri",
+   "阿璃-好奇",
+   "阿狸"
+  ]
+ },
+ "OGN-256": {
+  "name": "魅火",
+  "alternates": [
+   "Fox-Fire",
+   "妖异狐火",
+   "妖異狐火"
+  ]
+ },
+ "OGN-257": {
+  "name": "李星-盲眼武僧",
+  "alternates": [
+   "Lee Sin, Blind Monk",
+   "盲僧",
+   "盲眼武僧",
+   "Lee Sin",
+   "李星-苦行僧",
+   "李青"
+  ]
+ },
+ "OGN-258": {
+  "name": "神龍擺尾",
+  "alternates": [
+   "Dragon's Rage",
+   "猛龙摆尾",
+   "猛龍擺尾"
+  ]
+ },
+ "OGN-259": {
+  "name": "犽宿-放逐浪人",
+  "alternates": [
+   "Yasuo, Unforgiven",
+   "疾风剑豪",
+   "疾風劍豪",
+   "放逐浪人",
+   "Yasuo",
+   "犽宿-御風者",
+   "亚索"
+  ]
+ },
+ "OGN-260": {
+  "name": "奪命氣息",
+  "alternates": [
+   "Last Breath",
+   "狂风绝息斩",
+   "狂風絕息斬"
+  ]
+ },
+ "OGN-261": {
+  "name": "雷歐娜-黎明之光",
+  "alternates": [
+   "Leona, Radiant Dawn",
+   "曙光女神",
+   "黎明之光",
+   "Leona",
+   "雷歐娜-決心",
+   "蕾欧娜"
+  ]
+ },
+ "OGN-262": {
+  "name": "太陽聖劍",
+  "alternates": [
+   "Zenith Blade",
+   "天顶之刃",
+   "天頂之刃"
+  ]
+ },
+ "OGN-263": {
+  "name": "提摩-迅捷斥候",
+  "alternates": [
+   "Teemo, Swift Scout",
+   "迅捷斥候",
+   "Teemo",
+   "提摩-戰略家",
+   "提莫"
+  ]
+ },
+ "OGN-264": {
+  "name": "森林游擊戰",
+  "alternates": [
+   "Guerilla Warfare",
+   "游击战",
+   "游擊戰"
+  ]
+ },
+ "OGN-265": {
+  "name": "維克特-奧術使徒",
+  "alternates": [
+   "Viktor, Herald of the Arcane",
+   "奥术先驱",
+   "奧術先驅",
+   "奧術預示者",
+   "Viktor",
+   "維克特-領袖",
+   "维克托"
+  ]
+ },
+ "OGN-266": {
+  "name": "能量守恆",
+  "alternates": [
+   "Siphon Power",
+   "虹吸能量"
+  ]
+ },
+ "OGN-267": {
+  "name": "好運姐-賞金獵人",
+  "alternates": [
+   "Miss Fortune, Bounty Hunter",
+   "赏金猎人",
+   "賞金獵人",
+   "Miss Fortune",
+   "好運姐-海盜",
+   "厄运小姐"
+  ]
+ },
+ "OGN-268": {
+  "name": "彈幕",
+  "alternates": [
+   "Bullet Time",
+   "弹幕时间",
+   "彈幕時間"
+  ]
+ },
+ "OGN-269": {
+  "name": "賽特-獸血拳皇",
+  "alternates": [
+   "Sett, The Boss",
+   "腕豪",
+   "獸血拳皇",
+   "Sett",
+   "賽特-鬥士",
+   "瑟提"
+  ]
+ },
+ "OGN-270": {
+  "name": "嘆為觀止",
+  "alternates": [
+   "Showstopper",
+   "叹为观止",
+   "歎為觀止"
+  ]
+ },
+ "OGN-271": {
+  "name": "侍從（蒂瑪西亞）",
+  "alternates": [
+   "Recruit v2",
+   "随从（德玛西亚）",
+   "隨從（德瑪西亞）"
+  ]
+ },
+ "OGN-272": {
+  "name": "侍從（諾克薩斯）",
+  "alternates": [
+   "Recruit v3",
+   "随从（诺克萨斯）",
+   "隨從（諾克薩斯）"
+  ]
+ },
+ "OGN-273": {
+  "name": "侍從（佐恩）",
+  "alternates": [
+   "Recruit",
+   "随从（祖安）",
+   "隨從（祖安）"
+  ]
+ },
+ "OGN-274": {
+  "name": "精靈",
+  "alternates": [
+   "Sprite",
+   "精灵"
+  ]
+ },
+ "OGN-275": {
+  "name": "團結祭壇",
+  "alternates": [
+   "Altar to Unity",
+   "团结圣坛",
+   "團結聖壇"
+  ]
+ },
+ "OGN-276": {
+  "name": "登峰之路",
+  "alternates": [
+   "Aspirant's Climb",
+   "攀圣长阶",
+   "攀聖長階"
+  ]
+ },
+ "OGN-277": {
+  "name": "暗巷酒館",
+  "alternates": [
+   "Back-Alley Bar",
+   "后巷酒吧",
+   "後巷酒吧"
+  ]
+ },
+ "OGN-278": {
+  "name": "班德爾樹",
+  "alternates": [
+   "Bandle Tree",
+   "班德尔树"
+  ]
+ },
+ "OGN-279": {
+  "name": "堅固陣地",
+  "alternates": [
+   "Fortified Position",
+   "强化阵地",
+   "強化陣地"
+  ]
+ },
+ "OGN-280": {
+  "name": "神聖柳林",
+  "alternates": [
+   "Grove of the God-Willow",
+   "帝柳之林"
+  ]
+ },
+ "OGN-281": {
+  "name": "聖塚",
+  "alternates": [
+   "Hallowed Tomb",
+   "圣化之墓",
+   "聖化之墓"
+  ]
+ },
+ "OGN-282": {
+  "name": "希安那修道院",
+  "alternates": [
+   "Monastery of Hirana",
+   "希拉娜修道院"
+  ]
+ },
+ "OGN-283": {
+  "name": "那歐格鬥場",
+  "alternates": [
+   "Navori Fighting Pit",
+   "纳沃利角斗场",
+   "納沃利角鬥場"
+  ]
+ },
+ "OGN-284": {
+  "name": "力量方尖碑",
+  "alternates": [
+   "Obelisk of Power"
+  ]
+ },
+ "OGN-285": {
+  "name": "掠奪者船頭",
+  "alternates": [
+   "Reaver's Row",
+   "劫掠船巷"
+  ]
+ },
+ "OGN-286": {
+  "name": "角鬥士競技場",
+  "alternates": [
+   "Reckoner's Arena",
+   "清算人竞技场",
+   "清算人競技場"
+  ]
+ },
+ "OGN-287": {
+  "name": "風暴符印",
+  "alternates": [
+   "Sigil of the Storm",
+   "雷霆之纹",
+   "雷霆之紋"
+  ]
+ },
+ "OGN-288": {
+  "name": "星芒峰",
+  "alternates": [
+   "Startipped Peak",
+   "星尖峰"
+  ]
+ },
+ "OGN-289": {
+  "name": "巨石峰",
+  "alternates": [
+   "Targon's Peak",
+   "巨神峰之巅",
+   "巨神峰之巔"
+  ]
+ },
+ "OGN-290": {
+  "name": "競技場之巔",
+  "alternates": [
+   "The Arena's Greatest",
+   "荣耀竞技场",
+   "榮耀競技場"
+  ]
+ },
+ "OGN-291": {
+  "name": "燭光聖所",
+  "alternates": [
+   "The Candlelit Sanctum",
+   "烛光圣殿",
+   "燭光聖殿"
+  ]
+ },
+ "OGN-292": {
+  "name": "夢境之樹",
+  "alternates": [
+   "The Dreaming Tree",
+   "幻梦之树",
+   "幻夢之樹"
+  ]
+ },
+ "OGN-293": {
+  "name": "大廣場",
+  "alternates": [
+   "The Grand Plaza",
+   "宏伟广场",
+   "宏偉廣場"
+  ]
+ },
+ "OGN-294": {
+  "name": "特菲利安軍營",
+  "alternates": [
+   "Trifarian War Camp",
+   "崔法利兵营",
+   "崔法利兵營"
+  ]
+ },
+ "OGN-295": {
+  "name": "威洛魔巢穴",
+  "alternates": [
+   "Vilemaw's Lair",
+   "卑鄙之喉的巢穴"
+  ]
+ },
+ "OGN-296": {
+  "name": "虛空之門",
+  "alternates": [
+   "Void Gate",
+   "虚空之门"
+  ]
+ },
+ "OGN-297": {
+  "name": "風蝕土丘",
+  "alternates": [
+   "Windswept Hillock",
+   "疾风山丘",
+   "疾風山丘"
+  ]
+ },
+ "OGN-298": {
+  "name": "佐恩地道",
+  "alternates": [
+   "Zaun Warrens",
+   "祖安地沟",
+   "祖安地溝"
+  ]
+ },
+ "OGN-299": {
+  "name": "凱莎-虛空之女",
+  "alternates": [
+   "Kai'Sa, Daughter of the Void",
+   "虚空之女",
+   "虛空之女",
+   "Kai'Sa",
+   "凱莎-生還者",
+   "卡莎"
+  ]
+ },
+ "OGN-300": {
+  "name": "弗力貝爾-無情風暴",
+  "alternates": [
+   "Volibear, Relentless Storm",
+   "不灭狂雷",
+   "不滅狂雷",
+   "無情風暴",
+   "Volibear",
+   "弗力貝爾-狂怒",
+   "沃利贝尔"
+  ]
+ },
+ "OGN-301": {
+  "name": "吉茵珂絲-暴走重砲",
+  "alternates": [
+   "Jinx, Loose Cannon",
+   "暴走萝莉",
+   "暴走蘿莉",
+   "暴走重砲",
+   "Jinx",
+   "吉茵珂絲-反叛軍",
+   "金克丝"
+  ]
+ },
+ "OGN-302": {
+  "name": "達瑞斯-諾克薩斯之力",
+  "alternates": [
+   "Darius, Hand of Noxus",
+   "诺克萨斯之手",
+   "諾克薩斯之手",
+   "諾克薩斯之力",
+   "Darius",
+   "達瑞斯-處刑者",
+   "德莱厄斯"
+  ]
+ },
+ "OGN-303": {
+  "name": "阿璃-九尾妖狐",
+  "alternates": [
+   "Ahri, Nine-Tailed Fox",
+   "九尾妖狐",
+   "Ahri",
+   "阿璃-好奇",
+   "阿狸"
+  ]
+ },
+ "OGN-304": {
+  "name": "李星-盲眼武僧",
+  "alternates": [
+   "Lee Sin, Blind Monk",
+   "盲僧",
+   "盲眼武僧",
+   "Lee Sin",
+   "李星-苦行僧",
+   "李青"
+  ]
+ },
+ "OGN-305": {
+  "name": "犽宿-放逐浪人",
+  "alternates": [
+   "Yasuo, Unforgiven",
+   "疾风剑豪",
+   "疾風劍豪",
+   "放逐浪人",
+   "Yasuo",
+   "犽宿-御風者",
+   "亚索"
+  ]
+ },
+ "OGN-306": {
+  "name": "雷歐娜-黎明之光",
+  "alternates": [
+   "Leona, Radiant Dawn",
+   "曙光女神",
+   "黎明之光",
+   "Leona",
+   "雷歐娜-決心",
+   "蕾欧娜"
+  ]
+ },
+ "OGN-307": {
+  "name": "提摩-迅捷斥候",
+  "alternates": [
+   "Teemo, Swift Scout",
+   "迅捷斥候",
+   "Teemo",
+   "提摩-戰略家",
+   "提莫"
+  ]
+ },
+ "OGN-308": {
+  "name": "維克特-奧術使徒",
+  "alternates": [
+   "Viktor, Herald of the Arcane",
+   "奥术先驱",
+   "奧術先驅",
+   "奧術預示者",
+   "Viktor",
+   "維克特-領袖",
+   "维克托"
+  ]
+ },
+ "OGN-309": {
+  "name": "好運姐-賞金獵人",
+  "alternates": [
+   "Miss Fortune, Bounty Hunter",
+   "赏金猎人",
+   "賞金獵人",
+   "Miss Fortune",
+   "好運姐-海盜",
+   "厄运小姐"
+  ]
+ },
+ "OGN-310": {
+  "name": "賽特-獸血拳皇",
+  "alternates": [
+   "Sett, The Boss",
+   "腕豪",
+   "獸血拳皇",
+   "Sett",
+   "賽特-鬥士",
+   "瑟提"
+  ]
+ },
+ "OGS-001": {
+  "name": "安妮-洶湧烈焰",
+  "alternates": [
+   "Annie, Fiery",
+   "安妮",
+   "Annie"
+  ]
+ },
+ "OGS-002": {
+  "name": "烈火風暴",
+  "alternates": [
+   "Firestorm",
+   "烈火风暴"
+  ]
+ },
+ "OGS-003": {
+  "name": "焚燒",
+  "alternates": [
+   "Incinerate",
+   "焚烧"
+  ]
+ },
+ "OGS-004": {
+  "name": "易大師-禪心大道",
+  "alternates": [
+   "Master Yi, Meditative",
+   "易",
+   "易大師",
+   "Master Yi"
+  ]
+ },
+ "OGS-005": {
+  "name": "和風賢者",
+  "alternates": [
+   "Zephyr Sage",
+   "和风贤者"
+  ]
+ },
+ "OGS-006": {
+  "name": "拉克絲-明麗光華",
+  "alternates": [
+   "Lux, Illuminated",
+   "拉克丝",
+   "拉克絲",
+   "Lux"
+  ]
+ },
+ "OGS-007": {
+  "name": "蓋倫-身經百戰",
+  "alternates": [
+   "Garen, Rugged",
+   "盖伦",
+   "蓋倫",
+   "Garen"
+  ]
+ },
+ "OGS-008": {
+  "name": "紳士決鬥",
+  "alternates": [
+   "Gentlemen's Duel",
+   "绅士决斗"
+  ]
+ },
+ "OGS-009": {
+  "name": "易大師-鋒芒畢現",
+  "alternates": [
+   "Master Yi, Honed",
+   "易",
+   "易大師",
+   "Master Yi"
+  ]
+ },
+ "OGS-010": {
+  "name": "安妮-野火叢生",
+  "alternates": [
+   "Annie, Stubborn",
+   "安妮",
+   "Annie"
+  ]
+ },
+ "OGS-011": {
+  "name": "閃現",
+  "alternates": [
+   "Flash",
+   "闪现"
+  ]
+ },
+ "OGS-012": {
+  "name": "爆能術",
+  "alternates": [
+   "Blast of Power",
+   "爆能术"
+  ]
+ },
+ "OGS-013": {
+  "name": "蓋倫-劍尉長",
+  "alternates": [
+   "Garen, Commander",
+   "盖伦",
+   "蓋倫",
+   "Garen"
+  ]
+ },
+ "OGS-014": {
+  "name": "拉克絲-冕衛之光",
+  "alternates": [
+   "Lux, Crownguard",
+   "拉克丝",
+   "拉克絲",
+   "Lux"
+  ]
+ },
+ "OGS-015": {
+  "name": "共同獻身",
+  "alternates": [
+   "Recruit the Vanguard",
+   "共同献身"
+  ]
+ },
+ "OGS-016": {
+  "name": "先鋒扈從",
+  "alternates": [
+   "Vanguard Attendant",
+   "先锋扈从"
+  ]
+ },
+ "OGS-017": {
+  "name": "安妮-黑暗之女",
+  "alternates": [
+   "Annie, Dark Child",
+   "黑暗之女",
+   "Annie",
+   "安妮-洶湧烈焰",
+   "安妮"
+  ]
+ },
+ "OGS-018": {
+  "name": "提伯斯",
+  "alternates": [
+   "Tibbers"
+  ]
+ },
+ "OGS-019": {
+  "name": "易大師-無極劍聖",
+  "alternates": [
+   "Master Yi, Wuju Bladesman",
+   "无极剑圣",
+   "無極劍聖",
+   "Master Yi",
+   "易大師-人劍合一",
+   "易"
+  ]
+ },
+ "OGS-020": {
+  "name": "高原血統",
+  "alternates": [
+   "Highlander",
+   "高原血统"
+  ]
+ },
+ "OGS-021": {
+  "name": "拉克絲-光之少女",
+  "alternates": [
+   "Lux, Lady of Luminosity",
+   "光辉女郎",
+   "光輝女郎",
+   "光之少女",
+   "Lux",
+   "拉克絲-冕衛之光",
+   "拉克丝"
+  ]
+ },
+ "OGS-022": {
+  "name": "終極閃光",
+  "alternates": [
+   "Final Spark",
+   "终极闪光"
+  ]
+ },
+ "OGS-023": {
+  "name": "蓋倫-蒂瑪西亞之力",
+  "alternates": [
+   "Garen, Might of Demacia",
+   "德玛西亚之力",
+   "德瑪西亞之力",
+   "蒂瑪西亞之力",
+   "Garen",
+   "蓋倫-身經百戰",
+   "盖伦"
+  ]
+ },
+ "OGS-024": {
+  "name": "致命打擊",
+  "alternates": [
+   "Decisive Strike",
+   "致命打击"
+  ]
+ }
+}

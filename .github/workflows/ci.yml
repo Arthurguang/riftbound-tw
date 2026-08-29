@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # 每週跑一次，即使沒有改動也能抓到「新公布的套件漏洞」。
+  schedule:
+    - cron: '0 3 * * 1'
+
+# 預設不給任何權限，需要什麼再開什麼。
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # 用 npm ci 而非 npm install：嚴格照著 lockfile 安裝，
+      # 不會因為版本範圍而悄悄裝到不同的套件。
+      - name: 安裝依賴
+        run: npm ci
+
+      - name: 危險 API 檢查
+        run: npm run check:danger
+
+      - name: 型別檢查
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: 單元測試（含解析器紅隊測試）
+        run: npm test
+
+      - name: 建置
+        run: npm run build
+
+      - name: 安裝 Playwright 瀏覽器
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: 端對端測試（三種瀏覽器引擎：Chromium / Firefox / WebKit）
+        run: npx playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: 依賴漏洞掃描（npm audit）
+        run: npm audit --audit-level=high
+
+      - name: 依賴漏洞掃描（OSV-Scanner，涵蓋範圍比 npm audit 廣）
+        uses: google/osv-scanner-action/osv-scanner-action@v2.2.3
+        with:
+          scan-args: |-
+            --lockfile=package-lock.json
+
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v3

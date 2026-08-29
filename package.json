@@ -1,0 +1,42 @@
+{
+  "name": "riftbound-tw",
+  "version": "0.1.0",
+  "private": true,
+  "description": "符文戰場 (Riftbound) 繁體中文玩家資源站 — 卡牌圖鑑",
+  "scripts": {
+    "fetch:cards": "node scripts/fetch-cards.mjs",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "audit:ci": "npm audit --audit-level=high",
+    "check:danger": "node scripts/check-forbidden-apis.mjs",
+    "verify": "npm run check:danger && npm run typecheck && npm run lint && npm run test && npm run build"
+  },
+  "dependencies": {
+    "next": "^15.5.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
+    "@playwright/test": "^1.62.1",
+    "@tailwindcss/postcss": "^4.1.13",
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "eslint": "^9.36.0",
+    "eslint-config-next": "^15.5.4",
+    "opencc-js": "^1.4.2",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

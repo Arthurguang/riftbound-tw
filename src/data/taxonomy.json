@@ -1,0 +1,481 @@
+{
+ "sets": [
+  {
+   "id": "OGN",
+   "name": "Origins",
+   "count": 352
+  },
+  {
+   "id": "OGS",
+   "name": "Proving Grounds",
+   "count": 24
+  }
+ ],
+ "types": [
+  "unit",
+  "spell",
+  "legend",
+  "gear",
+  "battlefield",
+  "rune"
+ ],
+ "domains": [
+  "calm",
+  "chaos",
+  "fury",
+  "body",
+  "mind",
+  "order",
+  "colorless"
+ ],
+ "rarities": [
+  "common",
+  "uncommon",
+  "rare",
+  "epic",
+  "showcase"
+ ],
+ "tags": [
+  "Ahri",
+  "Anivia",
+  "Annie",
+  "Bandle City",
+  "Bilgewater",
+  "Bird",
+  "Blitzcrank",
+  "Caitlyn",
+  "Cat",
+  "Darius",
+  "Demacia",
+  "Dog",
+  "Dr. Mundo",
+  "Dragon",
+  "Draven",
+  "Ekko",
+  "Elite",
+  "Fae",
+  "Fiora",
+  "Freljord",
+  "Garen",
+  "Heimerdinger",
+  "Ionia",
+  "Ixtal",
+  "Jinx",
+  "Kai'Sa",
+  "Karthus",
+  "Kayn",
+  "Kog'Maw",
+  "Lee Sin",
+  "Leona",
+  "Lux",
+  "Malzahar",
+  "Master Yi",
+  "Mech",
+  "Miss Fortune",
+  "Mount Targon",
+  "Nocturne",
+  "Noxus",
+  "Piltover",
+  "Pirate",
+  "Poro",
+  "Qiyana",
+  "Recruit",
+  "Sett",
+  "Shadow Isles",
+  "Shen",
+  "Shurima",
+  "Sona",
+  "Spirit",
+  "Taric",
+  "Teemo",
+  "The Void",
+  "Trifarian",
+  "Tryndamere",
+  "Twisted Fate",
+  "Udyr",
+  "Vayne",
+  "Vi",
+  "Viktor",
+  "Volibear",
+  "Warwick",
+  "Yasuo",
+  "Yordle",
+  "Zaun"
+ ],
+ "tagLabels": {
+  "Ahri": {
+   "cn": "阿狸",
+   "tw": "阿璃",
+   "src": "official"
+  },
+  "Anivia": {
+   "cn": "艾尼维亚",
+   "tw": "艾妮維亞",
+   "src": "official"
+  },
+  "Annie": {
+   "cn": "安妮",
+   "tw": "安妮",
+   "src": "official"
+  },
+  "Bandle City": {
+   "cn": "班德尔城",
+   "tw": "班德爾城",
+   "src": "official"
+  },
+  "Bilgewater": {
+   "cn": "比尔吉沃特",
+   "tw": "比爾吉沃特",
+   "src": "official"
+  },
+  "Bird": {
+   "cn": "鸟类",
+   "tw": "鳥類",
+   "src": "converted"
+  },
+  "Blitzcrank": {
+   "cn": "布里茨",
+   "tw": "布里茨",
+   "src": "official"
+  },
+  "Caitlyn": {
+   "cn": "凯特琳",
+   "tw": "凱特琳",
+   "src": "official"
+  },
+  "Cat": {
+   "cn": "猫科",
+   "tw": "貓科",
+   "src": "converted"
+  },
+  "Darius": {
+   "cn": "德莱厄斯",
+   "tw": "達瑞斯",
+   "src": "official"
+  },
+  "Demacia": {
+   "cn": "德玛西亚",
+   "tw": "德瑪西亞",
+   "src": "official"
+  },
+  "Dog": {
+   "cn": "犬形",
+   "tw": "犬形",
+   "src": "converted"
+  },
+  "Dr. Mundo": {
+   "cn": "蒙多医生",
+   "tw": "蒙多醫生",
+   "src": "official"
+  },
+  "Dragon": {
+   "cn": "龙",
+   "tw": "龍",
+   "src": "converted"
+  },
+  "Draven": {
+   "cn": "德莱文",
+   "tw": "達瑞文",
+   "src": "official"
+  },
+  "Ekko": {
+   "cn": "艾克",
+   "tw": "艾克",
+   "src": "official"
+  },
+  "Elite": {
+   "cn": "精锐",
+   "tw": "精銳",
+   "src": "converted"
+  },
+  "Fae": {
+   "cn": "仙灵",
+   "tw": "仙靈",
+   "src": "converted"
+  },
+  "Fiora": {
+   "cn": "菲奥娜",
+   "tw": "菲歐拉",
+   "src": "official"
+  },
+  "Freljord": {
+   "cn": "弗雷尔卓德",
+   "tw": "弗雷爾卓德",
+   "src": "official"
+  },
+  "Garen": {
+   "cn": "盖伦",
+   "tw": "蓋倫",
+   "src": "official"
+  },
+  "Heimerdinger": {
+   "cn": "黑默丁格",
+   "tw": "漢默丁格",
+   "src": "official"
+  },
+  "Ionia": {
+   "cn": "艾欧尼亚",
+   "tw": "愛歐尼亞",
+   "src": "official"
+  },
+  "Ixtal": {
+   "cn": "以绪塔尔",
+   "tw": "伊薩爾",
+   "src": "official"
+  },
+  "Jinx": {
+   "cn": "金克丝",
+   "tw": "吉茵珂絲",
+   "src": "official"
+  },
+  "Kai'Sa": {
+   "cn": "卡莎",
+   "tw": "凱莎",
+   "src": "official"
+  },
+  "Karthus": {
+   "cn": "卡尔萨斯",
+   "tw": "卡爾瑟斯",
+   "src": "official"
+  },
+  "Kayn": {
+   "cn": "凯隐",
+   "tw": "慨影",
+   "src": "official"
+  },
+  "Kog'Maw": {
+   "cn": "克格莫",
+   "tw": "寇格魔",
+   "src": "official"
+  },
+  "Lee Sin": {
+   "cn": "李青",
+   "tw": "李星",
+   "src": "official"
+  },
+  "Leona": {
+   "cn": "蕾欧娜",
+   "tw": "雷歐娜",
+   "src": "official"
+  },
+  "Lux": {
+   "cn": "拉克丝",
+   "tw": "拉克絲",
+   "src": "official"
+  },
+  "Malzahar": {
+   "cn": "玛尔扎哈",
+   "tw": "馬爾札哈",
+   "src": "official"
+  },
+  "Master Yi": {
+   "cn": "易",
+   "tw": "易大師",
+   "src": "official"
+  },
+  "Mech": {
+   "cn": "机械",
+   "tw": "機械",
+   "src": "converted"
+  },
+  "Miss Fortune": {
+   "cn": "厄运小姐",
+   "tw": "好運姐",
+   "src": "official"
+  },
+  "Mount Targon": {
+   "cn": "巨神峰",
+   "tw": "巨神峰",
+   "src": "official"
+  },
+  "Nocturne": {
+   "cn": "魔腾",
+   "tw": "夜曲",
+   "src": "official"
+  },
+  "Noxus": {
+   "cn": "诺克萨斯",
+   "tw": "諾克薩斯",
+   "src": "official"
+  },
+  "Piltover": {
+   "cn": "皮尔特沃夫",
+   "tw": "皮爾托福",
+   "src": "official"
+  },
+  "Pirate": {
+   "cn": "海盗",
+   "tw": "海盜",
+   "src": "converted"
+  },
+  "Poro": {
+   "cn": "魄罗",
+   "tw": "波羅",
+   "src": "official"
+  },
+  "Qiyana": {
+   "cn": "奇亚娜",
+   "tw": "姬亞娜",
+   "src": "official"
+  },
+  "Recruit": {
+   "cn": "随从",
+   "tw": "隨從",
+   "src": "converted"
+  },
+  "Sett": {
+   "cn": "瑟提",
+   "tw": "賽特",
+   "src": "official"
+  },
+  "Shadow Isles": {
+   "cn": "暗影岛",
+   "tw": "暗影島",
+   "src": "official"
+  },
+  "Shen": {
+   "cn": "慎",
+   "tw": "慎",
+   "src": "official"
+  },
+  "Shurima": {
+   "cn": "恕瑞玛",
+   "tw": "恕瑞瑪",
+   "src": "official"
+  },
+  "Sona": {
+   "cn": "娑娜",
+   "tw": "索娜",
+   "src": "official"
+  },
+  "Spirit": {
+   "cn": "灵体",
+   "tw": "靈體",
+   "src": "converted"
+  },
+  "Taric": {
+   "cn": "塔里克",
+   "tw": "塔里克",
+   "src": "official"
+  },
+  "Teemo": {
+   "cn": "提莫",
+   "tw": "提摩",
+   "src": "official"
+  },
+  "The Void": {
+   "cn": "虚空之地",
+   "tw": "虛空",
+   "src": "official"
+  },
+  "Trifarian": {
+   "cn": "崔法利",
+   "tw": "崔法利",
+   "src": "converted"
+  },
+  "Tryndamere": {
+   "cn": "泰达米尔",
+   "tw": "泰達米爾",
+   "src": "official"
+  },
+  "Twisted Fate": {
+   "cn": "崔斯特",
+   "tw": "逆命",
+   "src": "official"
+  },
+  "Udyr": {
+   "cn": "乌迪尔",
+   "tw": "烏迪爾",
+   "src": "official"
+  },
+  "Vayne": {
+   "cn": "薇恩",
+   "tw": "汎",
+   "src": "official"
+  },
+  "Vi": {
+   "cn": "蔚",
+   "tw": "菲艾",
+   "src": "official"
+  },
+  "Viktor": {
+   "cn": "维克托",
+   "tw": "維克特",
+   "src": "official"
+  },
+  "Volibear": {
+   "cn": "沃利贝尔",
+   "tw": "弗力貝爾",
+   "src": "official"
+  },
+  "Warwick": {
+   "cn": "沃里克",
+   "tw": "沃維克",
+   "src": "official"
+  },
+  "Yasuo": {
+   "cn": "亚索",
+   "tw": "犽宿",
+   "src": "official"
+  },
+  "Yordle": {
+   "cn": "约德尔人",
+   "tw": "約德爾人",
+   "src": "official"
+  },
+  "Zaun": {
+   "cn": "祖安",
+   "tw": "祖安",
+   "src": "official"
+  }
+ },
+ "energies": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  12
+ ],
+ "mights": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10
+ ],
+ "powers": [
+  1,
+  2,
+  3,
+  4
+ ],
+ "glyphs": [
+  "might",
+  "exhaust",
+  "energy_0",
+  "energy_1",
+  "energy_2",
+  "energy_3",
+  "energy_4",
+  "energy_5",
+  "rune_body",
+  "rune_calm",
+  "rune_chaos",
+  "rune_fury",
+  "rune_mind",
+  "rune_order",
+  "rune_rainbow"
+ ]
+}

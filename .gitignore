@@ -1,0 +1,22 @@
+# 依賴套件
+node_modules/
+
+# 建置產物
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# 測試產物
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# 環境變數（絕對不要進版控）
+.env*
+!.env.example
+
+# 系統檔
+.DS_Store
+Thumbs.db

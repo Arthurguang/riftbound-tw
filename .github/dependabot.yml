@@ -1,0 +1,18 @@
+version: 2
+updates:
+  # 自動追蹤 npm 套件的安全性更新
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # 把例行的小版本更新併成一個 PR，安全性更新才單獨開
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # GitHub Actions 本身也要更新（供應鏈風險常被忽略的一環）
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

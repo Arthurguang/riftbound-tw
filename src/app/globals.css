@@ -1,0 +1,99 @@
+@import 'tailwindcss';
+
+/*
+ * 刻意不使用 next/font 或 Google Fonts：
+ *   1. 外部字型會需要放寬 CSP 的 font-src / style-src。
+ *   2. 每位訪客都會被 Google 記錄一次 IP。
+ * 改用系統字型堆疊，對繁體中文的顯示也更自然。
+ */
+
+@theme {
+  --color-ink: #e8ecf2;
+  --color-ink-dim: #9aa4b2;
+  --color-ink-faint: #6b7684;
+
+  --color-surface: #0b0e14;
+  --color-surface-1: #131822;
+  --color-surface-2: #1b2130;
+  --color-surface-3: #252d3f;
+
+  --color-line: #2a3346;
+  --color-accent: #c9a227;
+  --color-accent-soft: #e0c463;
+
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans TC', 'PingFang TC',
+    'Microsoft JhengHei', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+}
+
+/*
+ * 領域配色與卡片比例都用 class 定義，不用行內 style。
+ *
+ * 原因是資安：我們的 CSP 是 style-src 'self'（不含 'unsafe-inline'），
+ * 而 CSP 規格中 nonce 對「style 屬性」無效 —— 也就是說任何
+ * style="..." 都會被瀏覽器擋掉。
+ *
+ * 解法是把樣式搬進這個檔案，而不是放寬 CSP。
+ * 這同時也讓行內樣式型的 XSS（例如 style 裡塞 url(javascript:...)）完全無效。
+ */
+.domain-dot--fury {
+  background-color: #e0533d;
+}
+.domain-dot--calm {
+  background-color: #4fae63;
+}
+.domain-dot--mind {
+  background-color: #3da8c8;
+}
+.domain-dot--body {
+  background-color: #e08a3d;
+}
+.domain-dot--chaos {
+  background-color: #a05fd6;
+}
+.domain-dot--order {
+  background-color: #d8b23f;
+}
+.domain-dot--colorless {
+  background-color: #8a8f98;
+}
+
+/* 官方卡圖的兩種版式比例。 */
+.card-frame--portrait {
+  aspect-ratio: 744 / 1039;
+}
+.card-frame--landscape {
+  aspect-ratio: 1039 / 744;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 鍵盤操作時的焦點框：明顯、但不干擾滑鼠使用者。 */
+:focus-visible {
+  outline: 2px solid var(--color-accent-soft);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* 尊重使用者的「減少動態效果」系統設定。 */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
