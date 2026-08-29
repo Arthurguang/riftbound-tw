@@ -188,8 +188,9 @@ test.describe('CSP 實際攔截能力（主動攻擊測試）', () => {
     expect(violations.some((v) => v.includes('base-uri'))).toBe(true);
   });
 
-  test('本站無法被其他網站用 iframe 嵌入（防點擊劫持）', async ({ page }) => {
-    await page.setContent(`<iframe id="f" src="http://localhost:3100/cards"></iframe>`);
+  test('本站無法被其他網站用 iframe 嵌入（防點擊劫持）', async ({ page }, testInfo) => {
+    const target = new URL('/cards', testInfo.project.use.baseURL).toString();
+    await page.setContent(`<iframe id="f" src="${target}"></iframe>`);
     await page.waitForTimeout(800);
     const loaded = await page.evaluate(() => {
       const frame = document.getElementById('f') as HTMLIFrameElement;
@@ -278,11 +279,14 @@ test.describe('模擬真實 XSS（把腳本塞進網頁原始碼）', () => {
 });
 
 test.describe('隱私', () => {
-  test('除了官方卡圖 CDN 之外，不對任何第三方發出請求', async ({ page }) => {
+  test('除了官方卡圖 CDN 之外，不對任何第三方發出請求', async ({ page }, testInfo) => {
+    // 「自己的網域」要從 baseURL 推導，這樣本機與線上網站都能用同一份測試。
+    const ownHost = new URL(testInfo.project.use.baseURL!).hostname;
+
     const thirdParty = new Set<string>();
     page.on('request', (req) => {
       const host = new URL(req.url()).hostname;
-      if (host !== 'localhost' && host !== '127.0.0.1') thirdParty.add(host);
+      if (host !== ownHost) thirdParty.add(host);
     });
 
     // 三種語言、兩種卡面都跑一遍，確認沒有任何一條路徑會連到非官方來源。

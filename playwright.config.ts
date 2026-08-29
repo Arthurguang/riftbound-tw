@@ -7,7 +7,17 @@ import { defineConfig, devices } from '@playwright/test';
  * 只有正式版才代表使用者實際會拿到的安全設定。
  */
 const PORT = 3100;
-const baseURL = `http://localhost:${PORT}`;
+
+/*
+ * 預設測本機的正式版建置。
+ * 設定 E2E_BASE_URL 就會改測已部署的線上網站 ——
+ * 有些防護（HSTS、upgrade-insecure-requests）只有在真實的 HTTPS 上才會生效，
+ * 因此上線後至少要對正式網址跑一次。
+ *
+ *   E2E_BASE_URL=https://你的網址 npx playwright test
+ */
+const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
+const usingDeployedSite = Boolean(process.env.E2E_BASE_URL);
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -50,10 +60,15 @@ export default defineConfig({
       : []),
   ],
 
-  webServer: {
-    command: `npx next start -p ${PORT}`,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  // 測線上網站時不需要在本機啟動伺服器。
+  ...(usingDeployedSite
+    ? {}
+    : {
+        webServer: {
+          command: `npx next start -p ${PORT}`,
+          url: baseURL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+        },
+      }),
 });
