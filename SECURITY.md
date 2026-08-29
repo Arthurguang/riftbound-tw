@@ -92,18 +92,47 @@
 `src/lib/security-headers.ts` + `src/middleware.ts`
 
 ```
-default-src 'self';
+default-src 'none';
 script-src  'self' 'nonce-<每次請求隨機>' 'strict-dynamic';
 style-src   'self' 'nonce-<每次請求隨機>';
 img-src     'self' https://cmsassets.rgpub.io https://cdn.playloltcg.com data:;
-connect-src 'self';
-frame-ancestors 'none';  base-uri 'none';  form-action 'none';
+font-src 'self';  connect-src 'self';  manifest-src 'self';  worker-src 'self';
 object-src 'none';  frame-src 'none';  media-src 'none';
+frame-ancestors 'none';  base-uri 'none';  form-action 'none';
+require-trusted-types-for 'script';
 upgrade-insecure-requests
 ```
 
 **沒有 `'unsafe-inline'`，沒有 `'unsafe-eval'`，沒有 `'unsafe-hashes'`。**
 這三個是 Google CSP Evaluator 會標為高風險的寫法。
+
+兩個值得說明的選擇：
+
+**`default-src 'none'` 而不是 `'self'`** —— 「沒有明講的一律禁止」。
+差別在未來：CSP 規格日後新增資源類型時，`'self'` 會自動放行同網域的那種資源，
+`'none'` 則會擋下來，逼我們明確決定要不要開。
+代價是每一種資源類型都必須有自己的指令（上面十一項已全部涵蓋）。
+
+**`require-trusted-types-for 'script'`** —— 強制任何寫入 DOM 的危險操作
+都要先經過明確的檢查函式。實測效果比預期更好：最典型的 XSS payload
+`element.innerHTML = '<img src=x onerror=…>'` 原本是「寫得進去但 onerror 不執行」，
+加了之後變成**連寫入動作本身都被拒絕**
+（`TypeError: This document requires 'TrustedHTML' assignment`）。
+
+Safari 目前還不支援 Trusted Types，所以 CSP 的第二道防線仍然必要 ——
+測試同時涵蓋兩種情況，不依賴瀏覽器一定支援最新規格。
+
+### 刻意「不」採納的建議
+
+Google CSP Evaluator 建議在 `script-src` 加入 `'unsafe-inline'`，
+用來相容不支援 nonce 的舊瀏覽器（支援 nonce 的瀏覽器會忽略它）。
+
+**不採納。** 那是相容性建議，不是安全發現，理由：
+
+1. 需要這個回退的是 2015 年前的瀏覽器，它們本身的漏洞遠比這嚴重。
+2. 政策字串裡出現 `'unsafe-inline'` 會讓後續維護者難以判斷真實的防護強度。
+3. **最關鍵**：萬一將來有人動到 nonce 機制，那個字串會從「被忽略」
+   瞬間變成「真的生效」，防線會無聲無息地破掉。
 
 其餘標頭見 `src/lib/security-headers.ts`（每一項都有註解說明用途）。
 
@@ -246,19 +275,29 @@ WebKit 會把 `http://localhost` 的子資源也升級成 `https://`（Chromium 
 這一步很重要：**「測試通過」本身沒有意義，除非你確認過它在該失敗的時候會失敗。**
 以後若要改動 CSP，建議重做一次這個確認。
 
-### 部署後的外部驗證
+### 部署後的外部驗證（已完成）
 
-貼上網址就能跑，全部免費：
+以下為 2026-08-29 對正式站 https://riftbound-tw-sigma.vercel.app 的實測結果：
 
-| 服務 | 目標 |
-|---|---|
-| securityheaders.com | A+ |
-| developer.mozilla.org/en-US/observatory | A+ |
-| **csp-evaluator.withgoogle.com** | 零 High severity（會抓出 CSP 有沒有可繞過的漏洞） |
-| ssllabs.com/ssltest | A+ |
+| 服務 | 目標 | 實際結果 |
+|---|---|---|
+| securityheaders.com | A+ | **A+** |
+| developer.mozilla.org/en-US/observatory | A+ | **A+，130/100 分，10/10 項通過** |
+| csp-evaluator.withgoogle.com | 零 High severity | **零 High severity** |
+| ssllabs.com/ssltest | A+ | **A+**（兩台伺服器皆是） |
 
 > 對照：官方網站 playriftbound.com 只有 HSTS、nosniff、Referrer-Policy 三項，
 > **沒有 CSP**，因此拿不到 A+。
+
+掃描後依結果做了兩項強化（`default-src 'none'` 與 Trusted Types），
+細節見上方「針對威脅 B」一節。
+
+**重新掃描的時機**：每次改動 CSP、安全標頭，或升級 Next.js 之後。
+測試可以直接指向線上網站：
+
+```bash
+E2E_BASE_URL=https://riftbound-tw-sigma.vercel.app npx playwright test
+```
 
 ---
 
