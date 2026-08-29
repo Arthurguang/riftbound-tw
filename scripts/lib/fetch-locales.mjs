@@ -34,7 +34,13 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ─── 簡體中文 ────────────────────────────────────────────────────
 
-/** 抓取官方簡中卡牌資料，回傳以「卡號」為鍵的 Map。 */
+/**
+ * 抓取官方簡中卡牌資料。
+ *
+ * @returns wanted 以卡號為鍵、只含指定系列的 Map（給卡牌資料用）
+ *          all    完整清單（給關鍵字辭典用 —— 有些關鍵字的官方說明
+ *                 只出現在後續系列的卡面上）
+ */
 export async function fetchSimplifiedChinese(wantedSets) {
   const all = [];
   for (let page = 1; page <= 30; page += 1) {
@@ -66,7 +72,10 @@ export async function fetchSimplifiedChinese(wantedSets) {
   );
 
   // 官方簡中用「·」當分隔符，英文版用「-」，統一成英文版的格式方便比對。
-  return new Map(wanted.map((card) => [card.cardNo.replace('·', '-'), card]));
+  return {
+    wanted: new Map(wanted.map((card) => [card.cardNo.replace('·', '-'), card])),
+    all,
+  };
 }
 
 // ─── 繁體中文卡名 ────────────────────────────────────────────────

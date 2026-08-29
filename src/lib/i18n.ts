@@ -63,6 +63,7 @@ type UiStrings = {
   siteName: string;
   siteTagline: string;
   navGallery: string;
+  navRules: string;
   galleryTitle: string;
   gallerySubtitle: (count: number) => string;
   searchLabel: string;
@@ -108,6 +109,7 @@ const ZH_TW: UiStrings = {
   siteName: '符文戰場資料庫',
   siteTagline: 'Riftbound · 繁體中文玩家資源',
   navGallery: '卡牌圖鑑',
+  navRules: '規則說明',
   galleryTitle: '卡牌圖鑑',
   gallerySubtitle: (n) => `起源系列（Origins）與試煉場（Proving Grounds）共 ${n} 張卡。`,
   searchLabel: '搜尋卡牌',
@@ -154,6 +156,7 @@ const ZH_CN: UiStrings = {
   siteName: '符文战场资料库',
   siteTagline: 'Riftbound · 玩家资源',
   navGallery: '卡牌图鉴',
+  navRules: '规则说明',
   galleryTitle: '卡牌图鉴',
   gallerySubtitle: (n) => `起源系列（Origins）与试炼场（Proving Grounds）共 ${n} 张卡。`,
   searchLabel: '搜索卡牌',
@@ -199,6 +202,7 @@ const EN: UiStrings = {
   siteName: 'Riftbound Card Database',
   siteTagline: 'Riftbound · Player Resource',
   navGallery: 'Card Gallery',
+  navRules: 'Rules',
   galleryTitle: 'Card Gallery',
   gallerySubtitle: (n) => `${n} cards from Origins and Proving Grounds.`,
   searchLabel: 'Search cards',

@@ -20,6 +20,8 @@ import { parseCnText, convertBlocksToTraditional } from './lib/cn-text-parser.mj
 import { fetchSimplifiedChinese, fetchTraditionalNames } from './lib/fetch-locales.mjs';
 import {
   DOMAIN_BY_CN_COLOR,
+  GLYPH_BY_CN_TOKEN,
+  KEYWORD_BY_CN,
   RARITY_BY_CN,
   TAGS,
   TYPE_BY_CN_CATEGORY,
@@ -395,6 +397,216 @@ function attachLocales(card, cn, twNames) {
   };
 }
 
+// ─── 關鍵字辭典 ──────────────────────────────────────────────────────────
+
+/**
+ * 已知在卡面上找不到成對官方說明的關鍵字。
+ *
+ * Add 的說明（"Abilities that add resources can't be reacted to."）確實印在卡面上，
+ * 但它沒有緊接在關鍵字後面，而且那張卡同時帶有其他關鍵字 ——
+ * 沒有任何自動規則能在不冒「張冠李戴」風險的前提下把它認出來。
+ *
+ * 這裡明確記下來，而不是放寬比對規則去硬湊：
+ * 放寬規則會讓其他關鍵字也可能配到錯的說明，那種錯誤比「暫時沒有說明」嚴重得多。
+ * 介面上會顯示「官方卡面未提供說明」並指向官方規則書。
+ *
+ * 如果**其他**關鍵字哪天也抓不到，建置仍然會失敗 —— 那代表官方改了措辭，要有人來看。
+ */
+const KEYWORDS_WITHOUT_CARD_REMINDER = new Set(['Add']);
+
+/**
+ * 從卡面文字裡抽出官方的關鍵字說明。
+ *
+ * 官方會在卡面上用括號補充關鍵字的意思，例如
+ *   [Reaction] (Play any time, even before spells and abilities resolve.)
+ * 這是**官方自己的定義**，比任何人憑印象寫的都準確。
+ *
+ * 為什麼要自動抽而不是手打進程式碼：
+ *   1. 官方哪天調整措辭，我們會跟著更新，不會停在舊版本。
+ *   2. 開發過程中我曾手寫過這些說明，事後比對官方原文發現十五個裡錯了五個
+ *      （例如把 Shield 寫成「吸收傷害」，官方其實是「防守方時 +1 力量」）。
+ *      憑印象寫規則不可靠，這件事要用機制解決，不是靠小心。
+ *
+ * 掃描範圍是「全部系列」而不是只有 Origins —— 有幾個關鍵字的說明文字
+ * 只出現在後續系列的卡面上。
+ */
+function extractKeywordGlossary(rawEnCards, cnCards) {
+
+
+  const ALL_KEYWORDS = Object.values(KEYWORD_BY_CN);
+
+  /**
+   * 從卡面文字裡找出每個關鍵字的官方說明。
+   *
+   * 官方有兩種寫法，兩種都要處理：
+   *
+   *   緊接在後   "[Reaction] (Play any time, even before spells resolve.)"
+   *   放在句尾   "[Legion] — When you play me, ready me.
+   *               (Get the effect if you've played another card this turn)"
+   *
+   * 第二種沒辦法靠位置判斷，改用「專屬性」：
+   * 一段說明文字如果**只出現在帶有該關鍵字的卡上**，那它幾乎必然是
+   * 在解釋那個關鍵字。這個判準是資料本身給的，不是我猜的。
+   */
+  /*
+   * 兩種語言標示關鍵字的方式不同，所以要用不同的比對規則：
+   *   英文卡面   [Assault]、[Shield 2]
+   *   簡中卡面   {强攻}、{法盾2}     （原文是 {{强攻}}，前面已轉成單層大括號）
+   * 兩者都轉換成統一的英文關鍵字名稱後再處理。
+   */
+  const KEYWORD_PATTERNS = {
+    en: {
+      token: /\[([A-Za-z]+)(?: \d+)?\]/g,
+      resolve: (raw) => (ALL_KEYWORDS.includes(raw) ? raw : null),
+    },
+    cn: {
+      token: /\{([^}]+?)\d*\}/g,
+      resolve: (raw) => KEYWORD_BY_CN[raw] ?? null,
+    },
+  };
+
+  /** 取出一段文字裡所有的括號內容（含它在文字中的位置）。 */
+  const parentheticals = (text) => {
+    const out = [];
+    const re = /[（(]([^）)]{10,400})[）)]/g;
+    let m;
+    while ((m = re.exec(text)) !== null) out.push({ index: m.index, value: m[1].trim() });
+    return out;
+  };
+
+  /** 這段文字裡帶有哪些關鍵字，以及每個關鍵字出現的位置。 */
+  const keywordHits = (text, lang) => {
+    const { token, resolve } = KEYWORD_PATTERNS[lang];
+    const hits = [];
+    const re = new RegExp(token.source, 'g');
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      const name = resolve(m[1]);
+      if (name) hits.push({ name, index: m.index, end: m.index + m[0].length });
+    }
+    return hits;
+  };
+
+  /**
+   * 為每個關鍵字挑一張「最能代表它」的卡，然後從**同一張卡的同一個括號位置**
+   * 同時取出英文與簡中的說明。
+   *
+   * 為什麼一定要同一張卡同一個位置：
+   * 如果英文與簡中各自獨立挑選，很容易挑到不同的卡。開發時實際發生過 ——
+   * 英文取到 [Assault]（+1 力量）、簡中取到 {强攻2}（+2 戰力），
+   * 兩邊講的是不同的東西，但看起來都「對」。這種錯最難發現。
+   *
+   * 挑選優先順序：
+   *   1. 括號緊接在關鍵字後面（最沒有歧義）
+   *   2. 這張卡只有一個關鍵字、也只有一個括號（那個括號必然是在解釋它）
+   */
+  const collectPaired = (pairs) => {
+    const result = new Map();
+
+    for (const keyword of ALL_KEYWORDS) {
+      /** @type {{score: number, en: string, cn: string} | null} */
+      let best = null;
+
+      for (const { en, cn } of pairs) {
+        if (!en || !cn) continue;
+        const enHits = keywordHits(en, 'en').filter((h) => h.name === keyword);
+        const cnHits = keywordHits(cn, 'cn').filter((h) => h.name === keyword);
+        if (enHits.length === 0 || cnHits.length === 0) continue;
+
+        const enParens = parentheticals(en);
+        const cnParens = parentheticals(cn);
+        if (enParens.length === 0 || enParens.length !== cnParens.length) continue;
+
+        // 找出「緊接在關鍵字之後」的那個括號
+        let chosen = -1;
+        for (const hit of enHits) {
+          const idx = enParens.findIndex(
+            (p) => p.index >= hit.end && p.index - hit.end <= 3,
+          );
+          if (idx >= 0) {
+            chosen = idx;
+            break;
+          }
+        }
+        let score = chosen >= 0 ? 2 : 0;
+
+        // 沒有緊鄰的話：這張卡只有一個關鍵字、也只有一個括號才採用
+        if (chosen < 0) {
+          const allEnKeywords = new Set(keywordHits(en, 'en').map((h) => h.name));
+          if (allEnKeywords.size === 1 && enParens.length === 1) {
+            chosen = 0;
+            score = 1;
+          }
+        }
+        if (chosen < 0) continue;
+
+        if (!best || score > best.score) {
+          best = { score, en: enParens[chosen].value, cn: cnParens[chosen].value };
+        }
+        if (best.score === 2) break; // 已經是最好的來源，不必再找
+      }
+
+      if (best) result.set(keyword, { en: best.en, cn: best.cn });
+    }
+    return result;
+  };
+
+  // 英文：把官方 HTML 轉成純文字（不經過解析器，因為這裡只是要讀，不會輸出到頁面）
+  const enTexts = rawEnCards.map((c) =>
+    (c?.text?.richText?.body ?? '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/:rb_([a-z0-9_]+):/g, '{$1}')
+      .replace(/&gt;/g, '>')
+      .replace(/&lt;/g, '<')
+      .replace(/&amp;/g, '&'),
+  );
+  /*
+   * 簡中的符號 token（{{S}}、{{紫色}}…）轉成與英文一致的符號 id，
+   * 這樣前端可以用同一套元件把兩種語言的說明都畫成圖示。
+   * 關鍵字 token 維持中文原樣，因為後面要靠它比對關鍵字。
+   */
+  const cnTexts = cnCards.map((c) =>
+    (c?.cardEffect ?? '').replace(/\{\{([^}]*)\}\}/g, (_, inner) =>
+      Object.hasOwn(GLYPH_BY_CN_TOKEN, inner) ? `{${GLYPH_BY_CN_TOKEN[inner]}}` : `{${inner}}`,
+    ),
+  );
+
+  // 依卡號把英文卡與簡中卡配對，才能保證兩邊取到的是同一張卡的同一句話
+  const cnByCode = new Map(
+    cnCards.filter((c) => c?.cardNo).map((c) => [c.cardNo.replace('·', '-'), c]),
+  );
+  const pairs = rawEnCards
+    .map((card, i) => {
+      const cn = cnByCode.get(card?.publicCode ?? '');
+      return cn ? { en: enTexts[i], cn: cnTexts[cnCards.indexOf(cn)] } : null;
+    })
+    .filter(Boolean);
+
+  const paired = collectPaired(pairs);
+
+  const entries = {};
+  const missing = [];
+  for (const name of Object.values(KEYWORD_BY_CN)) {
+    const hit = paired.get(name);
+    if (!hit) {
+      // 沒有官方說明的關鍵字，介面上會誠實標示並指向官方規則書，
+      // 不會用手寫的內容頂替。
+      entries[name] = { en: null, cn: null, tw: null, source: 'none' };
+      if (!KEYWORDS_WITHOUT_CARD_REMINDER.has(name)) missing.push(name);
+      continue;
+    }
+    entries[name] = {
+      en: hit.en,
+      cn: hit.cn,
+      // 繁中沿用簡中的官方說明逐字轉繁（官方尚未推出繁中規則資料）
+      tw: toTraditional(hit.cn),
+      // 讓介面能誠實標示這段文字的來歷
+      source: 'official-card-text',
+    };
+  }
+  return { entries, missing };
+}
+
 // ─── 分類法（篩選選項） ──────────────────────────────────────────────────
 
 function buildTaxonomy(cards) {
@@ -501,8 +713,8 @@ async function main() {
   console.log('\n▶ 取得中文資料…');
 
   console.log('  · 簡體中文：中國大陸官方發行商 API（lol-api.playloltcg.com）');
-  const cnMap = await fetchSimplifiedChinese(Object.keys(WANTED_SETS));
-  console.log(`  ✓ 取得官方簡中卡牌 ${cnMap.size} 張`);
+  const { wanted: cnMap, all: cnAll } = await fetchSimplifiedChinese(Object.keys(WANTED_SETS));
+  console.log(`  ✓ 取得官方簡中卡牌 ${cnMap.size} 張（全系列 ${cnAll.length} 張）`);
 
   const baseCodes = [
     ...new Set(cards.map((c) => `${c.set}-${String(c.number).padStart(3, '0')}`)),
@@ -533,7 +745,26 @@ async function main() {
 
   await downloadGlyphs();
 
-  const taxonomy = buildTaxonomy(cards);
+  // 關鍵字辭典：掃全系列的卡面文字，抽出官方自己寫的說明
+  const glossary = extractKeywordGlossary(raw, cnAll);
+  if (glossary.missing.length > 0) {
+    fail(
+      `以下關鍵字在所有系列的卡面上都找不到官方說明：${glossary.missing.join('、')}` +
+        `
+  這代表官方改了措辭，或我們的比對規則需要調整。` +
+        `
+  不要用手寫的說明頂替 —— 規則寫錯比沒有更糟。`,
+    );
+  }
+  const withText = Object.values(glossary.entries).filter((e) => e.en).length;
+  console.log(
+    `  ✓ 關鍵字辭典：${withText}/${Object.keys(glossary.entries).length} 個關鍵字取得官方說明` +
+      (withText < Object.keys(glossary.entries).length
+        ? `（${[...KEYWORDS_WITHOUT_CARD_REMINDER].join('、')} 卡面未提供，已標示）`
+        : ''),
+  );
+
+  const taxonomy = { ...buildTaxonomy(cards), keywords: glossary.entries };
   const dataDir = join(ROOT, 'src', 'data');
   await mkdir(dataDir, { recursive: true });
   await writeFile(join(dataDir, 'cards.origins.json'), JSON.stringify(cards, null, 1), 'utf8');

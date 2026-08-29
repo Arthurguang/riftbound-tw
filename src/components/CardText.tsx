@@ -1,5 +1,7 @@
 import type { CardTextBlock, CardTextNode, GlyphId } from '@/lib/types';
-import { GLYPH_LABELS, KEYWORD_INFO } from '@/lib/labels';
+import Link from 'next/link';
+import { GLYPH_LABELS, KEYWORD_LABELS } from '@/lib/labels';
+import { TAXONOMY } from '@/lib/cards';
 import { t, type TextLang } from '@/lib/i18n';
 
 /**
@@ -38,15 +40,30 @@ function Token({ node, lang }: { node: CardTextNode; lang: TextLang }) {
       return <Glyph id={node.id} lang={lang} />;
 
     case 'keyword': {
-      const info = KEYWORD_INFO[node.name];
-      const base = info.label[lang];
+      const base = KEYWORD_LABELS[node.name][lang];
       const display = node.value === undefined ? base : `${base} ${node.value}`;
-      // 滑鼠停留時顯示這個關鍵字的規則說明，並附上英文原文方便對照。
-      const title = lang === 'en' ? info.hint.en : `${node.name}｜${info.hint[lang]}`;
+
+      /*
+       * 滑鼠停留時顯示的說明來自官方卡面的提醒文字（taxonomy.keywords），
+       * 不是手寫的。開發時手寫過一版，十五個裡有五個是錯的。
+       */
+      const entry = TAXONOMY.keywords[node.name];
+      const official = entry?.[lang === 'zh-TW' ? 'tw' : lang === 'zh-CN' ? 'cn' : 'en'];
+      const title = official
+        ? lang === 'en'
+          ? official
+          : `${node.name}｜${official}`
+        : node.name;
+
+      // 點下去可以到辭典看完整說明
       return (
-        <strong className="font-semibold text-accent-soft" title={title}>
+        <Link
+          href={`/rules#keyword-${node.name.toLowerCase()}`}
+          title={title}
+          className="font-semibold text-accent-soft underline decoration-dotted underline-offset-2 hover:decoration-solid"
+        >
           {display}
-        </strong>
+        </Link>
       );
     }
   }
