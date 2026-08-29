@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { expectOfficialUrl } from './url-assert';
 
 /**
  * 在搜尋框輸入文字。
@@ -216,18 +217,20 @@ test.describe('多語系', () => {
     }
   });
 
+  /*
+   * 這裡只等 HTML 解析完成，不等圖片載完（domcontentloaded 而非預設的 load）。
+   *
+   * 简中卡圖來自中國的 CDN，從其他地區連過去有時會很慢。預設的 goto 會等
+   * 所有圖片載完，網路一慢測試就逾時 —— 但這條要驗的是「卡圖網址有沒有
+   * 換成简中 CDN」，圖片載不載得完無關。
+   * 會隨機變紅的測試比沒有測試更糟，因為久了就沒有人相信 CI。
+   */
   test('切換卡面語言會換成简中卡圖', async ({ page }) => {
-    await page.goto('/cards/ogn-056-298?art=en');
-    await expect(page.locator('article img').first()).toHaveAttribute(
-      'src',
-      /cmsassets\.rgpub\.io/,
-    );
+    await page.goto('/cards/ogn-056-298?art=en', { waitUntil: 'domcontentloaded' });
+    await expectOfficialUrl(page.locator('article img').first(), 'src', 'cmsassets.rgpub.io');
 
-    await page.goto('/cards/ogn-056-298?art=zh-CN');
-    await expect(page.locator('article img').first()).toHaveAttribute(
-      'src',
-      /cdn\.playloltcg\.com/,
-    );
+    await page.goto('/cards/ogn-056-298?art=zh-CN', { waitUntil: 'domcontentloaded' });
+    await expectOfficialUrl(page.locator('article img').first(), 'src', 'cdn.playloltcg.com');
   });
 
   test('繁中能力文字會誠實標示為簡轉繁', async ({ page }) => {

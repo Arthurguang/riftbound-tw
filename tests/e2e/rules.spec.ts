@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { expectOfficialUrl } from './url-assert';
 
 /** 規則說明與關鍵字辭典。 */
 
@@ -84,12 +85,32 @@ test.describe('規則頁', () => {
     }
   });
 
-  test('提供官方規則文件連結', async ({ page }) => {
+  test('提供官方規則文件連結，且確實指向官方網域', async ({ page }) => {
     await page.goto('/rules');
-    const coreRules = page.getByRole('link', { name: /Core Rules/ });
-    await expect(coreRules.first()).toBeVisible();
-    await expect(coreRules.first()).toHaveAttribute('href', /cmsassets\.rgpub\.io.*\.pdf/);
-    await expect(coreRules.first()).toHaveAttribute('rel', /noopener/);
+    const coreRules = page.getByRole('link', { name: /Core Rules/ }).first();
+    await expect(coreRules).toBeVisible();
+
+    // 比對完整主機名稱，而不是「網址裡含有某段字串」——
+    // 後者會讓 https://evil.example.com/?x=cmsassets.rgpub.io/a.pdf 也通過。
+    const url = await expectOfficialUrl(coreRules, 'href', 'cmsassets.rgpub.io');
+    expect(url.pathname.endsWith('.pdf'), `${url} 應為 PDF`).toBe(true);
+
+    await expect(coreRules).toHaveAttribute('rel', /noopener/);
+  });
+
+  test('所有官方文件連結都指向官方網域', async ({ page }) => {
+    await page.goto('/rules');
+    const links = page.locator('section', { hasText: '官方規則文件' }).locator('a[target="_blank"]');
+    const count = await links.count();
+    expect(count).toBeGreaterThan(0);
+
+    const allowed = ['cmsassets.rgpub.io', 'playriftbound.com'];
+    for (let i = 0; i < count; i += 1) {
+      const href = await links.nth(i).getAttribute('href');
+      const host = new URL(href!).hostname;
+      expect(allowed, `第 ${i + 1} 個連結指向了非官方網域 ${host}`).toContain(host);
+      await expect(links.nth(i)).toHaveAttribute('rel', /noopener/);
+    }
   });
 });
 
