@@ -82,70 +82,33 @@ export const RARITY_ORDER: Record<Rarity, number> = {
 };
 
 /**
- * 關鍵字：三語名稱與簡短說明。
- * 中文名稱取自官方簡中卡面（繁體為逐字轉換）。
+ * 關鍵字的三語「名稱」。
+ *
+ * ⚠️ 這裡只放名稱，不放解釋。
+ *
+ * 原本這裡有我手寫的關鍵字說明，事後拿官方卡面原文比對，
+ * 十五個裡有五個是錯的（例如把 Shield 寫成「吸收傷害」，
+ * 官方其實是「防守方時 +1 力量」）。憑印象寫遊戲規則不可靠。
+ *
+ * 現在解釋一律來自官方卡面上的提醒文字，由建置腳本自動抽取到
+ * taxonomy.json 的 keywords 欄位，官方改措辭時我們會跟著更新。
  */
-export const KEYWORD_INFO: Record<Keyword, { label: Tri; hint: Tri }> = {
-  Accelerate: {
-    label: tri('急速', '急速', 'Accelerate'),
-    hint: tri('可支付額外費用讓我進場時就處於待命狀態。', '可支付额外费用让我进场时就处于待命状态。', 'Pay an additional cost to have me enter ready.'),
-  },
-  Action: {
-    label: tri('迅捷', '迅捷', 'Action'),
-    hint: tri('只能在你的回合或對峙中使用。', '只能在你的回合或对峙中使用。', 'Play on your turn or in showdowns.'),
-  },
-  Add: {
-    label: tri('獲得', '获得', 'Add'),
-    hint: tri('把指定的卡加入指定區域。', '把指定的卡加入指定区域。', 'Put the named card into a zone.'),
-  },
-  Assault: {
-    label: tri('強攻', '强攻', 'Assault'),
-    hint: tri('身為進攻方時獲得額外力量。', '身为进攻方时获得额外战力。', 'Gets bonus Might while attacking.'),
-  },
-  Deathknell: {
-    label: tri('絕念', '绝念', 'Deathknell'),
-    hint: tri('這個單位死亡時觸發。', '这个单位死亡时触发。', 'Triggers when this unit dies.'),
-  },
-  Deflect: {
-    label: tri('法盾', '法盾', 'Deflect'),
-    hint: tri('對手必須額外付費才能將我選為目標。', '对手必须额外付费才能将我选为目标。', 'Opponents must pay extra to target me.'),
-  },
-  Ganking: {
-    label: tri('遊走', '游走', 'Ganking'),
-    hint: tri('可以在非預期的時機加入戰鬥。', '可以在非预期的时机加入战斗。', 'Can join a fight at an unexpected time.'),
-  },
-  Hidden: {
-    label: tri('待命', '待命', 'Hidden'),
-    hint: tri('不會被對手指定為目標。', '不会被对手指定为目标。', 'Cannot be targeted by opponents.'),
-  },
-  Legion: {
-    label: tri('鼓舞', '鼓舞', 'Legion'),
-    hint: tri('與同類單位一起行動時獲得增益。', '与同类单位一起行动时获得增益。', 'Gets a bonus alongside similar units.'),
-  },
-  Mighty: {
-    label: tri('強力', '强力', 'Mighty'),
-    hint: tri('在對峙中具有較高的優先權。', '在对峙中具有较高的优先权。', 'Has higher priority in showdowns.'),
-  },
-  Reaction: {
-    label: tri('反應', '反应', 'Reaction'),
-    hint: tri('任何時候都能使用，甚至能搶在其他效果結算前。', '任何时候都能使用，甚至能抢在其他效果结算前。', 'Play any time, even before other effects resolve.'),
-  },
-  Shield: {
-    label: tri('堅守', '坚守', 'Shield'),
-    hint: tri('吸收指定數量的傷害。', '吸收指定数量的伤害。', 'Absorbs a set amount of damage.'),
-  },
-  Tank: {
-    label: tri('壁壘', '壁垒', 'Tank'),
-    hint: tri('優先承受攻擊，保護其他單位。', '优先承受攻击，保护其他单位。', 'Takes hits first, protecting other units.'),
-  },
-  Temporary: {
-    label: tri('瞬息', '瞬息', 'Temporary'),
-    hint: tri('效果只持續到這個回合結束。', '效果只持续到这个回合结束。', 'Lasts only until end of turn.'),
-  },
-  Vision: {
-    label: tri('預知', '预知', 'Vision'),
-    hint: tri('可以查看牌庫頂或隱藏資訊。', '可以查看牌库顶或隐藏信息。', 'Look at the top of a deck or hidden information.'),
-  },
+export const KEYWORD_LABELS: Record<Keyword, Tri> = {
+  Accelerate: tri('急速', '急速', 'Accelerate'),
+  Action: tri('迅捷', '迅捷', 'Action'),
+  Add: tri('獲得', '获得', 'Add'),
+  Assault: tri('強攻', '强攻', 'Assault'),
+  Deathknell: tri('絕念', '绝念', 'Deathknell'),
+  Deflect: tri('法盾', '法盾', 'Deflect'),
+  Ganking: tri('遊走', '游走', 'Ganking'),
+  Hidden: tri('待命', '待命', 'Hidden'),
+  Legion: tri('鼓舞', '鼓舞', 'Legion'),
+  Mighty: tri('強力', '强力', 'Mighty'),
+  Reaction: tri('反應', '反应', 'Reaction'),
+  Shield: tri('堅守', '坚守', 'Shield'),
+  Tank: tri('壁壘', '壁垒', 'Tank'),
+  Temporary: tri('瞬息', '瞬息', 'Temporary'),
+  Vision: tri('預知', '预知', 'Vision'),
 };
 
 export const GLYPH_LABELS: Record<GlyphId, Tri> = {

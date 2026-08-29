@@ -139,6 +139,17 @@ export type Taxonomy = {
   rarities: Rarity[];
   tags: string[];
   /**
+   * 關鍵字辭典。
+   *
+   * 內容抽取自官方卡面上的提醒文字（見 scripts/fetch-cards.mjs），
+   * 不是任何人手寫的。source 為 'none' 代表官方卡面沒有提供說明，
+   * 介面上會誠實標示並指向官方規則書。
+   */
+  keywords: Record<
+    string,
+    { en: string | null; cn: string | null; tw: string | null; source: 'official-card-text' | 'none' }
+  >;
+  /**
    * 標籤的中文對照。
    * src 標示繁中譯名的來源：'official'（Riot 官方 / 台服正式譯名）或 'converted'（簡轉繁）。
    */

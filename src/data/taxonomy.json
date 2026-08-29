@@ -477,5 +477,97 @@
   "rune_mind",
   "rune_order",
   "rune_rainbow"
- ]
+ ],
+ "keywords": {
+  "Accelerate": {
+   "en": "You may pay {energy_1}{rune_chaos} as an additional cost to have me enter ready.",
+   "cn": "你可以选择额外支付{energy_1}和{rune_chaos}，让我以活跃状态进场。",
+   "tw": "你可以選擇額外支付{energy_1}和{rune_chaos}，讓我以活躍狀態進場。",
+   "source": "official-card-text"
+  },
+  "Action": {
+   "en": "Play on your turn or in showdowns.",
+   "cn": "可在你的回合或法术对决中打出。",
+   "tw": "可在你的回合或法術對決中打出。",
+   "source": "official-card-text"
+  },
+  "Add": {
+   "en": null,
+   "cn": null,
+   "tw": null,
+   "source": "none"
+  },
+  "Assault": {
+   "en": "+1 {might} while I'm an attacker.",
+   "cn": "如果我是进攻方，则{might}+1。",
+   "tw": "如果我是進攻方，則{might}+1。",
+   "source": "official-card-text"
+  },
+  "Deathknell": {
+   "en": "When I die, get the effect.",
+   "cn": "当我被摧毁后，发动此效果。",
+   "tw": "當我被摧毀後，發動此效果。",
+   "source": "official-card-text"
+  },
+  "Deflect": {
+   "en": "Opponents must pay {rune_rainbow} to choose me with a spell or ability.",
+   "cn": "对手必须支付{rune_rainbow}才能将我选作法术或技能的目标。",
+   "tw": "對手必須支付{rune_rainbow}才能將我選作法術或技能的目標。",
+   "source": "official-card-text"
+  },
+  "Ganking": {
+   "en": "I can move from battlefield to battlefield.",
+   "cn": "我可以向其他战场进行移动。",
+   "tw": "我可以向其他戰場進行移動。",
+   "source": "official-card-text"
+  },
+  "Hidden": {
+   "en": "Hide now for {rune_rainbow} to react with later for {energy_0}.",
+   "cn": "支付{rune_rainbow}正面朝下放置此牌，之后可支付{energy_0}将其当作反应牌打出。",
+   "tw": "支付{rune_rainbow}正面朝下放置此牌，之後可支付{energy_0}將其當作反應牌打出。",
+   "source": "official-card-text"
+  },
+  "Legion": {
+   "en": "Get the effect if you've played another card this turn.",
+   "cn": "如果你在本回合内已打出过其他卡牌，则发动此效果。",
+   "tw": "如果你在本回合內已打出過其他卡牌，則發動此效果。",
+   "source": "official-card-text"
+  },
+  "Mighty": {
+   "en": "A unit is Mighty while it has 5+ {might}.",
+   "cn": "战力达到5或以上时，即为强力单位。",
+   "tw": "戰力達到5或以上時，即為強力單位。",
+   "source": "official-card-text"
+  },
+  "Reaction": {
+   "en": "Play any time, even before spells and abilities resolve.",
+   "cn": "可在任意时机打出，甚至先于其他法术和技能的结算。",
+   "tw": "可在任意時機打出，甚至先於其他法術和技能的結算。",
+   "source": "official-card-text"
+  },
+  "Shield": {
+   "en": "+1 {might} while they're defenders.",
+   "cn": "如果它们是防守方，则{might}+1。",
+   "tw": "如果它們是防守方，則{might}+1。",
+   "source": "official-card-text"
+  },
+  "Tank": {
+   "en": "I must be assigned combat damage first.",
+   "cn": "我在战斗中首先承担伤害。",
+   "tw": "我在戰鬥中首先承擔傷害。",
+   "source": "official-card-text"
+  },
+  "Temporary": {
+   "en": "Kill it at the start of its controller's Beginning Phase, before scoring.",
+   "cn": "在其控制者的下个回合开始阶段，结算得分之前将其摧毁。",
+   "tw": "在其控制者的下個回合開始階段，結算得分之前將其摧毀。",
+   "source": "official-card-text"
+  },
+  "Vision": {
+   "en": "When you play this, look at the top card of your Main Deck. You may recycle it.",
+   "cn": "当你打出此牌时，查看主牌堆顶部的一张牌。你可以选择将其回收。",
+   "tw": "當你打出此牌時，查看主牌堆頂部的一張牌。你可以選擇將其回收。",
+   "source": "official-card-text"
+  }
+ }
 }
