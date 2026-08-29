@@ -323,15 +323,22 @@ test.describe('隱私', () => {
       if (host !== ownHost) thirdParty.add(host);
     });
 
-    // 三種語言、兩種卡面都跑一遍，確認沒有任何一條路徑會連到非官方來源。
+    /*
+     * 三種語言、兩種卡面都跑一遍，確認沒有任何一條路徑會連到非官方來源。
+     *
+     * 刻意不等 networkidle：这里要看的是「請求送去了哪裡」，
+     * 而不是「圖片有沒有載完」。简中卡圖來自中國的 CDN，
+     * 從其他地區連過去有時很慢，等它載完會讓測試隨機逾時。
+     * 請求在送出的當下就會被 page.on('request') 記錄到。
+     */
     for (const path of [
       '/cards',
       '/cards?lang=zh-CN&art=zh-CN',
       '/cards?lang=en',
       '/cards/ogn-001-298?art=zh-CN',
     ]) {
-      await page.goto(path);
-      await page.waitForLoadState('networkidle');
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
     }
 
     // 只允許這兩個官方 CDN：Riot 全球官方，以及中國大陸官方發行商。

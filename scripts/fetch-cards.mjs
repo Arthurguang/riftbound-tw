@@ -454,13 +454,25 @@ function extractKeywordGlossary(rawEnCards, cnCards) {
    *   簡中卡面   {强攻}、{法盾2}     （原文是 {{强攻}}，前面已轉成單層大括號）
    * 兩者都轉換成統一的英文關鍵字名稱後再處理。
    */
+  /*
+   * 每種語言的比對式都寫成「字面量」，而且每次使用時都新建一個。
+   *
+   * 為什麼不用 new RegExp(某個變數) 去組出來：
+   * CodeQL 會把「用變數建構正則式」標記為高風險（正則式注入）。
+   * 這裡的來源雖然是我們自己的常數、實際上不可被利用，但那個寫法本身很脆弱 ——
+   * 日後只要有人讓那個變數變成可設定的，就會變成真的漏洞。
+   * 寫成字面量既沒有這個風險，也比較好讀。
+   *
+   * 每次都新建的原因：帶 g 旗標的正則式會記住 lastIndex，
+   * 共用同一個實例會讓第二次呼叫從上次的位置開始找，結果時對時錯。
+   */
   const KEYWORD_PATTERNS = {
     en: {
-      token: /\[([A-Za-z]+)(?: \d+)?\]/g,
+      newToken: () => /\[([A-Za-z]+)(?: \d+)?\]/g,
       resolve: (raw) => (ALL_KEYWORDS.includes(raw) ? raw : null),
     },
     cn: {
-      token: /\{([^}]+?)\d*\}/g,
+      newToken: () => /\{([^}]+?)\d*\}/g,
       resolve: (raw) => KEYWORD_BY_CN[raw] ?? null,
     },
   };
@@ -476,9 +488,9 @@ function extractKeywordGlossary(rawEnCards, cnCards) {
 
   /** 這段文字裡帶有哪些關鍵字，以及每個關鍵字出現的位置。 */
   const keywordHits = (text, lang) => {
-    const { token, resolve } = KEYWORD_PATTERNS[lang];
+    const { newToken, resolve } = KEYWORD_PATTERNS[lang];
     const hits = [];
-    const re = new RegExp(token.source, 'g');
+    const re = newToken();
     let m;
     while ((m = re.exec(text)) !== null) {
       const name = resolve(m[1]);
