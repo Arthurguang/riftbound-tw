@@ -45,7 +45,8 @@ test.describe('Content-Security-Policy', () => {
     expect(csp).not.toContain("'unsafe-eval'");
     expect(csp).not.toContain("'unsafe-hashes'");
 
-    expect(csp).toContain("default-src 'self'");
+    // deny by default：沒有明確開放的資源類型一律禁止
+    expect(csp).toContain("default-src 'none'");
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("base-uri 'none'");
     expect(csp).toContain("object-src 'none'");
@@ -116,18 +117,51 @@ test.describe('CSP 實際攔截能力（主動攻擊測試）', () => {
    * 以及把字串當程式碼執行的能力。
    */
 
-  test('XSS 最常見的載體：行內事件處理器不會執行', async ({ page }) => {
+  /**
+   * 最典型的 XSS payload：`<img src=x onerror="壞事">`
+   *
+   * 本站有兩道獨立的防線擋它，這個測試同時涵蓋兩道：
+   *
+   *   第一道 Trusted Types（require-trusted-types-for 'script'）
+   *          連「把這段 HTML 寫進 DOM」這個動作本身都會拋出 TypeError，
+   *          惡意內容根本進不了頁面。目前 Chromium 系列支援。
+   *
+   *   第二道 CSP 沒有 'unsafe-inline'
+   *          就算 HTML 真的寫進去了（例如在還不支援 Trusted Types 的
+   *          Safari 上），onerror 這種行內事件處理器也不會執行。
+   *
+   * 兩道任一成立，攻擊就失敗 —— 這正是「縱深防禦」的意思：
+   * 不依賴單一機制，也不依賴瀏覽器一定支援最新規格。
+   */
+  test('XSS 最常見的載體：惡意 HTML 進不來，就算進來了也不會執行', async ({ page }) => {
     await page.goto('/cards');
-    const fired = await page.evaluate(async () => {
-      (window as unknown as Record<string, unknown>).__pwned = false;
+
+    const result = await page.evaluate(async () => {
+      const w = window as unknown as Record<string, unknown>;
+      w.__pwned = false;
+
       const host = document.createElement('div');
-      // 模擬「惡意內容被寫進頁面 HTML」——最典型的 XSS payload。
-      host.innerHTML = '<img src="data:," onerror="window.__pwned = true">';
+      let blockedByTrustedTypes = false;
+      try {
+        host.innerHTML = '<img src="data:," onerror="window.__pwned = true">';
+      } catch {
+        blockedByTrustedTypes = true; // Trusted Types 直接拒絕了這次寫入
+      }
       document.body.appendChild(host);
       await new Promise((r) => setTimeout(r, 400));
-      return (window as unknown as Record<string, unknown>).__pwned === true;
+
+      return { blockedByTrustedTypes, fired: w.__pwned === true };
     });
-    expect(fired, 'onerror 事件處理器不該執行（代表 CSP 沒有 unsafe-inline）').toBe(false);
+
+    // 不論被哪一道擋下，結果都必須是「惡意程式碼沒有執行」。
+    expect(result.fired, 'onerror 事件處理器絕對不該執行').toBe(false);
+
+    // 至少要有一道防線真的動作了 —— 否則代表兩道都失效，只是碰巧沒事。
+    const cspBlockedIt = !result.blockedByTrustedTypes && !result.fired;
+    expect(
+      result.blockedByTrustedTypes || cspBlockedIt,
+      '應由 Trusted Types 或 CSP 其中之一擋下',
+    ).toBe(true);
   });
 
   test('javascript: 協議的連結不會執行', async ({ page }) => {

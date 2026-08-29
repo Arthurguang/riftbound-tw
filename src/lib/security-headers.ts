@@ -67,8 +67,20 @@ export const STATIC_SECURITY_HEADERS: ReadonlyArray<{ key: string; value: string
  */
 export function buildCsp(nonce: string, isDev: boolean, isSecure = true): string {
   const directives: Record<string, string[]> = {
-    // 預設什麼都不准，下面逐項開放。
-    'default-src': ["'self'"],
+    /*
+     * 預設「全部禁止」，下面逐項開放。
+     *
+     * 用 'none' 而不是 'self' 的差別在未來：CSP 規格日後新增資源類型時，
+     * 'self' 會自動放行同網域的那種資源，'none' 則會擋下來，
+     * 逼我們明確決定要不要開。這就是 Mozilla Observatory 所謂的
+     * 「deny by default」。
+     *
+     * 前提是每一種資源類型都要有自己的指令，否則會退回 default-src 而被擋。
+     * 下面十一項已經涵蓋所有會退回 default-src 的類型；
+     * script-src-elem / style-src-elem 等細分指令則會退回各自的 script-src /
+     * style-src，不受影響。
+     */
+    'default-src': ["'none'"],
 
     // 只有帶著本次 nonce 的腳本能執行。'strict-dynamic' 讓 Next.js 由這些
     // 腳本動態載入的 chunk 也被信任，同時讓網域白名單失效——
@@ -102,6 +114,14 @@ export function buildCsp(nonce: string, isDev: boolean, isSecure = true): string
     'base-uri': ["'none'"],
     // 本站沒有任何表單，因此禁止任何表單送出目標。
     'form-action': ["'none'"],
+
+    /*
+     * Trusted Types：強制任何寫入 DOM 的危險操作（innerHTML 之類）
+     * 都必須先經過一個明確定義的檢查函式，否則瀏覽器直接拒絕。
+     * 本站的程式碼本來就沒有用那些寫法（scripts/check-forbidden-apis.mjs
+     * 會擋），這一條是額外的保險，防的是「未來不小心引入」。
+     */
+    'require-trusted-types-for': ["'script'"],
   };
 
   const policy = Object.entries(directives)
