@@ -41,6 +41,7 @@ const sample: Deck = {
   main: { [unit.id]: 3 },
   runes: { [rune.id]: 12 },
   battlefields: { [battlefield.id]: 3 },
+  sideboard: {},
 };
 
 describe('短代碼', () => {
@@ -83,8 +84,27 @@ describe('網址編碼', () => {
     expect(result.dropped).toBeGreaterThan(0);
   });
 
+  it('版本 1 的舊連結仍然能開 —— 分享出去的連結不能突然失效', () => {
+    // 版本 1 沒有備牌那一段
+    const legacy = `1|${shortCode(legend)}||${shortCode(unit)}x3|${shortCode(rune)}x12|${shortCode(battlefield)}`;
+    const result = decodeDeck(legacy, index);
+
+    expect(result.dropped).toBe(0);
+    expect(result.deck.legendId).toBe(legend.id);
+    expect(result.deck.main[unit.id]).toBe(3);
+    expect(result.deck.runes[rune.id]).toBe(12);
+    expect(result.deck.sideboard).toEqual({});
+  });
+
+  it('備牌會編進網址並還原', () => {
+    const withSide = { ...sample, sideboard: { [unit.id]: 2 } };
+    const decoded = decodeDeck(encodeDeck(withSide, ALL_CARDS), index);
+    expect(decoded.deck.sideboard[unit.id]).toBe(2);
+    expect(decoded.deck).toEqual(withSide);
+  });
+
   it('版本號不符時整份不採用', () => {
-    const result = decodeDeck(`9|${shortCode(legend)}|||`, index);
+    const result = decodeDeck(`9|${shortCode(legend)}||||`, index);
     expect(result.deck).toEqual(EMPTY_DECK);
   });
 

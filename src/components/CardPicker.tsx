@@ -5,7 +5,7 @@ import { applyFilters, buildSearchIndex, EMPTY_FILTERS } from '@/lib/search';
 import { cardImageUrl, cardName, cardSubtitle } from '@/lib/cards';
 import { DOMAIN_LABELS } from '@/lib/labels';
 import { DomainDot } from './CardBadges';
-import { zoneForCard, type Deck } from '@/lib/deck-rules';
+import { TOURNAMENT_REQUIREMENTS, zoneForCard, type Deck } from '@/lib/deck-rules';
 import type { ArtLang, TextLang } from '@/lib/i18n';
 import type { Card, Domain, Taxonomy } from '@/lib/types';
 
@@ -26,9 +26,11 @@ export function CardPicker({
   art,
   legend,
   deck,
+  sideboardCount,
   collection,
   trackCollection,
   onAdd,
+  onSideboard,
   onChooseLegend,
   onChooseChampion,
   onCollectionChange,
@@ -40,9 +42,12 @@ export function CardPicker({
   art: ArtLang;
   legend: Card | undefined;
   deck: Deck;
+  /** 備牌目前幾張，用來提示是否已達賽事上限。 */
+  sideboardCount: number;
   collection: Record<string, number> | null;
   trackCollection: boolean;
   onAdd: (cardId: string, next: number) => void;
+  onSideboard: (cardId: string, next: number) => void;
   onChooseLegend: (cardId: string | null) => void;
   onChooseChampion: (cardId: string) => void;
   onCollectionChange: (cardId: string, qty: number) => void;
@@ -183,6 +188,11 @@ export function CardPicker({
               只顯示我擁有的
             </label>
           )}
+          {tab === 'main' && sideboardCount > 0 && (
+            <span className="text-ink-faint">
+              備牌 {sideboardCount}/{TOURNAMENT_REQUIREMENTS.sideboardMax}
+            </span>
+          )}
           <span className="ml-auto text-ink-faint">{visible.length} 張</span>
         </div>
       </div>
@@ -199,6 +209,7 @@ export function CardPicker({
         >
           {visible.map((card) => {
             const inDeck = qtyInDeck(card);
+            const inSideboard = deck.sideboard[card.id] ?? 0;
             const owned = collection?.[card.id] ?? 0;
             const isLegendTab = tab === 'legend';
             const subtitle = cardSubtitle(card, lang);
@@ -263,6 +274,39 @@ export function CardPicker({
                     >
                       +
                     </button>
+                  </div>
+                )}
+
+                {/* 備牌：只有主牌組放得下的卡可以進備牌（賽事規則 601.1.c.2） */}
+                {tab === 'main' && (
+                  <div className="mt-1 flex items-center justify-between gap-1 rounded border border-line px-1 py-0.5">
+                    <span className="text-[0.65rem] text-ink-faint">備牌</span>
+                    <div className="flex items-center gap-0.5">
+                      <button
+                        type="button"
+                        aria-label={`從備牌移除 ${cardName(card, lang)}`}
+                        onClick={() => onSideboard(card.id, inSideboard - 1)}
+                        disabled={inSideboard === 0}
+                        className="h-5 w-5 rounded border border-line text-[0.65rem] text-ink-dim disabled:opacity-30"
+                      >
+                        −
+                      </button>
+                      <span
+                        className={`w-4 text-center text-[0.7rem] ${
+                          inSideboard > 0 ? 'text-accent-soft' : 'text-ink'
+                        }`}
+                      >
+                        {inSideboard}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label={`加入備牌 ${cardName(card, lang)}`}
+                        onClick={() => onSideboard(card.id, inSideboard + 1)}
+                        className="h-5 w-5 rounded border border-line text-[0.65rem] text-ink-dim"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                 )}
 

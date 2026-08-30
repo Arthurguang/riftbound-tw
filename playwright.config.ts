@@ -67,7 +67,14 @@ export default defineConfig({
         webServer: {
           command: `npx next start -p ${PORT}`,
           url: baseURL,
-          reuseExistingServer: !process.env.CI,
+          /*
+           * 一律自己起一台新的，不重用既有的伺服器。
+           *
+           * 曾經兩次因為前一輪留下的伺服器還在跑舊的建置產物，
+           * 測試對著過期的程式碼跑，結果整批紅燈、花很久才查到原因。
+           * 埠被佔用時 Playwright 會直接報錯，那比安靜地測到舊版本好得多。
+           */
+          reuseExistingServer: false,
           timeout: 120_000,
         },
       }),

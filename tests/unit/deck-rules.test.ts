@@ -13,6 +13,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DECK_REQUIREMENTS,
+  TOURNAMENT_REQUIREMENTS,
   EMPTY_DECK,
   checkLegality,
   matchesIdentity,
@@ -40,30 +41,42 @@ const legalCards = ALL_CARDS.filter(
 
 /** 組出一副「除了指定缺陷外都合法」的牌組，方便逐條測試。 */
 function buildDeck(overrides: Partial<Deck> = {}): Deck {
-  const main: Record<string, number> = {};
-  let count = 0;
-  for (const card of legalCards) {
-    if (count >= DECK_REQUIREMENTS.mainDeckMin) break;
-    // 每張最多 3 張（103.2.b）
-    const take = Math.min(3, DECK_REQUIREMENTS.mainDeckMin - count);
-    main[card.id] = take;
-    count += take;
-  }
-
   const rune = runes[0]!;
   // 選定英雄必須與傳奇共享英雄標籤（103.2.a.2）
   const champion = legalCards.find(
     (c) => c.subtype === 'champion' && c.tags.some((tag) => legend.tags.includes(tag)),
   );
 
+  /*
+   * 主牌組要湊到「剛好」40 張。
+   *
+   * 選定英雄本來就算主牌組的一張（103.2），所以要先把它放進去再補其他卡 ——
+   * 先填滿 40 再補英雄會變成 41 張，賽事規則 601.1.b 就會跳提醒。
+   */
+  const main: Record<string, number> = {};
+  let count = 0;
+  if (champion) {
+    main[champion.id] = 1;
+    count = 1;
+  }
+  for (const card of legalCards) {
+    if (count >= DECK_REQUIREMENTS.mainDeckMin) break;
+    if (main[card.id]) continue;
+    // 每張最多 3 張（103.2.b）
+    const take = Math.min(3, DECK_REQUIREMENTS.mainDeckMin - count);
+    main[card.id] = take;
+    count += take;
+  }
+
   return {
     legendId: legend.id,
     championId: champion?.id ?? null,
-    main: champion && !main[champion.id] ? { ...main, [champion.id]: 1 } : main,
+    main,
     runes: { [rune.id]: DECK_REQUIREMENTS.runeDeckSize },
     battlefields: Object.fromEntries(
       battlefields.slice(0, DECK_REQUIREMENTS.battlefieldCount).map((b) => [b.id, 1]),
     ),
+    sideboard: {},
     ...overrides,
   };
 }
@@ -134,7 +147,7 @@ describe('合法性檢查', () => {
   it('空牌組會逐條指出缺什麼，且每條都附官方條號', () => {
     const result = checkLegality(EMPTY_DECK, byId);
     expect(result.legal).toBe(false);
-    expect(result.issues.length).toBeGreaterThanOrEqual(5);
+    expect(result.issues.length).toBeGreaterThanOrEqual(4);
     for (const issue of result.issues) {
       // 條號格式如 103.2 / 485.4.a —— 沒有條號的訊息不該存在
       expect(issue.rule).toMatch(/^\d{3}(\.\d+)*(\.[a-z])?(\.\d+)?$/);
@@ -220,6 +233,7 @@ describe('合法性檢查', () => {
       main: { 'not-a-card': 3 },
       runes: {},
       battlefields: {},
+      sideboard: {},
     };
     expect(() => checkLegality(broken, byId)).not.toThrow();
     expect(checkLegality(broken, byId).legal).toBe(false);
@@ -227,12 +241,39 @@ describe('合法性檢查', () => {
 });
 
 describe('選定英雄（103.2.a）', () => {
-  it('沒指定選定英雄會被擋下', () => {
+  /*
+   * 官方規則要求指定選定英雄（103.2「一張選定英雄單位」、402.1
+   * 「including a chosen champion」），但本站刻意標成「提醒」而非「錯誤」，
+   * 讓人可以邊組邊調整。訊息裡必須保留條號與「官方規則要求」的字樣，
+   * 否則要帶去賽事的人會被誤導。
+   */
+  it('沒指定選定英雄是「提醒」，不會擋下牌組', () => {
     const deck = buildDeck({ championId: null });
-    expect(checkLegality(deck, byId).issues.some((i) => i.rule.startsWith('103.2.a'))).toBe(true);
+    const result = checkLegality(deck, byId);
+
+    const issue = result.issues.find((i) => i.rule === '103.2.a');
+    expect(issue).toBeDefined();
+    expect(issue?.severity).toBe('warning');
+    expect(result.legal).toBe(true);
   });
 
-  it('選定英雄必須是英雄單位，不能是普通單位', () => {
+  it('提醒訊息要說明官方規則其實有要求', () => {
+    const deck = buildDeck({ championId: null });
+    const issue = checkLegality(deck, byId).issues.find((i) => i.rule === '103.2.a')!;
+
+    expect(issue.message['zh-TW']).toContain('官方規則要求');
+    expect(issue.message['zh-CN']).toContain('官方规则要求');
+    expect(issue.message.en).toMatch(/official rules require/i);
+  });
+
+  it('還沒選傳奇時不提這條 —— 那時候無從指定英雄', () => {
+    const result = checkLegality(EMPTY_DECK, byId);
+    expect(result.issues.some((i) => i.rule === '103.2.a')).toBe(false);
+    // 該提的是「先選傳奇」
+    expect(result.issues.some((i) => i.rule === '103.1')).toBe(true);
+  });
+
+  it('指定了不合規的英雄仍然是錯誤 —— 那是主動選錯，不是還沒選', () => {
     const deck = buildDeck();
     const notChampion = legalCards.find((c) => c.subtype !== 'champion')!;
     const wrong = {
@@ -240,8 +281,13 @@ describe('選定英雄（103.2.a）', () => {
       championId: notChampion.id,
       main: { ...deck.main, [notChampion.id]: 1 },
     };
-    expect(checkLegality(wrong, byId).issues.some((i) => i.rule.startsWith('103.2.a'))).toBe(true);
+    const result = checkLegality(wrong, byId);
+
+    const issue = result.issues.find((i) => i.rule === '103.2.a.2');
+    expect(issue?.severity).toBe('error');
+    expect(result.legal).toBe(false);
   });
+
 });
 
 describe('資料本身', () => {
@@ -256,5 +302,104 @@ describe('資料本身', () => {
     expect(legends.length).toBeGreaterThan(0);
     expect(runes.length).toBeGreaterThan(0);
     expect(battlefields.length).toBeGreaterThanOrEqual(DECK_REQUIREMENTS.battlefieldCount);
+  });
+});
+
+describe('備牌（賽事規則 403、601.1.c）', () => {
+  const spare = legalCards.find((c) => !buildDeck().main[c.id])!;
+
+  it('備牌上限 10 張（601.1.c.1），而且是上限不是固定張數', () => {
+    expect(TOURNAMENT_REQUIREMENTS.sideboardMax).toBe(10);
+
+    // 剛好 10 張不該有問題
+    const ok = buildDeck({ sideboard: { [spare.id]: 3 } });
+    expect(checkLegality(ok, byId).issues.some((i) => i.rule === '601.1.c.1')).toBe(false);
+  });
+
+  it('超過 10 張會被提醒', () => {
+    const many: Record<string, number> = {};
+    let count = 0;
+    for (const card of legalCards) {
+      if (count >= 11) break;
+      many[card.id] = 1;
+      count += 1;
+    }
+    const deck = buildDeck({ sideboard: many });
+    expect(checkLegality(deck, byId).issues.some((i) => i.rule === '601.1.c.1')).toBe(true);
+  });
+
+  it('備牌問題是「提醒」而不是「錯誤」—— 只有賽事才有備牌（403.1）', () => {
+    const many = Object.fromEntries(legalCards.slice(0, 11).map((c) => [c.id, 1]));
+    const result = checkLegality(buildDeck({ sideboard: many }), byId);
+
+    const sideIssues = result.issues.filter((i) => i.rule.startsWith('601.1.c'));
+    expect(sideIssues.length).toBeGreaterThan(0);
+    expect(sideIssues.every((i) => i.severity === 'warning')).toBe(true);
+  });
+
+  it('同名卡上限橫跨主牌組與備牌（601.1.c.3、403.3）', () => {
+    const deck = buildDeck();
+    const firstId = Object.keys(deck.main).find((id) => deck.main[id] === 3)!;
+
+    // 主牌組已有 3 張，備牌再放 1 張就超過上限
+    const over = { ...deck, sideboard: { [firstId]: 1 } };
+    expect(checkLegality(over, byId).issues.some((i) => i.rule === '103.2.b')).toBe(true);
+
+    // 主牌組 2 張 + 備牌 1 張 = 3 張，剛好不超過
+    const fine = {
+      ...deck,
+      main: { ...deck.main, [firstId]: 2 },
+      sideboard: { [firstId]: 1 },
+    };
+    expect(checkLegality(fine, byId).issues.some((i) => i.rule === '103.2.b')).toBe(false);
+  });
+
+  it('備牌只能放主牌組的卡（601.1.c.2）', () => {
+    const deck = buildDeck({ sideboard: { [runes[0]!.id]: 1 } });
+    expect(checkLegality(deck, byId).issues.some((i) => i.rule === '601.1.c.2')).toBe(true);
+  });
+
+  it('備牌張數會回報在 counts 裡', () => {
+    const deck = buildDeck({ sideboard: { [spare.id]: 2 } });
+    expect(checkLegality(deck, byId).counts.sideboard).toBe(2);
+  });
+});
+
+describe('賽事構築的額外限制', () => {
+  it('主牌組超過 40 張：核心規則允許，賽事不允許（103.2 vs 601.1.b）', () => {
+    const deck = buildDeck();
+    const extra = legalCards.find((c) => !deck.main[c.id])!;
+    const bigger = { ...deck, main: { ...deck.main, [extra.id]: 3 } };
+
+    const result = checkLegality(bigger, byId);
+    // 核心規則層面仍然合法
+    expect(result.legal).toBe(true);
+    // 但賽事會被擋，所以要提醒
+    const warn = result.issues.find((i) => i.rule === '601.1.b');
+    expect(warn).toBeDefined();
+    expect(warn?.severity).toBe('warning');
+  });
+
+  it('剛好 40 張不會有賽事提醒', () => {
+    expect(checkLegality(buildDeck(), byId).issues.some((i) => i.rule === '601.1.b')).toBe(false);
+  });
+
+  it('戰場名稱必須各不相同（402.1）', () => {
+    const groups = new Map<string, string[]>();
+    for (const card of battlefields) {
+      groups.set(card.name, [...(groups.get(card.name) ?? []), card.id]);
+    }
+    const dup = [...groups.values()].find((ids) => ids.length >= 2);
+    if (!dup) return; // 資料裡沒有同名戰場就跳過
+
+    const deck = buildDeck({
+      battlefields: { [dup[0]!]: 1, [dup[1]!]: 1, [battlefields[2]!.id]: 1 },
+    });
+    expect(checkLegality(deck, byId).issues.some((i) => i.rule === '402.1')).toBe(true);
+  });
+
+  it('同一張戰場放兩張會被提醒（402.1）', () => {
+    const deck = buildDeck({ battlefields: { [battlefields[0]!.id]: 2, [battlefields[1]!.id]: 1 } });
+    expect(checkLegality(deck, byId).issues.some((i) => i.rule === '402.1')).toBe(true);
   });
 });

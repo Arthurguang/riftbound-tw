@@ -208,3 +208,310 @@ body {
     margin: 15mm;
   }
 }
+
+/* ── 機率計算 ────────────────────────────────────────────── */
+
+/* 機率長條的寬度。用類別而非 inline style：CSP 不允許 style 屬性。 */
+.prob-w-0 {
+  width: 0%;
+}
+.prob-w-1 {
+  width: 1%;
+}
+.prob-w-2 {
+  width: 2%;
+}
+.prob-w-3 {
+  width: 3%;
+}
+.prob-w-4 {
+  width: 4%;
+}
+.prob-w-5 {
+  width: 5%;
+}
+.prob-w-6 {
+  width: 6%;
+}
+.prob-w-7 {
+  width: 7%;
+}
+.prob-w-8 {
+  width: 8%;
+}
+.prob-w-9 {
+  width: 9%;
+}
+.prob-w-10 {
+  width: 10%;
+}
+.prob-w-11 {
+  width: 11%;
+}
+.prob-w-12 {
+  width: 12%;
+}
+.prob-w-13 {
+  width: 13%;
+}
+.prob-w-14 {
+  width: 14%;
+}
+.prob-w-15 {
+  width: 15%;
+}
+.prob-w-16 {
+  width: 16%;
+}
+.prob-w-17 {
+  width: 17%;
+}
+.prob-w-18 {
+  width: 18%;
+}
+.prob-w-19 {
+  width: 19%;
+}
+.prob-w-20 {
+  width: 20%;
+}
+.prob-w-21 {
+  width: 21%;
+}
+.prob-w-22 {
+  width: 22%;
+}
+.prob-w-23 {
+  width: 23%;
+}
+.prob-w-24 {
+  width: 24%;
+}
+.prob-w-25 {
+  width: 25%;
+}
+.prob-w-26 {
+  width: 26%;
+}
+.prob-w-27 {
+  width: 27%;
+}
+.prob-w-28 {
+  width: 28%;
+}
+.prob-w-29 {
+  width: 29%;
+}
+.prob-w-30 {
+  width: 30%;
+}
+.prob-w-31 {
+  width: 31%;
+}
+.prob-w-32 {
+  width: 32%;
+}
+.prob-w-33 {
+  width: 33%;
+}
+.prob-w-34 {
+  width: 34%;
+}
+.prob-w-35 {
+  width: 35%;
+}
+.prob-w-36 {
+  width: 36%;
+}
+.prob-w-37 {
+  width: 37%;
+}
+.prob-w-38 {
+  width: 38%;
+}
+.prob-w-39 {
+  width: 39%;
+}
+.prob-w-40 {
+  width: 40%;
+}
+.prob-w-41 {
+  width: 41%;
+}
+.prob-w-42 {
+  width: 42%;
+}
+.prob-w-43 {
+  width: 43%;
+}
+.prob-w-44 {
+  width: 44%;
+}
+.prob-w-45 {
+  width: 45%;
+}
+.prob-w-46 {
+  width: 46%;
+}
+.prob-w-47 {
+  width: 47%;
+}
+.prob-w-48 {
+  width: 48%;
+}
+.prob-w-49 {
+  width: 49%;
+}
+.prob-w-50 {
+  width: 50%;
+}
+.prob-w-51 {
+  width: 51%;
+}
+.prob-w-52 {
+  width: 52%;
+}
+.prob-w-53 {
+  width: 53%;
+}
+.prob-w-54 {
+  width: 54%;
+}
+.prob-w-55 {
+  width: 55%;
+}
+.prob-w-56 {
+  width: 56%;
+}
+.prob-w-57 {
+  width: 57%;
+}
+.prob-w-58 {
+  width: 58%;
+}
+.prob-w-59 {
+  width: 59%;
+}
+.prob-w-60 {
+  width: 60%;
+}
+.prob-w-61 {
+  width: 61%;
+}
+.prob-w-62 {
+  width: 62%;
+}
+.prob-w-63 {
+  width: 63%;
+}
+.prob-w-64 {
+  width: 64%;
+}
+.prob-w-65 {
+  width: 65%;
+}
+.prob-w-66 {
+  width: 66%;
+}
+.prob-w-67 {
+  width: 67%;
+}
+.prob-w-68 {
+  width: 68%;
+}
+.prob-w-69 {
+  width: 69%;
+}
+.prob-w-70 {
+  width: 70%;
+}
+.prob-w-71 {
+  width: 71%;
+}
+.prob-w-72 {
+  width: 72%;
+}
+.prob-w-73 {
+  width: 73%;
+}
+.prob-w-74 {
+  width: 74%;
+}
+.prob-w-75 {
+  width: 75%;
+}
+.prob-w-76 {
+  width: 76%;
+}
+.prob-w-77 {
+  width: 77%;
+}
+.prob-w-78 {
+  width: 78%;
+}
+.prob-w-79 {
+  width: 79%;
+}
+.prob-w-80 {
+  width: 80%;
+}
+.prob-w-81 {
+  width: 81%;
+}
+.prob-w-82 {
+  width: 82%;
+}
+.prob-w-83 {
+  width: 83%;
+}
+.prob-w-84 {
+  width: 84%;
+}
+.prob-w-85 {
+  width: 85%;
+}
+.prob-w-86 {
+  width: 86%;
+}
+.prob-w-87 {
+  width: 87%;
+}
+.prob-w-88 {
+  width: 88%;
+}
+.prob-w-89 {
+  width: 89%;
+}
+.prob-w-90 {
+  width: 90%;
+}
+.prob-w-91 {
+  width: 91%;
+}
+.prob-w-92 {
+  width: 92%;
+}
+.prob-w-93 {
+  width: 93%;
+}
+.prob-w-94 {
+  width: 94%;
+}
+.prob-w-95 {
+  width: 95%;
+}
+.prob-w-96 {
+  width: 96%;
+}
+.prob-w-97 {
+  width: 97%;
+}
+.prob-w-98 {
+  width: 98%;
+}
+.prob-w-99 {
+  width: 99%;
+}
+.prob-w-100 {
+  width: 100%;
+}

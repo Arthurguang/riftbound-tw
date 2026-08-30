@@ -29,6 +29,32 @@ export const RULES_VERSION = {
 };
 
 /**
+ * 賽事規則是**另一份文件**，條號體系也不同（4xx、6xx）。
+ * 它會在核心規則之上再加限制，例如主牌組必須「恰好」40 張。
+ * 引用時務必標明是哪一份，否則使用者查不到。
+ */
+export const TOURNAMENT_RULES_VERSION = {
+  document: 'Riftbound Tournament Rules（官方英文版）',
+  updated: '2026-07-16',
+  url: 'https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/503da65669ced10598d62925a6f6bc15111af726.pdf',
+};
+
+/**
+ * 賽事構築的額外限制。
+ *
+ * 這些**不是**核心規則，只在正式賽事適用。因此檢查結果標為「提醒」而非「錯誤」——
+ * 隨便跟朋友玩不受這些限制。
+ */
+export const TOURNAMENT_REQUIREMENTS = {
+  /** 601.1.b　賽事中主牌組必須「恰好」40 張（核心規則只說「至少」） */
+  mainDeckExact: 40,
+  /** 601.1.c.1　備牌上限 10 張（是上限，不是固定張數） */
+  sideboardMax: 10,
+  /** 402.1　恰好 3 張戰場，且**每張名稱都不同** */
+  battlefieldCount: 3,
+} as const;
+
+/**
  * 1v1 模式的構築需求（官方核心規則 485：1v1 決鬥 / 486：1v1 比賽）。
  *
  * 之所以把數字集中在這裡而不是散落在檢查邏輯裡：日後官方調整或要支援
@@ -60,6 +86,14 @@ export type Deck = {
   runes: Record<string, number>;
   /** 戰場：卡片 id → 張數（同名只能 1 張，所以實際上都是 1）。 */
   battlefields: Record<string, number>;
+  /**
+   * 備牌：卡片 id → 張數。
+   *
+   * 只有賽事才有備牌（賽事規則 403.1「某些賽事」）。上限 10 張（601.1.c.1），
+   * 而且**同名卡上限是主牌組與備牌合計**（601.1.c.3、403.3）——
+   * 這是最容易忽略的一條。
+   */
+  sideboard: Record<string, number>;
 };
 
 export const EMPTY_DECK: Deck = {
@@ -68,6 +102,7 @@ export const EMPTY_DECK: Deck = {
   main: {},
   runes: {},
   battlefields: {},
+  sideboard: {},
 };
 
 /** 一張卡該放進牌組的哪一區。 */
@@ -99,7 +134,8 @@ export function deckNeeds(deck: Deck): Record<string, number> {
   };
 
   if (deck.legendId) add(deck.legendId, 1);
-  for (const zone of [deck.main, deck.runes, deck.battlefields]) {
+  // 備牌也要實際擁有，所以缺卡計算要含進去
+  for (const zone of [deck.main, deck.runes, deck.battlefields, deck.sideboard]) {
     for (const [id, qty] of Object.entries(zone)) add(id, qty);
   }
   return needs;
@@ -144,6 +180,7 @@ export type LegalityResult = {
     main: number;
     runes: number;
     battlefields: number;
+    sideboard: number;
     signatures: number;
   };
 };
@@ -171,10 +208,12 @@ export function checkLegality(deck: Deck, cardsById: Map<string, Card>): Legalit
   const battlefieldCount = totalCards(deck.battlefields);
 
   // 專屬卡總數（103.2.d.1）——跨所有區域計算
+  const sideboardCount = totalCards(deck.sideboard);
   const allEntries = [
     ...Object.entries(deck.main),
     ...Object.entries(deck.runes),
     ...Object.entries(deck.battlefields),
+    ...Object.entries(deck.sideboard),
   ];
   const signatureCount = allEntries.reduce(
     (sum, [id, qty]) => sum + (get(id)?.subtype === 'signature' ? qty : 0),
@@ -204,14 +243,34 @@ export function checkLegality(deck: Deck, cardsById: Map<string, Card>): Legalit
     });
   }
 
-  // ── 選定英雄（103.2.a）──
+  /*
+   * ── 選定英雄（103.2.a）──
+   *
+   * 官方規則確實要求指定一張選定英雄：
+   *   103.2　　　主牌堆包含「一張選定英雄單位」
+   *   103.2.a.1　遊戲開始時置於英雄區域
+   *   402.1　　　賽事：40 張「including a chosen champion」
+   *
+   * 但這裡刻意標成「提醒」而不是「錯誤」，是使用者的選擇 ——
+   * 邊組牌邊被紅字擋著很煩，而且隨意玩的時候沒人在意這條。
+   * 訊息裡保留條號並寫明官方要求，這樣要帶去賽事的人不會被誤導。
+   *
+   * 另外：還沒選傳奇時不顯示這條。沒有傳奇就無從指定英雄（103.2.a.2
+   * 要求標籤一致），那時候提醒只是噪音。
+   */
   const champion = deck.championId ? get(deck.championId) : undefined;
   if (!champion) {
-    issues.push({
-      severity: 'error',
-      rule: '103.2.a',
-      message: msg('尚未指定選定英雄。', '尚未指定选定英雄。', 'No Chosen Champion selected.'),
-    });
+    if (legend) {
+      issues.push({
+        severity: 'warning',
+        rule: '103.2.a',
+        message: msg(
+          '尚未指定選定英雄。官方規則要求主牌組包含一張選定英雄，正式賽事會檢查這一項。',
+          '尚未指定选定英雄。官方规则要求主牌堆包含一张选定英雄，正式赛事会检查这一项。',
+          'No Chosen Champion selected. The official rules require one in your main deck, and tournaments check for it.',
+        ),
+      });
+    }
   } else {
     if (champion.subtype !== 'champion') {
       issues.push({
@@ -254,8 +313,11 @@ export function checkLegality(deck: Deck, cardsById: Map<string, Card>): Legalit
 
   // ── 同名卡上限（103.2.b）──
   // 官方是以「卡名」計算，不是以卡片 id —— 同一張卡的不同版本（異畫）同名。
+  //
+  // 有備牌時，上限是**主牌組與備牌合計**（賽事規則 601.1.c.3、403.3）。
+  // 這是最容易被忽略的一條：主牌組 3 張、備牌再放 1 張就超了。
   const byName = new Map<string, number>();
-  for (const [id, qty] of Object.entries(deck.main)) {
+  for (const [id, qty] of [...Object.entries(deck.main), ...Object.entries(deck.sideboard)]) {
     const card = get(id);
     if (!card) continue;
     byName.set(card.name, (byName.get(card.name) ?? 0) + qty);
@@ -266,9 +328,9 @@ export function checkLegality(deck: Deck, cardsById: Map<string, Card>): Legalit
         severity: 'error',
         rule: '103.2.b',
         message: msg(
-          `「${name}」有 ${qty} 張，同名卡最多 ${DECK_REQUIREMENTS.copiesPerName} 張（含選定英雄）。`,
-          `「${name}」有 ${qty} 张，同名卡最多 ${DECK_REQUIREMENTS.copiesPerName} 张（含选定英雄）。`,
-          `"${name}" appears ${qty} times; the limit is ${DECK_REQUIREMENTS.copiesPerName} per name (including your Chosen Champion).`,
+          `「${name}」有 ${qty} 張，同名卡最多 ${DECK_REQUIREMENTS.copiesPerName} 張（含選定英雄與備牌）。`,
+          `「${name}」有 ${qty} 张，同名卡最多 ${DECK_REQUIREMENTS.copiesPerName} 张（含选定英雄与备牌）。`,
+          `"${name}" appears ${qty} times; the limit is ${DECK_REQUIREMENTS.copiesPerName} per name (including your Chosen Champion and sideboard).`,
         ),
       });
     }
@@ -363,6 +425,80 @@ export function checkLegality(deck: Deck, cardsById: Map<string, Card>): Legalit
     }
   }
 
+  // ── 備牌（賽事規則 403、601.1.c）──
+  //
+  // 備牌只有正式賽事才有（403.1「某些賽事」），所以這裡的問題一律是「提醒」，
+  // 隨便跟朋友玩不受限制。
+  if (sideboardCount > TOURNAMENT_REQUIREMENTS.sideboardMax) {
+    issues.push({
+      severity: 'warning',
+      rule: '601.1.c.1',
+      message: msg(
+        `備牌 ${sideboardCount} 張，賽事上限是 ${TOURNAMENT_REQUIREMENTS.sideboardMax} 張。`,
+        `备牌 ${sideboardCount} 张，赛事上限是 ${TOURNAMENT_REQUIREMENTS.sideboardMax} 张。`,
+        `Sideboard has ${sideboardCount} cards; the tournament limit is ${TOURNAMENT_REQUIREMENTS.sideboardMax}.`,
+      ),
+    });
+  }
+
+  // 601.1.c.2　備牌只能放「主牌組放得下」的卡
+  for (const [id, qty] of Object.entries(deck.sideboard)) {
+    if (qty <= 0) continue;
+    const card = get(id);
+    if (!card) continue;
+    if (zoneForCard(card) !== 'main') {
+      issues.push({
+        severity: 'warning',
+        rule: '601.1.c.2',
+        message: msg(
+          `備牌只能放主牌組的卡，「${card.name}」不是。`,
+          `备牌只能放主牌堆的卡，「${card.name}」不是。`,
+          `A sideboard may only contain valid Main Deck cards; "${card.name}" is not one.`,
+        ),
+      });
+    }
+  }
+
+  // ── 賽事構築：主牌組必須「恰好」40 張（601.1.b）──
+  //
+  // 核心規則 103.2 只說「至少」40 張，賽事規則在其上加嚴。
+  // 兩者都是對的，適用場合不同 —— 所以這裡是提醒，不是錯誤。
+  if (mainCount > TOURNAMENT_REQUIREMENTS.mainDeckExact) {
+    issues.push({
+      severity: 'warning',
+      rule: '601.1.b',
+      message: msg(
+        `主牌組 ${mainCount} 張。核心規則允許超過 40 張，但正式賽事要求恰好 ${TOURNAMENT_REQUIREMENTS.mainDeckExact} 張。`,
+        `主牌堆 ${mainCount} 张。核心规则允许超过 40 张，但正式赛事要求刚好 ${TOURNAMENT_REQUIREMENTS.mainDeckExact} 张。`,
+        `Main deck has ${mainCount} cards. The Core Rules allow more than 40, but tournament play requires exactly ${TOURNAMENT_REQUIREMENTS.mainDeckExact}.`,
+      ),
+    });
+  }
+
+  // ── 戰場名稱必須各不相同（賽事規則 402.1）──
+  {
+    const seen = new Map<string, number>();
+    for (const [id, qty] of Object.entries(deck.battlefields)) {
+      if (qty <= 0) continue;
+      const card = get(id);
+      if (!card) continue;
+      seen.set(card.name, (seen.get(card.name) ?? 0) + qty);
+    }
+    for (const [name, qty] of seen) {
+      if (qty > 1) {
+        issues.push({
+          severity: 'warning',
+          rule: '402.1',
+          message: msg(
+            `戰場「${name}」有 ${qty} 張。賽事要求 3 張戰場的名稱各不相同。`,
+            `战场「${name}」有 ${qty} 张。赛事要求 3 张战场的名称各不相同。`,
+            `Battlefield "${name}" appears ${qty} times; tournament play requires three battlefields each with a unique name.`,
+          ),
+        });
+      }
+    }
+  }
+
   // ── 指示物不能放進牌組 ──
   for (const [id, qty] of allEntries) {
     const card = get(id);
@@ -386,6 +522,7 @@ export function checkLegality(deck: Deck, cardsById: Map<string, Card>): Legalit
       main: mainCount,
       runes: runeCount,
       battlefields: battlefieldCount,
+      sideboard: sideboardCount,
       signatures: signatureCount,
     },
   };

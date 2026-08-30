@@ -12,8 +12,17 @@
 import { EMPTY_DECK, type Deck } from './deck-rules';
 import type { Card } from './types';
 
-/** 編碼格式版本。日後若要改格式，靠這個辨識舊連結。 */
-const FORMAT_VERSION = '1';
+/**
+ * 編碼格式版本。
+ *
+ * 版本 1：`1|傳奇|選定英雄|主牌組|符文|戰場`
+ * 版本 2：末端多一段備牌 `|備牌`
+ *
+ * 舊連結仍然要能開 —— 版本 1 的連結解碼後備牌為空即可，
+ * 不然使用者分享出去的連結會突然失效。
+ */
+const FORMAT_VERSION = '2';
+const SUPPORTED_VERSIONS = new Set(['1', '2']);
 
 /** 單一卡片的張數上限。防止有人在網址裡塞 999999 張癱瘓瀏覽器。 */
 const MAX_QTY = 99;
@@ -50,8 +59,8 @@ const encodeZone = (zone: Record<string, number>, byId: Map<string, Card>): stri
 /**
  * 把牌組編成查詢字串的值。
  *
- * 格式：`1|傳奇|選定英雄|主牌組|符文|戰場`
- * 例：`1|ogn304|ogn066a|ogn056x3.ogn179x2|ogn007x12|ogn205.ogn206.ogn207`
+ * 格式：`2|傳奇|選定英雄|主牌組|符文|戰場|備牌`
+ * 例：`2|ogn304|ogn066a|ogn056x3.ogn179x2|ogn007x12|ogn205.ogn206.ogn207|ogn012x2`
  */
 export function encodeDeck(deck: Deck, cards: Card[]): string {
   const byId = new Map(cards.map((c) => [c.id, c]));
@@ -68,6 +77,7 @@ export function encodeDeck(deck: Deck, cards: Card[]): string {
     encodeZone(deck.main, byId),
     encodeZone(deck.runes, byId),
     encodeZone(deck.battlefields, byId),
+    encodeZone(deck.sideboard, byId),
   ].join('|');
 }
 
@@ -121,12 +131,21 @@ export function decodeDeck(encoded: string, index: Map<string, Card>): DecodeRes
   }
 
   const parts = encoded.split('|');
-  if (parts[0] !== FORMAT_VERSION) {
+  if (!SUPPORTED_VERSIONS.has(parts[0] ?? '')) {
     // 版本對不上就整份不採用，總比誤讀成別的牌組好
     return { deck: EMPTY_DECK, dropped: 1 };
   }
 
-  const [, legendCode = '', championCode = '', mainRaw = '', runesRaw = '', bfRaw = ''] = parts;
+  // 版本 1 沒有備牌那一段，解構時預設為空字串即可
+  const [
+    ,
+    legendCode = '',
+    championCode = '',
+    mainRaw = '',
+    runesRaw = '',
+    bfRaw = '',
+    sideRaw = '',
+  ] = parts;
 
   const legend = legendCode === '' ? null : (index.get(legendCode) ?? null);
   const champion = championCode === '' ? null : (index.get(championCode) ?? null);
@@ -134,8 +153,9 @@ export function decodeDeck(encoded: string, index: Map<string, Card>): DecodeRes
   const main = decodeZone(mainRaw, index);
   const runes = decodeZone(runesRaw, index);
   const battlefields = decodeZone(bfRaw, index);
+  const sideboard = decodeZone(sideRaw, index);
 
-  let dropped = main.dropped + runes.dropped + battlefields.dropped;
+  let dropped = main.dropped + runes.dropped + battlefields.dropped + sideboard.dropped;
   if (legendCode !== '' && !legend) dropped += 1;
   if (championCode !== '' && !champion) dropped += 1;
 
@@ -146,6 +166,7 @@ export function decodeDeck(encoded: string, index: Map<string, Card>): DecodeRes
       main: main.zone,
       runes: runes.zone,
       battlefields: battlefields.zone,
+      sideboard: sideboard.zone,
     },
     dropped,
   };
