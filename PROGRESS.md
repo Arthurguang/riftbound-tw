@@ -299,23 +299,83 @@ https://evil.example.com/?x=cmsassets.rgpub.io/a.pdf
 
 ---
 
+## 依賴套件更新評估（2026-08-29）
+
+Dependabot 開了 10 個更新 PR。逐一查了官方文件、遷移指南與社群評價，
+**然後實際裝上去跑我們的 165 項測試** —— 部落格說得再好，不如自己這套程式碼實測。
+
+### 結論
+
+| 更新 | 決定 | 原因 |
+|---|---|---|
+| `actions/checkout` 4 → 7 | ✅ 採用 | CI 工具本身，實測通過 |
+| `actions/setup-node` 4 → 7 | ✅ 採用 | 同上 |
+| `actions/upload-artifact` 4 → 7 | ✅ 採用 | 同上 |
+| `github/codeql-action` 3 → 4 | ✅ 採用 | **資安掃描工具升級，直接有益** |
+| `google/osv-scanner-action` 2.2.3 → 2.5.1 | ✅ 採用 | **漏洞掃描器升級，直接有益** |
+| `@types/node` 24 → 26 | ✅ 採用 | 純型別定義，不影響執行 |
+| `vitest` 3 → 4 | ✅ 採用 | 51 項單元測試全過 |
+| `eslint` 9 → 10 | ❌ 暫緩 | 生態系不相容（見下） |
+| `typescript` 5 → 7 | ❌ 暫緩 | 生態系不相容（見下） |
+| `next` 15 → 16 | ❌ 暫緩 | **會破壞我們的 XSS 防護**（見下） |
+
+### 問題 17：Next.js 16 會讓 Trusted Types 失效 ⭐⭐
+
+**狀況**　升級到 Next 16 後建置正常、114 項端對端測試通過了 112 項，
+但有一條失敗：卡牌能力文字裡的關鍵字連結**點了不會跳轉**。
+
+**原因**　瀏覽器 console 顯示：
+
+```
+This document requires 'TrustedScriptURL' assignment. The action has been blocked.
+Failed to set the 'innerHTML' property: This document requires 'TrustedHTML' assignment.
+```
+
+**Next.js 16 的用戶端路由器會用 `innerHTML` 與動態腳本網址，被我們的
+`require-trusted-types-for 'script'` 擋下**，站內導覽因此失效。Next 15 沒有這個問題。
+
+查證後確認這是 Next.js 的**長期已知問題**（vercel/next.js#13228），到 16.3.3 仍未完全解決。
+
+**決定：留在 Next 15。**
+
+要用 Next 16 就得拿掉 Trusted Types。那是我們**實測有效**的最強 XSS 防線 ——
+它讓最典型的攻擊（`innerHTML = '<img src=x onerror=...>'`）連寫入動作本身都被拒絕，
+而不只是「寫進去了但不執行」。
+
+拿一個確實在運作的防護去換一個我們用不到新功能的版本號，不划算。
+Next 15.5.24 目前仍在維護且沒有已知漏洞（`npm audit` 為 0）。
+
+**重新評估的時機**：Next.js 官方修好 Trusted Types 相容性，或 Next 15 停止安全性更新時。
+
+### 問題 18：ESLint 10 與 TypeScript 7 的生態系還沒跟上
+
+**ESLint 10**　`eslint-config-next`（Next.js 的 lint 設定）依賴的 `@rushstack/eslint-patch`
+與 ESLint 10 不相容，直接崩潰。
+
+**TypeScript 7**　這一版是用 Go 重寫的原生編譯器，官方宣稱快 8–12 倍
+（實測型別檢查確實只要 1.2 秒）。但：
+
+- CSS 側效匯入的型別宣告失效（`Cannot find module './globals.css'`）
+- 尚未提供穩定的程式化 API，`typescript-eslint` 等工具仍只能依賴舊版
+
+速度提升對我們這種規模的專案效益有限（省下十幾秒），不值得為此對抗相容性問題。
+
+**這兩項都等生態系跟上再說。**
+
+### 過程中的一個教訓
+
+用 npm 安裝／退回大版本套件時，它會連帶移除其他套件的相依，
+造成「退版後 ESLint 反而壞掉」這種混亂狀態。
+
+**正確做法**：測試每個大版本更新前，先用 `git checkout -- package.json package-lock.json`
+加上 `npm ci` 回到乾淨基準，再裝下一個。中途用 `npm install` 反覆升降版會累積髒狀態。
+
+---
+
 ## 待辦事項
 
-### Dependabot 的更新 PR（10 個）
-
-| 更新 | 處理方式 |
-|---|---|
-| GitHub Actions ×5 | ✅ 可以直接合併，CI 已跑綠 |
-| `next` 15 → 16 | ⚠️ 大版本，需另外測試 |
-| `typescript` 5 → 7 | ⚠️ 大版本 |
-| `eslint` 9 → 10 | ⚠️ 大版本 |
-| `vitest` 3 → 4 | ⚠️ 大版本 |
-| `@types/node` | ✅ 低風險 |
-
-大版本更新建議**一次處理一個**，出問題時才知道是誰造成的。
-
-### 其他
-
+- [ ] **Next.js 16**：等官方修好 Trusted Types 相容性再評估（追蹤 vercel/next.js#13228）
+- [ ] **ESLint 10 / TypeScript 7**：等 `eslint-config-next` 與 `typescript-eslint` 支援
 - [ ] `Add` 關鍵字缺官方說明（已在介面標示，等官方在後續系列補上）
 - [ ] 繁中能力文字目前是簡轉繁，官方若推出繁中資料應改用官方版
 - [ ] Firefox 無法在本機執行（環境問題，CI 有涵蓋）
@@ -327,3 +387,4 @@ https://evil.example.com/?x=cmsassets.rgpub.io/a.pdf
 | 日期 | 內容 |
 |---|---|
 | 2026-08-29 | 階段 1、1.5、1.6、2 全部完成並上線；建立本文件 |
+| 2026-08-29 | 評估 10 個依賴更新：採用 7 項（含兩個資安掃描工具升級），暫緩 3 項；Next.js 16 會破壞 Trusted Types |
