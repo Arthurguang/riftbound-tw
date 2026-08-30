@@ -141,10 +141,20 @@ tests/
 
 ---
 
+## 文件
+
+| 文件 | 內容 |
+|---|---|
+| **[PROGRESS.md](PROGRESS.md)** | 開發進度、踩過的坑、每個決策的理由（時間軸） |
+| **[SECURITY.md](SECURITY.md)** | 資安威脅模型與每個防護的理由 |
+
+---
+
 ## 資安
 
 這個專案把資安當作第一優先。完整的威脅模型、每個決策的理由、
-以及開發過程中遇到的真實取捨，都寫在 **[SECURITY.md](SECURITY.md)**。
+以及開發過程中遇到的真實取捨，都寫在 **[SECURITY.md](SECURITY.md)**；
+開發過程的時間軸與踩坑紀錄在 **[PROGRESS.md](PROGRESS.md)**。
 
 三個重點：
 
