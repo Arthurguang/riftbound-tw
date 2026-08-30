@@ -46,7 +46,7 @@ const toCsvText = (rows: (string | number)[][]): string =>
 // ─── 牌組的區域整理 ──────────────────────────────────────────────
 
 export type ExportRow = {
-  zone: 'legend' | 'champion' | 'main' | 'runes' | 'battlefields';
+  zone: 'legend' | 'champion' | 'main' | 'runes' | 'battlefields' | 'sideboard';
   card: Card;
   qty: number;
 };
@@ -70,6 +70,9 @@ export function deckRows(deck: Deck, byId: Map<string, Card>): ExportRow[] {
   for (const [id, qty] of sortByNumber(Object.entries(deck.battlefields))) {
     push('battlefields', id, qty);
   }
+  for (const [id, qty] of sortByNumber(Object.entries(deck.sideboard))) {
+    push('sideboard', id, qty);
+  }
   return rows;
 }
 
@@ -79,9 +82,20 @@ const ZONE_LABELS: Record<ExportRow['zone'], Record<TextLang, string>> = {
   main: { 'zh-TW': '主牌組', 'zh-CN': '主牌堆', en: 'Main Deck' },
   runes: { 'zh-TW': '符文牌組', 'zh-CN': '符文牌堆', en: 'Rune Deck' },
   battlefields: { 'zh-TW': '戰場', 'zh-CN': '战场', en: 'Battlefields' },
+  sideboard: { 'zh-TW': '備牌', 'zh-CN': '备牌', en: 'Sideboard' },
 };
 
 export const zoneLabel = (zone: ExportRow['zone'], lang: TextLang) => ZONE_LABELS[zone][lang];
+
+/** 各區域在匯出與列印時的固定順序。 */
+export const ZONE_ORDER = [
+  'legend',
+  'champion',
+  'main',
+  'runes',
+  'battlefields',
+  'sideboard',
+] as const;
 
 // ─── 把收藏狀況標到每一列上 ──────────────────────────────────────
 
@@ -182,7 +196,7 @@ export function toPlainText(
   const rows = annotateRows(deck, byId, collection);
   const lines: string[] = [deckName, ''];
 
-  for (const zone of ['legend', 'champion', 'main', 'runes', 'battlefields'] as const) {
+  for (const zone of ZONE_ORDER) {
     const inZone = rows.filter((r) => r.zone === zone);
     if (inZone.length === 0) continue;
     const total = inZone.reduce((sum, r) => sum + r.qty, 0);

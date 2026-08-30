@@ -14,6 +14,7 @@ import {
   oddsAfterMulligan,
   oddsByTurn,
   resourceCurve,
+  runeOddsByTurn,
   runesNeeded,
   runesSummonedByTurn,
   unpayableDomains,
@@ -336,5 +337,88 @@ describe('百分比顯示', () => {
   it('不合理的輸入顯示破折號而不是 NaN', () => {
     expect(formatPercent(Number.NaN)).toBe('—');
     expect(formatPercent(-1)).toBe('—');
+  });
+});
+
+describe('符文的機率（規則 114、430.1、108.5.d）', () => {
+  const runes = ALL_CARDS.filter((c) => c.types.includes('rune'));
+  const fury = runes.find((r) => r.domains.includes('fury'))!;
+  const calm = runes.find((r) => r.domains.includes('calm'))!;
+
+  it('單色符文牌組必定召出該顏色', () => {
+    const odds = runeOddsByTurn({ [fury.id]: 12 }, byId, true, 6);
+    expect(odds).toHaveLength(1);
+    expect(odds[0]!.domain).toBe('fury');
+    expect(odds[0]!.inDeck).toBe(12);
+    expect(odds[0]!.byTurn[0]).toBeCloseTo(1, 12);
+  });
+
+  it('雙色 6/6，先手第 1 回合召 2 張，至少 1 張熾烈 = 1 − C(6,2)/C(12,2)', () => {
+    const odds = runeOddsByTurn({ [fury.id]: 6, [calm.id]: 6 }, byId, true, 6);
+    const furyRow = odds.find((o) => o.domain === 'fury')!;
+
+    // C(6,2)=15, C(12,2)=66 → 1 − 15/66 ≈ 0.7727
+    expect(furyRow.byTurn[0]).toBeCloseTo(1 - 15 / 66, 12);
+  });
+
+  it('機率隨回合單調上升，第 6 回合召完必定為 1', () => {
+    const odds = runeOddsByTurn({ [fury.id]: 3, [calm.id]: 9 }, byId, true, 8);
+    const furyRow = odds.find((o) => o.domain === 'fury')!;
+
+    for (let i = 1; i < furyRow.byTurn.length; i += 1) {
+      expect(furyRow.byTurn[i]).toBeGreaterThanOrEqual(furyRow.byTurn[i - 1]!);
+    }
+    expect(furyRow.byTurn.at(-1)).toBeCloseTo(1, 12);
+  });
+
+  it('後手第 1 回合多召 1 張，機率比先手高（485.7）', () => {
+    const first = runeOddsByTurn({ [fury.id]: 3, [calm.id]: 9 }, byId, true, 3);
+    const second = runeOddsByTurn({ [fury.id]: 3, [calm.id]: 9 }, byId, false, 3);
+
+    const f = first.find((o) => o.domain === 'fury')!.byTurn[0]!;
+    const s = second.find((o) => o.domain === 'fury')!.byTurn[0]!;
+    expect(s).toBeGreaterThan(f);
+  });
+
+  it('要「至少 2 張」的機率低於「至少 1 張」', () => {
+    const one = runeOddsByTurn({ [fury.id]: 4, [calm.id]: 8 }, byId, true, 6, 1);
+    const two = runeOddsByTurn({ [fury.id]: 4, [calm.id]: 8 }, byId, true, 6, 2);
+
+    const a = one.find((o) => o.domain === 'fury')!.byTurn[0]!;
+    const b = two.find((o) => o.domain === 'fury')!.byTurn[0]!;
+    expect(b).toBeLessThan(a);
+  });
+
+  it('放越多張該顏色，機率越高', () => {
+    let previous = 0;
+    for (let n = 0; n <= 12; n += 2) {
+      const odds = runeOddsByTurn(
+        n === 0 ? { [calm.id]: 12 } : { [fury.id]: n, [calm.id]: 12 - n },
+        byId,
+        true,
+        3,
+      );
+      const p = odds.find((o) => o.domain === 'fury')?.byTurn[0] ?? 0;
+      expect(p).toBeGreaterThanOrEqual(previous);
+      previous = p;
+    }
+  });
+
+  it('空的符文牌組回傳空陣列，不會除以零', () => {
+    expect(runeOddsByTurn({}, byId, true, 6)).toEqual([]);
+  });
+
+  it('不存在的卡片 id 會被忽略', () => {
+    expect(() => runeOddsByTurn({ 'not-a-card': 12 }, byId, true, 6)).not.toThrow();
+    expect(runeOddsByTurn({ 'not-a-card': 12 }, byId, true, 6)).toEqual([]);
+  });
+
+  it('每個機率都落在 0 到 1 之間', () => {
+    for (const row of runeOddsByTurn({ [fury.id]: 5, [calm.id]: 7 }, byId, false, 8, 3)) {
+      for (const p of row.byTurn) {
+        expect(p).toBeGreaterThanOrEqual(0);
+        expect(p).toBeLessThanOrEqual(1);
+      }
+    }
   });
 });

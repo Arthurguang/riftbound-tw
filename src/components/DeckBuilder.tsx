@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DeckZonePanel } from './DeckZonePanel';
+import { DeckImport } from './DeckImport';
 import { DeckLegality } from './DeckLegality';
 import { DeckExport } from './DeckExport';
 import { CardPicker } from './CardPicker';
@@ -10,6 +11,7 @@ import { cardName } from '@/lib/cards';
 import {
   checkLegality,
   DECK_REQUIREMENTS,
+  TOURNAMENT_REQUIREMENTS,
   EMPTY_DECK,
   matchesIdentity,
   totalCards,
@@ -17,6 +19,9 @@ import {
   type Deck,
 } from '@/lib/deck-rules';
 import { buildCodeIndex, decodeDeck, encodeDeck } from '@/lib/deck-url';
+
+/** 空牌組編出來長什麼樣。用來判斷網址要不要帶 d 參數。 */
+const EMPTY_ENCODED = encodeDeck(EMPTY_DECK, []);
 import {
   loadCollection,
   loadTracking,
@@ -85,7 +90,7 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
     const next = new URLSearchParams();
     const encoded = encodeDeck(deck, cards);
     // 空牌組不必污染網址
-    if (encoded !== '1|||||') next.set('d', encoded);
+    if (encoded !== EMPTY_ENCODED) next.set('d', encoded);
     if (lang !== DEFAULT_TEXT_LANG) next.set('lang', lang);
     if (art !== DEFAULT_ART_LANG) next.set('art', art);
 
@@ -102,10 +107,10 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
   // ── 操作 ──────────────────────────────────────────────────────
 
   const setQty = useCallback(
-    (cardId: string, next: number) => {
+    (cardId: string, next: number, zoneOverride?: 'sideboard') => {
       const card = byId.get(cardId);
       if (!card) return;
-      const zone = zoneForCard(card);
+      const zone = zoneOverride ?? zoneForCard(card);
       if (!zone || zone === 'legend') return;
 
       setDeck((prev) => {
@@ -119,6 +124,27 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
           result.championId = null;
         }
         return result;
+      });
+    },
+    [byId],
+  );
+
+  /**
+   * 備牌加減。
+   *
+   * 備牌不是卡片的屬性而是玩家的選擇，所以不能沿用 zoneForCard —— 
+   * 但仍要擋掉不能進主牌組的卡（賽事規則 601.1.c.2）。
+   */
+  const setSideboard = useCallback(
+    (cardId: string, next: number) => {
+      const card = byId.get(cardId);
+      if (!card || zoneForCard(card) !== 'main') return;
+
+      setDeck((prev) => {
+        const updated = { ...prev.sideboard };
+        if (next <= 0) delete updated[cardId];
+        else updated[cardId] = Math.min(next, 99);
+        return { ...prev, sideboard: updated };
       });
     },
     [byId],
@@ -170,7 +196,7 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
   // ── 衍生資料 ──────────────────────────────────────────────────
 
   const rows = useMemo(() => deckRows(deck, byId), [deck, byId]);
-  const rowsFor = (zone: 'main' | 'runes' | 'battlefields') =>
+  const rowsFor = (zone: 'main' | 'runes' | 'battlefields' | 'sideboard') =>
     rows.filter((r) => r.zone === zone).map(({ card, qty }) => ({ card, qty }));
 
   /** 費用曲線（只看主牌組）。 */
@@ -226,6 +252,15 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
             </button>
           </div>
 
+          <DeckImport
+            cards={cards}
+            byId={byId}
+            onImport={(imported, importedName) => {
+              setDeck(imported);
+              if (importedName) setDeckName(importedName.slice(0, 60));
+            }}
+          />
+
           <DeckLegality result={legality} lang={lang} />
 
           {/* 傳奇 */}
@@ -277,6 +312,16 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
             requirement={`需要 ${DECK_REQUIREMENTS.battlefieldCount}`}
           />
 
+          <DeckZonePanel
+            zone="sideboard"
+            rows={rowsFor('sideboard')}
+            lang={lang}
+            art={art}
+            collection={trackCollection ? collection : null}
+            onChange={(id, next) => setSideboard(id, next)}
+            requirement={`賽事上限 ${TOURNAMENT_REQUIREMENTS.sideboardMax}`}
+          />
+
           {/* 費用曲線 */}
           {totalCards(deck.main) > 0 && (
             <section className="mb-5">
@@ -323,7 +368,9 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
           legend={legend}
           deck={deck}
           collection={trackCollection ? collection : null}
+          sideboardCount={legality.counts.sideboard}
           onAdd={setQty}
+          onSideboard={setSideboard}
           onChooseLegend={chooseLegend}
           onChooseChampion={chooseChampion}
           onCollectionChange={updateCollection}

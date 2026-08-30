@@ -259,3 +259,63 @@ export function formatPercent(p: number): string {
 /** 提供給測試與介面：組合數是否大到需要 BigInt（說明用）。 */
 export const exceedsSafeInteger = (n: number, k: number): boolean =>
   binomial(n, k) > BigInt(Number.MAX_SAFE_INTEGER);
+
+// ─── 符文的機率 ──────────────────────────────────────────────────
+
+/**
+ * 符文也是隨機的 —— 這一點常被忽略。
+ *
+ * 規則 114　　主牌堆與**符文牌堆都要洗牌**
+ * 規則 430.1　召出是從符文牌堆**頂部**抽取
+ * 規則 108.5.d　符文牌堆的順序是隱密資訊
+ *
+ * 所以「第 N 回合我手上有幾張熾烈符文」跟抽牌一樣是超幾何分布的問題，
+ * 母體是符文牌組的 12 張（103.3.a）。
+ */
+export type RuneOdds = {
+  domain: Domain;
+  /** 符文牌組裡這個特性有幾張 */
+  inDeck: number;
+  /** 每回合「至少召出 1 張」的機率，索引 0 對應第 1 回合 */
+  byTurn: number[];
+};
+
+/**
+ * 逐回合算出各特性符文「至少召出 k 張」的機率。
+ *
+ * 為什麼是「至少 k 張」而不是「至少 1 張」：符能費用可能要 2 點以上
+ * （資料裡最高 4 點），一張符文只換得到 1 點符能（164.2.b），
+ * 所以要問的是「湊得齊幾點」。
+ */
+export function runeOddsByTurn(
+  runeDeck: Record<string, number>,
+  byId: Map<string, Card>,
+  onThePlay: boolean,
+  turns: number,
+  wanted = 1,
+): RuneOdds[] {
+  // 依特性彙總符文牌組
+  const countByDomain = new Map<Domain, number>();
+  let total = 0;
+  for (const [id, qty] of Object.entries(runeDeck)) {
+    if (qty <= 0) continue;
+    const card = byId.get(id);
+    if (!card) continue;
+    total += qty;
+    for (const domain of card.domains) {
+      countByDomain.set(domain, (countByDomain.get(domain) ?? 0) + qty);
+    }
+  }
+  if (total === 0) return [];
+
+  return [...countByDomain.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([domain, inDeck]) => ({
+      domain,
+      inDeck,
+      byTurn: Array.from({ length: turns }, (_, index) => {
+        const summoned = Math.min(total, runesSummonedByTurn(index + 1, onThePlay));
+        return atLeast({ population: total, successes: inDeck, draws: summoned }, wanted);
+      }),
+    }));
+}

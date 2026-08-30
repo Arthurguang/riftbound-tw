@@ -62,7 +62,7 @@ test.describe('牌組編輯器', () => {
     await expect(page.getByRole('heading', { name: /符文牌組\s*2/ })).toBeVisible();
     // 網址帶上編碼。要等它真的帶到 2 張才重整 ——
     // router.replace 是非同步的，太早重整會讀到只有 1 張的舊網址。
-    await expect(page).toHaveURL(/[?&]d=1%7C/);
+    await expect(page).toHaveURL(/[?&]d=2%7C/); // 格式版本 2（含備牌）
     await expect(page).toHaveURL(/x2/);
 
     await page.reload({ waitUntil: 'domcontentloaded' });
@@ -249,5 +249,95 @@ test.describe('牌組編輯器', () => {
     await page.getByRole('button', { name: /^加入牌組/ }).first().click();
 
     expect(violations).toEqual([]);
+  });
+});
+
+test.describe('匯入牌組', () => {
+  test('貼上牌表就能產生牌組', async ({ page }) => {
+    await gotoDeck(page);
+    await page.getByRole('button', { name: /^匯入牌組/ }).click();
+
+    const box = page.getByLabel('牌表內容');
+    await box.fill(['我的測試牌組', '', '【符文牌組】', '12 Fury Rune'].join('\n'));
+
+    await page.getByRole('button', { name: '檢查' }).click();
+    await expect(page.getByTestId('import-result')).toContainText('認出 1 種卡');
+    await expect(page.getByTestId('import-result')).toContainText('我的測試牌組');
+
+    await page.getByRole('button', { name: /^匯入 1 種卡$/ }).click();
+
+    await expect(page.getByRole('heading', { name: /符文牌組\s*12/ })).toBeVisible();
+    // 牌組名稱也一起帶進來
+    await expect(page.getByLabel('牌組名稱')).toHaveValue('我的測試牌組');
+    // 網址跟著更新，可以直接去算機率
+    await expect(page).toHaveURL(/[?&]d=2%7C/);
+  });
+
+  test('認不得的行會列出來，不會安靜吞掉', async ({ page }) => {
+    await gotoDeck(page);
+    await page.getByRole('button', { name: /^匯入牌組/ }).click();
+
+    await page.getByLabel('牌表內容').fill(['12 Fury Rune', '3 這張卡不存在'].join('\n'));
+    await page.getByRole('button', { name: '檢查' }).click();
+
+    const result = page.getByTestId('import-result');
+    await expect(result).toContainText('認出 1 種卡');
+    await expect(result).toContainText('有 1 行無法辨識');
+    await expect(result).toContainText('這張卡不存在');
+  });
+
+  test('貼上惡意內容不會產生任何卡片，也不會讓頁面壞掉', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+
+    await gotoDeck(page);
+    await page.getByRole('button', { name: /^匯入牌組/ }).click();
+    await page
+      .getByLabel('牌表內容')
+      .fill(['<script>alert(1)</script>', '3 __proto__', '3 constructor'].join('\n'));
+    await page.getByRole('button', { name: '檢查' }).click();
+
+    await expect(page.getByTestId('import-result')).toContainText('沒有認出任何卡牌');
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe('備牌區', () => {
+  test('可以把主牌組的卡加進備牌', async ({ page }) => {
+    await gotoDeck(page);
+    await openTab(page, '主牌組');
+
+    await page.getByRole('button', { name: /^加入備牌/ }).first().click();
+    await page.getByRole('button', { name: /^加入備牌/ }).first().click();
+
+    await expect(page.getByRole('heading', { name: /備牌\s*2/ })).toBeVisible();
+    await expect(page).toHaveURL(/[?&]d=2%7C/);
+  });
+
+  test('備牌會編進分享網址', async ({ page, context }) => {
+    await gotoDeck(page);
+    await openTab(page, '主牌組');
+    await page.getByRole('button', { name: /^加入備牌/ }).first().click();
+    await expect(page).toHaveURL(/[?&]d=/);
+
+    const other = await context.newPage();
+    await other.goto(page.url(), { waitUntil: 'domcontentloaded' });
+    await expect(other.locator('[data-deck-ready="true"]')).toBeAttached();
+    await expect(other.getByRole('heading', { name: /備牌\s*1/ })).toBeVisible();
+    await other.close();
+  });
+
+  test('同名卡主牌組加備牌超過 3 張會被提醒（601.1.c.3）', async ({ page }) => {
+    await gotoDeck(page);
+    await openTab(page, '主牌組');
+
+    // 主牌組放 3 張
+    const add = page.getByRole('button', { name: /^加入牌組/ }).first();
+    for (let i = 0; i < 3; i += 1) await add.click();
+    // 備牌再放 1 張 → 合計 4 張
+    await page.getByRole('button', { name: /^加入備牌/ }).first().click();
+
+    await expect(page.getByTestId('deck-legality')).toContainText('103.2.b');
+    await expect(page.getByTestId('deck-legality')).toContainText('含選定英雄與備牌');
   });
 });

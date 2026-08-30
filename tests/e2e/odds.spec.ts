@@ -129,3 +129,43 @@ test.describe('機率計算', () => {
     expect(violations).toEqual([]);
   });
 });
+
+test.describe('符文機率', () => {
+  /** 組一副雙色符文的牌組，再去機率頁。 */
+  async function buildTwoColourRuneDeck(page: Page) {
+    await page.goto('/deck', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-deck-ready="true"]')).toBeAttached();
+    await page.getByRole('button', { name: /^匯入牌組/ }).click();
+    await page
+      .getByLabel('牌表內容')
+      .fill(['【符文牌組】', '6 Fury Rune', '6 Calm Rune', '【主牌組】', '3 Cleave'].join('\n'));
+    await page.getByRole('button', { name: '檢查' }).click();
+    await page.getByRole('button', { name: /^匯入 \d+ 種卡$/ }).click();
+    await page.getByRole('link', { name: '計算機率' }).click();
+    await expect(page.getByRole('heading', { name: '各特性符文召出的機率' })).toBeVisible();
+  }
+
+  test('雙色 6/6，先手第 1 回合至少 1 張的機率是 77.3%', async ({ page }) => {
+    await buildTwoColourRuneDeck(page);
+    // 1 − C(6,2)/C(12,2) = 1 − 15/66 = 0.7727…
+    const row = page.getByRole('row').filter({ hasText: '熾烈' });
+    await expect(row).toContainText('77.3%');
+  });
+
+  test('第 6 回合符文召完，機率變成 100%', async ({ page }) => {
+    await buildTwoColourRuneDeck(page);
+    const row = page.getByRole('row').filter({ hasText: '熾烈' });
+    await expect(row).toContainText('100%');
+  });
+
+  test('切到「至少 2 張」機率會下降', async ({ page }) => {
+    await buildTwoColourRuneDeck(page);
+    const row = page.getByRole('row').filter({ hasText: '熾烈' });
+    await expect(row).toContainText('77.3%');
+
+    await page.locator('#rune-wanted').selectOption('2');
+    // 至少 2 張、第 1 回合只召 2 張 → C(6,2)/C(12,2) = 15/66 ≈ 22.7%
+    await expect(row).toContainText('22.7%');
+    await expect(row).not.toContainText('77.3%');
+  });
+});

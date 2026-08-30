@@ -13,10 +13,13 @@ import {
   oddsAfterMulligan,
   oddsByTurn,
   resourceCurve,
+  runeOddsByTurn,
   runesNeeded,
   unpayableDomains,
 } from '@/lib/draw-model';
 import { distribution } from '@/lib/probability';
+import { DOMAIN_LABELS } from '@/lib/labels';
+import { DomainDot } from './CardBadges';
 import { readTextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
 
@@ -138,6 +141,13 @@ export function OddsCalculator({ cards }: { cards: Card[] }) {
   const curve = useMemo(
     () => (hasDeck ? resourceCurve(deck.main, byId, onThePlay, TURNS) : []),
     [hasDeck, deck.main, byId, onThePlay],
+  );
+
+  /** 各特性符文逐回合召出的機率。符文牌堆也要洗牌（114），所以這也是機率問題。 */
+  const [runeWanted, setRuneWanted] = useState(1);
+  const runeOdds = useMemo(
+    () => (hasDeck ? runeOddsByTurn(deck.runes, byId, onThePlay, TURNS, runeWanted) : []),
+    [hasDeck, deck.runes, byId, onThePlay, runeWanted],
   );
 
   const unpayable = useMemo(
@@ -420,6 +430,71 @@ export function OddsCalculator({ cards }: { cards: Card[] }) {
                 </tbody>
               </table>
             </div>
+
+            {runeOdds.length > 0 && (
+              <div className="mt-5">
+                <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-ink">各特性符文召出的機率</h3>
+                  <label htmlFor="rune-wanted" className="flex items-center gap-1.5 text-xs text-ink-dim">
+                    至少
+                    <select
+                      id="rune-wanted"
+                      value={runeWanted}
+                      onChange={(e) => setRuneWanted(Number(e.target.value))}
+                      className="rounded border border-line bg-surface-1 px-1.5 py-0.5 text-xs text-ink focus:border-accent focus:outline-none"
+                    >
+                      {[1, 2, 3, 4].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                    張
+                  </label>
+                </div>
+                <p className="mb-2 text-xs leading-relaxed text-ink-faint">
+                  符文牌堆一樣要洗牌（規則 114），召出是從牌堆頂部抽取（430.1），
+                  牌堆順序是隱密資訊（108.5.d）—— 所以「這回合有沒有你要的顏色」是機率問題。
+                  一張符文只換得到 1 點符能（164.2.b），符能費用要 2 點以上時就要選「至少 2 張」。
+                </p>
+
+                <div className="overflow-x-auto rounded-lg border border-line">
+                  <table className="w-full min-w-[560px] border-collapse text-sm">
+                    <thead className="bg-surface-2/50">
+                      <tr>
+                        <th className="px-2 py-1.5 text-left text-xs font-medium text-ink-dim">
+                          特性
+                        </th>
+                        <th className={head}>牌組裡</th>
+                        {Array.from({ length: 6 }, (_, i) => (
+                          <th key={i} className={head}>
+                            T{i + 1}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {runeOdds.map((row) => (
+                        <tr key={row.domain} className="border-t border-line">
+                          <td className="px-2 py-1.5">
+                            <span className="flex items-center gap-1.5 text-ink">
+                              <DomainDot domain={row.domain} />
+                              {DOMAIN_LABELS[row.domain][lang]}
+                            </span>
+                          </td>
+                          <td className={cell}>{row.inDeck}</td>
+                          {row.byTurn.slice(0, 6).map((p, i) => (
+                            <td key={i} className={cell}>
+                              {formatPercent(p)}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {unpayable.length > 0 && (
               <div className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3">

@@ -58,7 +58,7 @@ const ALL_OWNED: Record<TextLang, string> = {
 const FONT_STACK =
   '"Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, -apple-system, sans-serif';
 
-const ZONES = ['legend', 'champion', 'main', 'runes', 'battlefields'] as const;
+const ZONES = ['legend', 'champion', 'main', 'runes', 'battlefields', 'sideboard'] as const;
 
 /**
  * 產生牌組圖片。
