@@ -23,6 +23,7 @@ import {
   GLYPH_BY_CN_TOKEN,
   KEYWORD_BY_CN,
   RARITY_BY_CN,
+  SUBTYPE_BY_CN_CATEGORY,
   TAGS,
   TYPE_BY_CN_CATEGORY,
 } from './lib/taxonomy-map.mjs';
@@ -373,7 +374,24 @@ function attachLocales(card, cn, twNames) {
     return m ? { name: m[1], subtitle: m[2] } : { name: full, subtitle: null };
   };
 
+  /*
+   * 細分類型（英雄單位／專屬卡／指示物）只有官方簡中資料有，
+   * 但牌組合法性檢查需要它 —— 見 taxonomy-map.mjs 的 SUBTYPE_BY_CN_CATEGORY。
+   * 一張卡最多只會有一種細分身分。
+   */
+  const subtypes = [
+    ...new Set(
+      (cn.cardCategoryNameList ?? [])
+        .map((category) => SUBTYPE_BY_CN_CATEGORY[category])
+        .filter(Boolean),
+    ),
+  ];
+  if (subtypes.length > 1) {
+    fail(`同時具有多種細分身分：${subtypes.join('、')}`, card.code);
+  }
+
   return {
+    subtype: subtypes[0] ?? null,
     cn: {
       name: cnName,
       subtitle: cnSubtitle,
@@ -742,7 +760,9 @@ async function main() {
   for (const card of cards) {
     const cn = cnMap.get(card.code) ?? null;
     if (cn) cnMatched += 1;
-    card.zh = attachLocales(card, cn, twNames);
+    const locales = attachLocales(card, cn, twNames);
+    card.subtype = locales.subtype;
+    card.zh = { cn: locales.cn, tw: locales.tw };
     if (card.zh.tw?.nameSource === 'community') twOfficial += 1;
   }
 

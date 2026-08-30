@@ -56,8 +56,8 @@ test.describe('卡牌圖鑑', () => {
     expect(unitsOnly).toBeGreaterThan(0);
     expect(unitsOnly).toBeLessThan(376);
 
-    // 中文版卡面用顏色標示領域，因此篩選鈕顯示的是顏色名稱。
-    await page.getByRole('button', { name: '綠色', exact: true }).click();
+    // 篩選鈕顯示官方特性名稱加顏色（核心規則 134.2），例如「翠意（綠）」。
+    await page.getByRole('button', { name: '翠意（綠）', exact: true }).click();
     const unitsAndCalm = await page.locator('main ul > li').count();
     expect(unitsAndCalm).toBeGreaterThan(0);
     expect(unitsAndCalm).toBeLessThan(unitsOnly);

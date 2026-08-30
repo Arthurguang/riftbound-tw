@@ -109,6 +109,12 @@ export type Card = {
   name: string;
   set: SetId;
   types: CardType[];
+  /**
+   * 細分身分。英文版 API 沒有這個區分，取自官方簡中資料。
+   * 牌組合法性檢查需要它：選定英雄必須是 champion（核心規則 103.2.a.2），
+   * 專屬卡有總數上限（103.2.d），指示物不能放進牌組。
+   */
+  subtype: 'champion' | 'signature' | 'token' | null;
   rarity: Rarity;
   domains: Domain[];
   tags: string[];

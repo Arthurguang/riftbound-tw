@@ -41,6 +41,25 @@ export const TYPE_BY_CN_CATEGORY = Object.freeze({
   战场: 'battlefield',
 });
 
+/**
+ * 卡牌的細分類型。
+ *
+ * 英文版 API 只給大類（unit / spell / …），但官方簡中把「英雄單位」「專屬卡」
+ * 「指示物」分得很清楚，而牌組合法性檢查**需要**這個區分：
+ *
+ *   · 選定英雄必須是「英雄單位」，且英雄標籤與傳奇一致（核心規則 103.2.a.2）
+ *   · 專屬卡全卡組最多三張（核心規則 103.2.d）
+ *   · 指示物不是可放進牌組的卡
+ *
+ * null 代表沒有特殊身分的一般卡。
+ */
+export const SUBTYPE_BY_CN_CATEGORY = Object.freeze({
+  英雄单位: 'champion',
+  专属单位: 'signature',
+  专属法术: 'signature',
+  指示物单位: 'token',
+});
+
 export const RARITY_BY_CN = Object.freeze({
   普通: 'common',
   不凡: 'uncommon',

@@ -32,19 +32,26 @@ export const TYPE_LABELS: Record<CardType, Tri> = {
 };
 
 /**
- * 領域。
+ * 領域（官方稱為「符文特性」）。
  *
- * 英文卡面用領域名（Fury / Calm …），中文卡面則直接用顏色標示，
- * 所以中文顯示顏色才符合玩家手上的實體卡。
+ * 中文名稱取自官方簡中核心規則 134.2 —— 六大特性各有正式名稱與對應顏色：
+ *   熾烈=紅 翠意=綠 靈光=藍 摧破=橙 混沌=紫 序理=黃
+ *
+ * 這裡採用「正式名稱（顏色）」的寫法：正式名稱是規則書用語，
+ * 顏色則是玩家在卡面上實際看到的識別方式，兩者都需要。
+ *
+ * 「無色」不是第七種特性 —— 官方規則 134.1 說「大多數卡牌擁有一個或多個特性」，
+ * 135.2.e.6.b 提到「如果卡牌沒有特性⋯」，可見沒有特性是合法狀態。
+ * 這類卡不受符文特性限制，任何牌組都能放（見 src/lib/deck-rules.ts）。
  */
 export const DOMAIN_LABELS: Record<Domain, Tri> = {
-  fury: tri('紅色', '红色', 'Fury'),
-  calm: tri('綠色', '绿色', 'Calm'),
-  mind: tri('藍色', '蓝色', 'Mind'),
-  body: tri('橙色', '橙色', 'Body'),
-  chaos: tri('紫色', '紫色', 'Chaos'),
-  order: tri('黃色', '黄色', 'Order'),
-  colorless: tri('無色', '无色', 'Colorless'),
+  fury: tri('熾烈（紅）', '炽烈（红）', 'Fury'),
+  calm: tri('翠意（綠）', '翠意（绿）', 'Calm'),
+  mind: tri('靈光（藍）', '灵光（蓝）', 'Mind'),
+  body: tri('摧破（橙）', '摧破（橙）', 'Body'),
+  chaos: tri('混沌（紫）', '混沌（紫）', 'Chaos'),
+  order: tri('序理（黃）', '序理（黄）', 'Order'),
+  colorless: tri('無特性', '无特性', 'Colorless'),
 };
 
 /**

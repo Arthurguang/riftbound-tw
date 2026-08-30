@@ -57,6 +57,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Blazing Scorcher. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "灼焰飞龙",
@@ -187,6 +188,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Brazen Buccaneer. As you play me, you may discard 1 as an additional cost. If you do, reduce my cost by [2]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "粗鲁的海盗",
@@ -302,6 +304,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Chemtech Enforcer. [Assault 2] (+2 [S] while I'm an attacker.)\nWhen you play me, discard 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "炼金太保",
@@ -453,6 +456,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Cleave. [Action] (Play on your turn or in showdowns.)\nGive a unit [Assault 3] this turn. (+3 [S] while it's an attacker.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "顺劈",
@@ -605,6 +609,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Disintegrate. [Action] (Play on your turn or in showdowns.)\nDeal 3 to a unit at a battlefield. If this kills it, draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "碎裂之火",
@@ -720,6 +725,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Flame Chompers. When you discard me, you may pay [C] to play me."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "嚼火者手雷",
@@ -803,6 +809,7 @@
    "height": 2078,
    "alt": "Riftbound Rune: Fury Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "炽烈符文",
@@ -850,6 +857,7 @@
    "height": 1039,
    "alt": "Riftbound Rune: Fury Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "炽烈符文",
@@ -918,6 +926,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Get Excited!. [Action] (Play on your turn or in showdowns.)\nDiscard 1. Deal its Energy cost as damage to a unit at a battlefield. (Ignore its Power cost.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "罪恶快感",
@@ -1034,6 +1043,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Hextech Ray. [Action] (Play on your turn or in showdowns.)\nDeal 3 to a unit at a battlefield."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "海克斯射线",
@@ -1158,6 +1168,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Legion Rearguard. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "军团后卫",
@@ -1279,6 +1290,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Magma Wurm. Other friendly units enter ready."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "熔浆巨龙",
@@ -1371,6 +1383,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Noxus Hopeful. [Legion] — I cost [2] less. (Get the effect if you've played another card this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "诺克萨斯新兵",
@@ -1488,6 +1501,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Pouty Poro. [Deflect] (Opponents must pay [A] to choose me with a spell or ability.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "呸呸魄罗",
@@ -1609,6 +1623,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Sky Splitter. [Action] (Play on your turn or in showdowns.)\nThis spell's Energy cost is reduced by the highest Might among units you control.\nDeal 5 to a unit at a battlefield."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "霹天雳地",
@@ -1751,6 +1766,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Captain Farron. Other friendly units here have [Assault]. (+1 [S] while they're attackers.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "法荣队长",
@@ -1877,6 +1893,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Dangerous Duo. [Legion] — When you play me, give a unit +2 [S] this turn. (Get the effect if you've played another card this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "危险二人组",
@@ -1991,6 +2008,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Iron Ballista. This enters exhausted.\n[T]: Deal 2 to a unit at a battlefield."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "钢铁弩炮",
@@ -2105,6 +2123,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Noxus Saboteur. Your opponents' [Hidden] cards can't be revealed here."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "诺克萨斯破坏者",
@@ -2227,6 +2246,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Raging Soul. If you've discarded a card this turn, I have [Assault] and [Ganking]. (+1 [S] while I'm an attacker. I can move from battlefield to battlefield.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "肆虐狂魂",
@@ -2363,6 +2383,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Scrapyard Champion. [Legion] — When you play me, discard 2, then draw 2. (Get the effect if you've played another card this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "垃圾场小霸王",
@@ -2462,6 +2483,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Sun Disc. [T]: [Legion] — The next unit you play this turn enters ready. (Get the effect if you've played another card this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "太阳圆盘",
@@ -2576,6 +2598,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Thermo Beam. [Action] (Play on your turn or in showdowns.)\nKill all gear."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "热电光束",
@@ -2697,6 +2720,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Unlicensed Armory. Discard 1, [E]: Choose a friendly unit. The next time it dies this turn, you may pay [C] to recall it exhausted instead. (Send it to base. This isn't a move.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "来路不明的武器",
@@ -2817,6 +2841,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Void Seeker. [Action] (Play on your turn or in showdowns.)\nDeal 4 to a unit at a battlefield. Draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "虚空索敌",
@@ -2933,6 +2958,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Blind Fury. [Action] (Play on your turn or in showdowns.)\nEach opponent reveals the top card of their Main Deck. Choose one and banish it, then play it, ignoring its cost. Then recycle the rest."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "暴怒冲动",
@@ -3040,6 +3066,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Brynhir Thundersong. When you play me, opponents can't play cards this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "颂雷者 布林希尔",
@@ -3129,6 +3156,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Darius, Trifarian. When you play your second card in a turn, give me +2 [S] this turn and ready me."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "德莱厄斯",
@@ -3234,6 +3262,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Darius, Trifarian. When you play your second card in a turn, give me +2 [S] this turn and ready me."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "德莱厄斯",
@@ -3330,6 +3359,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Draven, Showboat. My Might is increased by your points."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "德莱文",
@@ -3414,6 +3444,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Falling Star. Deal 3 to a unit.\nDeal 3 to a unit."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "星落",
@@ -3555,6 +3586,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Jinx, Demolitionist. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\n[Assault 2] (+2 [S] while I'm an attacker.)\nWhen you play me, discard 2."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "金克丝",
@@ -3784,6 +3816,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Jinx, Demolitionist. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\n[Assault 2] (+2 [S] while I'm an attacker.)\nWhen you play me, discard 2."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "金克丝",
@@ -3978,6 +4011,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Raging Firebrand. When you play me, the next spell you play this turn costs [5] less."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "狂暴龙怪",
@@ -4075,6 +4109,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Ravenborn Tome. [E]: The next spell you play this turn deals 1 Bonus Damage. (Each instance of damage the spell deals is increased by 1.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "邪鸦魔典",
@@ -4171,6 +4206,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Shakedown. [Reaction] (Play any time, even before spells and abilities resolve.)\nChoose an enemy unit. Deal 6 to it unless its controller has you draw 2."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "巧取豪夺",
@@ -4279,6 +4315,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Tryndamere, Barbarian. When I conquer after an attack, if you assigned 5 or more excess damage to enemy units, you score 1 point."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "泰达米尔",
@@ -4394,6 +4431,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Vayne, Hunter. [Assault 3] (+3 [S] while I'm an attacker.)\nIf an opponent controls a battlefield, I enter ready.\nWhen I conquer, you may pay [1] to return me to my owner's hand."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "薇恩",
@@ -4555,6 +4593,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Vi, Destructive. [Ganking] (I can move from battlefield to battlefield.)\nRecycle 1 from your trash: Give me +1 [S] this turn."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "蔚",
@@ -4710,6 +4749,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Immortal Phoenix. [Assault 2] (+2 [S] while I'm an attacker.)\nWhen you kill a unit with a spell, you may pay [1][C] to play me from your trash."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "不朽凤凰",
@@ -4884,6 +4924,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Kadregrin the Infernal. When you play me, draw 1 for each of your [Mighty] units. (A unit is Mighty while it has 5+ [S].)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "邪焰巨龙 卡德雷格林",
@@ -5005,6 +5046,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Kai'Sa, Survivor. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\nWhen I conquer, draw 1."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "卡莎",
@@ -5168,6 +5210,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Kai'Sa, Survivor. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\nWhen I conquer, draw 1."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "卡莎",
@@ -5333,6 +5376,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Seal of Rage. [T]: [Reaction] — [Add] [C]. (Abilities that add resources can't be reacted to.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "暴怒之印",
@@ -5489,6 +5533,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Volibear, Furious. [Deflect 2] (Opponents must pay [A][A] to choose me with a spell or ability.)\nWhen I attack, deal 5 damage split among any number of enemy units here."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "沃利贝尔",
@@ -5647,6 +5692,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Volibear, Furious. [Deflect 2] (Opponents must pay [A][A] to choose me with a spell or ability.)\nWhen I attack, deal 5 damage split among any number of enemy units here."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "沃利贝尔",
@@ -5768,6 +5814,7 @@
    "height": 2078,
    "alt": "Riftbound Rune: Calm Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "翠意符文",
@@ -5815,6 +5862,7 @@
    "height": 1039,
    "alt": "Riftbound Rune: Calm Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "翠意符文",
@@ -5872,6 +5920,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Charm. Move an enemy unit."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "魅惑妖术",
@@ -5959,6 +6008,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Clockwork Keeper. As you play me, you may pay [C] as an additional cost. If you do, draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "小小守护者",
@@ -6079,6 +6129,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Defy. [Reaction] (Play any time, even before spells and abilities resolve.)\nCounter a spell that costs no more than [4] and no more than [A]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "蔑视",
@@ -6243,6 +6294,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: En Garde. [Reaction] (Play any time, even before spells and abilities resolve.)\nGive a friendly unit +1 [S] this turn, then an additional +1 [S] this turn if it is the only unit you control there."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "决斗架势",
@@ -6406,6 +6458,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Find Your Center. [Action] (Play on your turn or in showdowns.)\nIf an opponent's score is within 3 points of the Victory Score, this costs [2] less.\nDraw 1 and channel 1 rune exhausted."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "御衡守念",
@@ -6556,6 +6609,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Meditation. [Reaction] (Play any time, even before spells and abilities resolve.)\nAs an additional cost to play this, you may exhaust a friendly unit. If you do, draw 2. Otherwise, draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "冥想",
@@ -6654,6 +6708,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Playful Phantom."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "贪玩的小鬼",
@@ -6722,6 +6777,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Rune Prison. [Action] (Play on your turn or in showdowns.)\nStun a unit. (It doesn't deal combat damage this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "符文禁锢",
@@ -6829,6 +6885,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Solari Shieldbearer. When you play me, stun a unit. (It doesn't deal combat damage this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "烈阳盾卫",
@@ -6920,6 +6977,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Stalwart Poro. [Shield] (+1 [S] while I'm a defender.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "强强魄罗",
@@ -7077,6 +7135,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Stand United. [Hidden] (Hide now for [A] to react with later for [0].)\n[Action] (Play on your turn or in showdowns.)\nBuff a friendly unit. Buffs give an additional +1 [S] to friendly units this turn. (To buff a unit, give it a +1 [S] buff if it doesn't already have one.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "秘奥义！慈悲度魂落",
@@ -7317,6 +7376,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Sunlit Guardian. [Shield] (+1 [S] while I'm a defender.)\n[Tank] (I must be assigned combat damage first.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "日耀卫队",
@@ -7458,6 +7518,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Wielder of Water. While I'm attacking or defending alone, I have +2 [S]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "驭水者",
@@ -7562,6 +7623,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Adaptatron. When I conquer, you may kill a gear. If you do, buff me. (If I don't have a buff, I get a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "自适应机器人",
@@ -7718,6 +7780,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Block. [Hidden] (Hide now for [A] to react with later for [0].)\n[Action] (Play on your turn or in showdowns.)\nGive a unit [Shield 3] and [Tank] this turn. (+3 [S] while it's a defender. It must be assigned combat damage first.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "格挡",
@@ -7956,6 +8019,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Discipline. [Reaction] (Play any time, even before spells and abilities resolve.)\nGive a unit +2 [S] this turn. Draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "训练有素",
@@ -8088,6 +8152,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Eclipse Herald. When you stun an enemy unit, ready me and give me +1 [S] this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "星蚀先锋",
@@ -8189,6 +8254,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Mask of Foresight. When a friendly unit attacks or defends alone, give it +1 [S] this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "远见面具",
@@ -8292,6 +8358,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Poro Herder. When you play me, if you control a Poro, buff me and draw 1. (If I don't have a buff, I get a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "魄罗牧者",
@@ -8393,6 +8460,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Reinforce. Look at the top 5 cards of your Main Deck. You may banish a unit from among them, then play it, reducing its cost by [5]. Recycle the remaining cards."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "增援",
@@ -8517,6 +8585,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Spirit's Refuge. When you play this, buff a friendly unit. (If it doesn't have a buff, it gets a +1 [S] buff.)\nFriendly buffed units have [Deflect] if they didn't already. (Opponents must pay [A] to choose those units with a spell or ability.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "奥义！魂佑",
@@ -8691,6 +8760,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Wind Wall. [Reaction] (Play any time, even before spells and abilities resolve.)\nCounter a spell."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "风之障壁",
@@ -8806,6 +8876,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Wizened Elder. While I'm buffed, I have an additional +1 [S]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "睿智长者",
@@ -8902,6 +8973,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Ahri, Alluring. When I hold, you score 1 point."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "阿狸",
@@ -8982,6 +9054,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Ahri, Alluring. When I hold, you score 1 point."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "阿狸",
@@ -9081,6 +9154,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Blitzcrank, Impassive. [Tank] (I must be assigned combat damage first.)\nWhen you play me to a battlefield, you may move an enemy unit to here.\nWhen I hold, return me to my owner's hand."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "布里茨",
@@ -9218,6 +9292,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Caitlyn, Patrolling. I must be assigned combat damage last.\n[T]: Deal damage equal to my Might to a unit at a battlefield. Use this ability only while I'm at a battlefield."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "凯特琳",
@@ -9340,6 +9415,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Last Stand. [Action] (Play on your turn or in showdowns.)\nDouble a friendly unit's Might this turn. Give it [Temporary]. (Kill it at the start of its controller's Beginning Phase, before scoring.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "背水一战",
@@ -9472,6 +9548,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Mageseeker Warden. While I'm at a battlefield, opponents can only play units to their base.\nWhile I'm at a battlefield, spells and abilities can't ready enemy units and gear."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "搜魔人典狱长",
@@ -9567,6 +9644,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Party Favors. Each other player chooses Cards or Runes. For each player that chooses Cards, you and that player each draw 1. For each player that chooses Runes, you and that player each channel 1 rune exhausted."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "次元门狂欢",
@@ -9680,6 +9758,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Solari Shrine. When you kill a stunned enemy unit, you may exhaust this to draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "烈阳圣坛",
@@ -9760,6 +9839,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Sona, Harmonious. While I'm at a battlefield, ready 4 friendly runes at the end of your turn."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "娑娜",
@@ -9878,6 +9958,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Taric, Protector. [Shield] (+1 [S] while I'm a defender.)\n[Tank] (I must be assigned combat damage first.)\nOther friendly units here have [Shield]."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "塔里克",
@@ -10075,6 +10156,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Tasty Faefolk. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\n[Deathknell] — Channel 2 runes exhausted and draw 1. (When I die, get the effect.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "美味仙灵",
@@ -10225,6 +10307,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Yasuo, Remorseful. When I attack, deal damage equal to my Might to an enemy unit here."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "亚索",
@@ -10305,6 +10388,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Yasuo, Remorseful. When I attack, deal damage equal to my Might to an enemy unit here."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "亚索",
@@ -10409,6 +10493,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Zhonya's Hourglass. [Hidden] (Hide now for [A] to react with later for [0].)\nThe next time a friendly unit would die, kill this instead. Recall that unit exhausted. (Send it to base. This isn't a move.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "中娅沙漏",
@@ -10587,6 +10672,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Lee Sin, Ascetic. [Shield] (+1 [S] while I'm a defender.)\n[T]: Buff me. (I get a +1 [S] buff.)\nI can have any number of buffs."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "李青",
@@ -10791,6 +10877,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Lee Sin, Ascetic. [Shield] (+1 [S] while I'm a defender.)\n[T]: Buff me. (I get a +1 [S] buff.)\nI can have any number of buffs."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "李青",
@@ -10980,6 +11067,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Leona, Zealot. If an opponent's score is within 3 points of the Victory Score, I enter ready.\nStunned enemy units here have -8 [S], to a minimum of 1 [S]."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "蕾欧娜",
@@ -11133,6 +11221,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Leona, Zealot. If an opponent's score is within 3 points of the Victory Score, I enter ready.\nStunned enemy units here have -8 [S], to a minimum of 1 [S]."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "蕾欧娜",
@@ -11271,6 +11360,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Mystic Reversal. [Reaction] (Play any time, even before spells and abilities resolve.)\nGain control of a spell. You may make new choices for it."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "倒转神通",
@@ -11404,6 +11494,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Seal of Focus. [T]: [Reaction] — [Add] [C]. (Abilities that add resources can't be reacted to.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "专注之印",
@@ -11544,6 +11635,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Whiteflame Protector. When you play me, give a unit +8 [S] this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "苍炎守护者",
@@ -11675,6 +11767,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Consult the Past. [Hidden] (Hide now for [A] to react with later for [0].)\n[Reaction] (Play any time, even before spells and abilities resolve.)\nDraw 2."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "借鉴历史",
@@ -11858,6 +11951,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Eager Apprentice. While I'm at a battlefield, the Energy costs for spells you play is reduced by [1], to a minimum of [1]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "踊跃的学徒",
@@ -11978,6 +12072,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Falling Comet. [Action] (Play on your turn or in showdowns.)\nDeal 6 to a unit at a battlefield."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "彗星坠击",
@@ -12108,6 +12203,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Jeweled Colossus. [Vision] (When you play me, look at the top card of your Main Deck. You may recycle it.)\n[Shield] (+1 [S] while I'm a defender.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "宝石巨像",
@@ -12253,6 +12349,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Lecturing Yordle. [Tank] (I must be assigned combat damage first.)\nWhen you play me, draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "约德尔教官",
@@ -12351,6 +12448,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Mega-Mech."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "超能机甲",
@@ -12398,6 +12496,7 @@
    "height": 1039,
    "alt": "Riftbound Rune: Mind Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "灵光符文",
@@ -12445,6 +12544,7 @@
    "height": 2078,
    "alt": "Riftbound Rune: Mind Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "灵光符文",
@@ -12522,6 +12622,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Orb of Regret. [T]: Give a unit -1 [S] this turn, to a minimum of 1 [S]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "懊悔法球",
@@ -12641,6 +12742,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Pit Crew. When you play a gear, ready me."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "竞技场勤务小队",
@@ -12721,6 +12823,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Riptide Rex. When you play me, deal 6 to an enemy unit at a battlefield."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "怒海大鲨炮",
@@ -12825,6 +12928,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Smoke Screen. [Reaction] (Play any time, even before spells and abilities resolve.)\nGive a unit -4 [S] this turn, to a minimum of 1 [S]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "烟幕弹",
@@ -13016,6 +13120,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Sprite Call. [Hidden] (Hide now for [A] to react with later for [0].)\n[Action] (Play on your turn or in showdowns.)\nPlay a ready 3 [S] Sprite unit token with [Temporary]. (Kill it at the start of its controller's Beginning Phase, before scoring.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "精灵召唤",
@@ -13242,6 +13347,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Stupefy. [Reaction] (Play any time, even before spells and abilities resolve.)\nGive a unit -1 [S] this turn, to a minimum of 1 [S]. Draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "“敲”诈",
@@ -13385,6 +13491,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Watchful Sentry. [Deathknell] — Draw 1. (When I die, get the effect.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "警觉的哨兵",
@@ -13518,6 +13625,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Blastcone Fae. [Hidden] (Hide now for [A] to react with later for [0].)\nWhen you play me, give a unit -2 [S] this turn, to a minimum of 1 [S]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "爆裂球果仙灵",
@@ -13715,6 +13823,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Energy Conduit. [T]: [Reaction] — [Add] [1]. (Abilities that add resources can't be reacted to.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "能量通道",
@@ -13860,6 +13969,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Garbage Grabber. Recycle 3 from your trash, [1], [T]: Draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "拾荒小能手",
@@ -13990,6 +14100,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Gemcraft Seer. [Vision] (When you play me, look at the top card of your Main Deck. You may recycle it.)\nOther friendly units have [Vision]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "宝石真知者",
@@ -14113,6 +14224,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Mushroom Pouch. At the start of your Beginning Phase, if you control a facedown card at a battlefield, draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "蘑菇袋",
@@ -14201,6 +14313,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Portal Rescue. [Action] (Play on your turn or in showdowns.)\nBanish a friendly unit, then play it to base, ignoring its cost."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "传送门大营救",
@@ -14316,6 +14429,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Ravenbloom Student. When you play a spell, give me +1 [S] this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "拉文布鲁姆学生",
@@ -14420,6 +14534,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Retreat. [Reaction] (Play any time, even before spells and abilities resolve.)\nReturn a friendly unit to its owner's hand. Its owner channels 1 rune exhausted."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "择日再战",
@@ -14525,6 +14640,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Singularity. Deal 6 to each of up to two units."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "星芒凝汇",
@@ -14620,6 +14736,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Sprite Mother. When you play me, play a ready 3 [S] Sprite unit token with [Temporary] here. (Kill it at the start of its controller's Beginning Phase, before scoring.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "精灵之母",
@@ -14749,6 +14866,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Ava Achiever. When I attack, you may pay [C] to play a card with [Hidden] from your hand here, ignoring its cost."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "斥候标兵 艾娃",
@@ -14871,6 +14989,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Convergent Mutation. [Reaction] (Play any time, even before spells and abilities resolve.)\nChoose a friendly unit. This turn, increase its Might to the Might of another friendly unit."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "聚合变异",
@@ -14986,6 +15105,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Dr. Mundo, Expert. My Might is increased by the number of cards in your trash.\nAt the start of your Beginning Phase, recycle 3 from your trash."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "蒙多医生",
@@ -15111,6 +15231,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Ekko, Recurrent. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\n[Deathknell] — Recycle me to ready your runes. (When I die, get the effect.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "艾克",
@@ -15270,6 +15391,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Heimerdinger, Inventor. I have all [T] abilities of all friendly legends, units, and gear."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "黑默丁格",
@@ -15377,6 +15499,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Kai'Sa, Evolutionary. [Ganking] (I can move from battlefield to battlefield.)\nWhen I conquer, you may play a spell from your trash with Energy cost less than your points without paying its Energy cost. Then recycle it. (You must still pay its Power cost.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "卡莎",
@@ -15496,6 +15619,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Kai'Sa, Evolutionary. [Ganking] (I can move from battlefield to battlefield.)\nWhen I conquer, you may play a spell from your trash with Energy cost less than your points without paying its Energy cost. Then recycle it. (You must still pay its Power cost.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "卡莎",
@@ -15640,6 +15764,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Malzahar, Fanatic. Kill a friendly unit or gear, [T]: [Action] — [Add] [A][A]. (Use on your turn or in showdowns. Abilities that add resources can't be reacted to.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "玛尔扎哈",
@@ -15785,6 +15910,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Progress Day. Draw 4."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "进化日",
@@ -15862,6 +15988,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Promising Future. Each player looks at the top 5 cards of their Main Deck, chooses one, then recycles the rest. Starting with the next player, each player plays those cards, ignoring Energy costs. (They must still pay Power costs.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "光明未来",
@@ -15980,6 +16107,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Thousand-Tailed Watcher. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\nWhen you play me, give enemy units -3 [S] this turn, to a minimum of 1 [S]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "千尾监视者",
@@ -16160,6 +16288,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Viktor, Innovator. When you play a card on an opponent's turn, play a 1 [S] Recruit unit token in your base."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "维克托",
@@ -16264,6 +16393,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Viktor, Innovator. When you play a card on an opponent's turn, play a 1 [S] Recruit unit token in your base."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "维克托",
@@ -16360,6 +16490,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Wraith of Echoes. The first time a friendly unit dies each turn, draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "残响之魂",
@@ -16456,6 +16587,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Ahri, Inquisitive. When I attack or defend, give an enemy unit here -2 [S] this turn, to a minimum of 1 [S]."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "阿狸",
@@ -16584,6 +16716,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Ahri, Inquisitive. When I attack or defend, give an enemy unit here -2 [S] this turn, to a minimum of 1 [S]."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "阿狸",
@@ -16721,6 +16854,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Seal of Insight. [T]: [Reaction] — [Add] [C]. (Abilities that add resources can't be reacted to.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "洞察之印",
@@ -16897,6 +17031,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Teemo, Strategist. [Hidden] (Hide now for [A] to react with later for [0].)\nWhen I defend or I'm played from [Hidden], reveal the top 5 cards of your Main Deck. Deal 1 to an enemy unit here for each card with [Hidden], then recycle them."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "提莫",
@@ -17117,6 +17252,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Teemo, Strategist. [Hidden] (Hide now for [A] to react with later for [0].)\nWhen I defend or I'm played from [Hidden], reveal the top 5 cards of your Main Deck. Deal 1 to an enemy unit here for each card with [Hidden], then recycle them."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "提莫",
@@ -17290,6 +17426,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Time Warp. Take a turn after this one. Banish this."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "时间扭曲",
@@ -17367,6 +17504,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Unchecked Power. Exhaust all friendly units, then deal 12 to ALL units at battlefields."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "过载能量",
@@ -17456,6 +17594,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Arena Bar. [T]: Buff an exhausted friendly unit. (If it doesn't have a buff, it gets a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "竞技场酒吧",
@@ -17567,6 +17706,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Bilgewater Bully. While I'm buffed, I have [Ganking]. (I can move from battlefield to battlefield.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "比尔吉沃特恶霸",
@@ -17652,6 +17792,7 @@
    "height": 2078,
    "alt": "Riftbound Rune: Body Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "摧破符文",
@@ -17699,6 +17840,7 @@
    "height": 1039,
    "alt": "Riftbound Rune: Body Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "摧破符文",
@@ -17767,6 +17909,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Cannon Barrage. [Reaction] (Play any time, even before spells and abilities resolve.)\nDeal 2 to all enemy units in combat."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "加农炮幕",
@@ -17883,6 +18026,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Challenge. [Action] (Play on your turn or in showdowns.)\nChoose a friendly unit and an enemy unit. They deal damage equal to their Mights to each other."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "决斗",
@@ -17999,6 +18143,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Confront. [Action] (Play on your turn or in showdowns.)\nUnits you play this turn enter ready. Draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "迎敌号令",
@@ -18107,6 +18252,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Crackshot Corsair. When I attack, deal 1 to an enemy unit here."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "神射海盗",
@@ -18195,6 +18341,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Dune Drake. When I attack, give me +2 [S] this turn if there is a ready enemy unit here."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "沙丘亚龙",
@@ -18291,6 +18438,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: First Mate. When you play me, ready another unit."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "大副",
@@ -18379,6 +18527,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Flurry of Blades. [Reaction] (Play any time, even before spells and abilities resolve.)\nDeal 1 to all units at battlefields."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "剑刃飓风",
@@ -18484,6 +18633,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Mobilize. Channel 1 rune exhausted. If you can't, draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "动员",
@@ -18584,6 +18734,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Pakaa Cub. [Hidden] (Hide now for [A] to react with later for [0].)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "帕卡幼崽",
@@ -18713,6 +18864,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Pit Rookie. When you play me, buff another friendly unit. (If it doesn't have a buff, it gets a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "竞技场新人",
@@ -18819,6 +18971,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Stormclaw Ursine. [Tank] (I must be assigned combat damage first.)\nWhen you play me, channel 1 rune exhausted."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "雷爪氏族熊人",
@@ -18924,6 +19077,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Catalyst of Aeons. Channel 2 runes exhausted. If you couldn't channel 2 runes this way, draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "万世催化石",
@@ -19012,6 +19166,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Cithria of Cloudfield. When you play another unit, buff me. (If I don't have a buff, I get a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "云丛的希思莉亚",
@@ -19123,6 +19278,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Herald of Scales. Your Dragons' Energy costs are reduced by [2], to a minimum of [1]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "唤龙使者",
@@ -19242,6 +19398,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Kinkou Monk. When you play me, buff up to two other friendly units. (Each one that doesn't have a buff gets a +1 [M] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "均衡僧侣",
@@ -19327,6 +19484,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Mountain Drake."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "山脉亚龙",
@@ -19392,6 +19550,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Pirate's Haven. When you ready a friendly unit, give it +1 [S] this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "海盗避风港",
@@ -19511,6 +19670,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Spoils of War. [Reaction] (Play any time, even before spells and abilities resolve.)\nIf an enemy unit has died this turn, this costs [2] less.\nDraw 2."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "以战养战",
@@ -19661,6 +19821,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Unyielding Spirit. [Reaction] (Play any time, even before spells and abilities resolve.)\nPrevent all spell and ability damage this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "坚毅不倒",
@@ -19784,6 +19945,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Wallop. [Action] (Play on your turn or in showdowns.)\nAs you play this, you may spend a buff as an additional cost. If you do, ignore this spell's cost.\nReady a unit."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "痛殴",
@@ -19917,6 +20079,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Wildclaw Shaman. When you play me, you may spend a buff to buff me and ready me. (If I don't have a buff, I get a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "野爪萨满",
@@ -20014,6 +20177,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Anivia, Primal. When I attack, deal 3 to all enemy units here."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "艾尼维亚",
@@ -20093,6 +20257,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Carnivorous Snapvine. When you play me, choose an enemy unit at a battlefield. We deal damage equal to our Mights to each other."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "食肉蛇藤",
@@ -20223,6 +20388,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Kraken Hunter. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\n[Assault] (+1 [S] while I'm an attacker.)\nAs you play me, you may spend any number of buffs as an additional cost. Reduce my cost by [C] for each buff you spend."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "海妖猎手",
@@ -20454,6 +20620,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Lee Sin, Centered. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\nOther buffed friendly units at my battlefield have +2 [S]."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "李青",
@@ -20641,6 +20808,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Lee Sin, Centered. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\nOther buffed friendly units at my battlefield have +2 [S]."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "李青",
@@ -20802,6 +20970,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Mistfall. When you buff a friendly unit, you may pay [C] and exhaust this to ready it."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "雾临剑冢",
@@ -20914,6 +21083,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Overt Operation. [Action] (Play on your turn or in showdowns.)\nFor each friendly unit, you may spend its buff to ready it. Then buff all friendly units. (Each one that doesn't have a buff gets a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "公开行动",
@@ -21054,6 +21224,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Primal Strength. [Action] (Play on your turn or in showdowns.)\nGive a unit +7 [S] this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "洪荒巨力",
@@ -21197,6 +21368,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Qiyana, Victorious. [Deflect] (Opponents must pay [A] to choose me with a spell or ability.)\nWhen I conquer, draw 1 or channel 1 rune exhausted."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "奇亚娜",
@@ -21318,6 +21490,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Sabotage. Choose an opponent. They reveal their hand. Choose a non-unit card from it, and recycle that card."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "暗中破坏",
@@ -21435,6 +21608,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Udyr, Wildman. Spend my buff: Choose one you've not chosen this turn —\n* Deal 2 to a unit at a battlefield.\n* Stun a unit at a battlefield.\n* Ready me.\n* Give me [Ganking] this turn."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "乌迪尔",
@@ -21636,6 +21810,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Volibear, Imposing. [Shield 3] (+3 [S] while I'm a defender.)\n[Tank] (I must be assigned combat damage first.)\nWhen an opponent moves to a battlefield other than mine, draw 1. (Bases are not battlefield.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "沃利贝尔",
@@ -21821,6 +21996,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Volibear, Imposing. [Shield 3] (+3 [S] while I'm a defender.)\n[Tank] (I must be assigned combat damage first.)\nWhen an opponent moves to a battlefield other than mine, draw 1. (Bases are not battlefield.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "沃利贝尔",
@@ -21983,6 +22159,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Warwick, Hunter. I enter ready.\nWhen I attack, kill all damaged enemy units here."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "沃里克",
@@ -22078,6 +22255,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Dazzling Aurora. At the end of your turn, reveal cards from the top of your Main Deck until you reveal a unit. Play it, ignoring its cost, and recycle the rest."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "闪耀极光",
@@ -22176,6 +22354,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Deadbloom Predator. [Deflect] (Opponents must pay [A] to choose me with a spell or ability.)\nYou may play me to an occupied enemy battlefield."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "亡花掠食者",
@@ -22335,6 +22514,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Miss Fortune, Captain. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\n[Ganking] (I can move from battlefield to battlefield.)\nThe first time I move each turn, you may ready something else that's exhausted."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "厄运小姐",
@@ -22538,6 +22718,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Miss Fortune, Captain. [Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\n[Ganking] (I can move from battlefield to battlefield.)\nThe first time I move each turn, you may ready something else that's exhausted."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "厄运小姐",
@@ -22731,6 +22912,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Seal of Strength. [T]: [Reaction] — [Add] [C]. (Abilities that add resources can't be reacted to.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "力量之印",
@@ -22886,6 +23068,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Sett, Brawler. When I'm played and when I conquer, buff me. (If I don't have a buff, I get a +1 [S] buff.)\nSpend my buff: Give me +4 [S] this turn."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "瑟提",
@@ -23039,6 +23222,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Sett, Brawler. When I'm played and when I conquer, buff me. (If I don't have a buff, I get a +1 [S] buff.)\nSpend my buff: Give me +4 [S] this turn."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "瑟提",
@@ -23169,6 +23353,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Cemetery Attendant. When you play me, return a unit from your trash to your hand."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "牧灵犬",
@@ -23236,6 +23421,7 @@
    "height": 2078,
    "alt": "Riftbound Rune: Chaos Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "混沌符文",
@@ -23283,6 +23469,7 @@
    "height": 1039,
    "alt": "Riftbound Rune: Chaos Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "混沌符文",
@@ -23358,6 +23545,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Ember Monk. When you play a card from [Hidden], give me +2 [S] this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "余火修士",
@@ -23507,6 +23695,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Fight or Flight. [Hidden] (Hide now for [A] to react with later for [0].)\n[Action] (Play on your turn or in showdowns.)\nMove a unit from a battlefield to its base."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "战或逃",
@@ -23691,6 +23880,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Gust. [Reaction] (Play any time, even before spells and abilities resolve.)\nReturn a unit at a battlefield with 3 [S] or less to its owner's hand."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "罡风",
@@ -23823,6 +24013,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Morbid Return. [Action] (Play on your turn or in showdowns.)\nReturn a unit from your trash to your hand."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "亡者复生",
@@ -23934,6 +24125,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Mystic Poro. [Vision] (When you play me, look at the top card of your Main Deck. You may recycle it.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "叨叨魄罗",
@@ -24032,6 +24224,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Rebuke. [Action] (Play on your turn or in showdowns.)\nReturn a unit at a battlefield to its owner's hand."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "责退",
@@ -24148,6 +24341,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Ride the Wind. [Action] (Play on your turn or in showdowns.)\nMove a friendly unit and ready it."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "驭风而行",
@@ -24266,6 +24460,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Sai Scout. [Vision] (When you play me, look at the top card of your Main Deck. You may recycle it.)\nYou may play me to an open battlefield."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "大塞斥候",
@@ -24364,6 +24559,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Shipyard Skulker."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "船坞潜伏者",
@@ -24424,6 +24620,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Sneaky Deckhand. You may play me to an open battlefield."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "鬼祟的水手",
@@ -24503,6 +24700,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Stealthy Pursuer. When a friendly unit moves from my location, I may be moved with it."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "隐秘追踪者",
@@ -24584,6 +24782,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Undercover Agent. [Deathknell] — Discard 2, then draw 2. (When I die, get the effect.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "卧底特工",
@@ -24682,6 +24881,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Acceptable Losses. [Action] (Play on your turn or in showdowns.)\nEach player kills one of their gear."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "折戟再战",
@@ -24795,6 +24995,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Fading Memories. Give a unit at a battlefield or a gear [Temporary]. (Kill it at the start of its controller's Beginning Phase, before scoring.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "逝水如镜",
@@ -24902,6 +25103,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Pack of Wonders. [E]: Return another friendly gear, unit, or [Hidden] card to its owner's hand."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "奇妙行囊",
@@ -25005,6 +25207,7 @@
    "height": 1038,
    "alt": "Riftbound Gear: Scrapheap. When this is played, discarded, or killed, draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "废料堆",
@@ -25093,6 +25296,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Stacked Deck. [Action] (Play on your turn or in showdowns.)\nLook at the top 3 cards of your Main Deck. Put 1 into your hand and recycle the rest."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "卡牌骗术",
@@ -25210,6 +25414,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: The Syren. [1], [E]: Move a friendly unit at a battlefield to your base."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "塞壬号",
@@ -25321,6 +25526,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Traveling Merchant. When I move, discard 1, then draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "旅行商人",
@@ -25417,6 +25623,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Treasure Trove. When this leaves the board, draw 1 and channel 1 rune exhausted.\n[C], [T]: Kill this."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "无主宝藏",
@@ -25544,6 +25751,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Whirlwind. Starting with the next player, each player may return a unit to its owner's hand."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "飓风席卷",
@@ -25623,6 +25831,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Zaunite Bouncer. When you play me, return another unit at a battlefield to its owner's hand."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "祖安保镖",
@@ -25714,6 +25923,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Kayn, Unleashed. [Ganking] (I can move from battlefield to battlefield.)\nIf I have moved twice this turn, I don't take damage."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "凯隐",
@@ -25826,6 +26036,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Kog'Maw, Caustic. [Deathknell] — Deal 4 to all units at my battlefield. (When I die, get the effect.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "克格莫",
@@ -25927,6 +26138,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Maddened Marauder. [Tank] (I must be assigned combat damage first.)\nWhen you play me, move a unit from a battlefield to its base."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "疯狂海寇",
@@ -26035,6 +26247,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Mindsplitter. When you play me, choose an opponent. They reveal their hand. Choose a card from it, and they discard that card."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "辟心玄龙",
@@ -26123,6 +26336,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Miss Fortune, Buccaneer. You may play me to an open battlefield. \nFriendly units may be played to open battlefields."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "厄运小姐",
@@ -26229,6 +26443,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Miss Fortune, Buccaneer. You may play me to an open battlefield. \nFriendly units may be played to open battlefields."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "厄运小姐",
@@ -26345,6 +26560,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Nocturne, Horrifying. [Ganking] (I can move from battlefield to battlefield.)\nWhen you look at cards from the top of your deck (and don't draw them) and see me, you may play me for [A]."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "魔腾",
@@ -26477,6 +26693,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Rhasa the Sunderer. I cost [1] less for each card in your trash."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "裂魂者喇煞",
@@ -26573,6 +26790,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Soulgorger. When you play me, you may play a unit from your trash, ignoring its Energy cost. (You must still pay its Power cost.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "咂魂者",
@@ -26689,6 +26907,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Teemo, Scout. [Hidden] (Hide now for [A] to react with later for [0].)\nWhen you play me, give me +3 [S] this turn."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "提莫",
@@ -26881,6 +27100,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Teemo, Scout. [Hidden] (Hide now for [A] to react with later for [0].)\nWhen you play me, give me +3 [S] this turn."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "提莫",
@@ -27034,6 +27254,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: The Harrowing. Play a unit from your trash, ignoring its Energy cost. (You must still pay its Power cost.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "蚀魂夜",
@@ -27140,6 +27361,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Tideturner. [Hidden] (Hide now for [A] to react with later for [0].)\nWhen you play me, you may choose a friendly unit. Move me to its location and it to my original location."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "控潮者",
@@ -27315,6 +27537,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Twisted Fate, Gambler. When I attack, reveal the top rune of your rune deck, then recycle it. Do one of the following based on its domain:\n* [R] — Deal 2 to an enemy unit here and 1 to all other enemy units here.\n* [B] — Draw 1.\n* [Y] — Stun an enemy unit."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "崔斯特",
@@ -27470,6 +27693,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Invert Timelines. Each player discards their hand, then draws 4."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "反转时间线",
@@ -27558,6 +27782,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Jinx, Rebel. When you discard one or more cards, ready me and give me +1 [S] this turn."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "金克丝",
@@ -27662,6 +27887,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Jinx, Rebel. When you discard one or more cards, ready me and give me +1 [S] this turn."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "金克丝",
@@ -27766,6 +27992,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Possession. [Action] (Play on your turn or in showdowns.)\nChoose an enemy unit at a battlefield. Take control of it and recall it. (Send it to your base. This isn't a move.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "据为己有",
@@ -27899,6 +28126,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Seal of Discord. [T]: [Reaction] — [Add] [C]. (Abilities that add resources can't be reacted to.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "不和之印",
@@ -28042,6 +28270,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Yasuo, Windrider. [Ganking] (I can move from battlefield to battlefield.)\nThe third time I move in a turn, you score 1 point."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "亚索",
@@ -28161,6 +28390,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Yasuo, Windrider. [Ganking] (I can move from battlefield to battlefield.)\nThe third time I move in a turn, you score 1 point."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "亚索",
@@ -28285,6 +28515,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Back to Back. [Reaction] (Play any time, even before spells and abilities resolve.)\nGive two friendly units each +2 [S] this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "背靠背",
@@ -28432,6 +28663,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Call to Glory. [Reaction] (Play any time, even before spells and abilities resolve.)\nAs you play this, you may spend a buff as an additional cost. If you do, ignore this spell's cost.\nGive a unit +3 [S] this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "荣耀召唤",
@@ -28555,6 +28787,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Cruel Patron. As an additional cost to play me, kill a friendly unit."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "冷血贵族",
@@ -28632,6 +28865,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Cull the Weak. Each player kills one of their units."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "清理门户",
@@ -28723,6 +28957,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Daring Poro. [Assault] (+1 [S] while I'm an attacker.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "莽莽魄罗",
@@ -28836,6 +29071,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Faithful Manufactor. When you play me, play a 1 [S] Recruit unit token here."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "忠实的工坊主",
@@ -28944,6 +29180,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Forge of the Future. When you play this, play a 1 [S] Recruit unit token at your base.\nKill this: Recycle up to 4 cards from trashes."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "未来熔炉",
@@ -29093,6 +29330,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Hidden Blade. [Hidden] (Hide now for [A] to react with later for [0].)\n[Action] (Play on your turn or in showdowns.)\nKill a unit at a battlefield. Its controller draws 2."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "暗刃",
@@ -29248,6 +29486,7 @@
    "height": 2078,
    "alt": "Riftbound Rune: Order Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "序理符文",
@@ -29295,6 +29534,7 @@
    "height": 1039,
    "alt": "Riftbound Rune: Order Rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "序理符文",
@@ -29367,6 +29607,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Petty Officer. [Assault] (+1 [S] while I'm an attacker.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "躁烈的副官",
@@ -29477,6 +29718,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Soaring Scout. [Deathknell] — Channel 1 rune exhausted. (When I die, get the effect.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "侦察飞鹰",
@@ -29579,6 +29821,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Trifarian Gloryseeker. [Legion] — When you play me, buff me. (If I don't have a buff, I get a +1 [S] buff. Get the effect if you've played another card this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "崔法利求战者",
@@ -29697,6 +29940,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Vanguard Captain. [Legion] — When you play me, play two 1 [S] Recruit unit tokens here. (Get the effect if you've played another card this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "先锋队长",
@@ -29793,6 +30037,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Vanguard Sergeant."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "先锋中士",
@@ -29888,6 +30133,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Facebreaker. [Hidden] (Hide now for [A] to react with later for [0].)\n[Action] (Play on your turn or in showdowns.)\nStun a friendly unit and an enemy unit at the same battlefield. (They don't deal combat damage this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "强手裂颅",
@@ -30064,6 +30310,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Imperial Decree. [Action] (Play on your turn or in showdowns.)\nWhen any unit takes damage this turn, kill it."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "帝国谕令",
@@ -30180,6 +30427,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Noxian Drummer. When I move to a battlefield, play a 1 [S] Recruit unit token here. (It is also at the battlefield.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "诺克萨斯鼓手",
@@ -30283,6 +30531,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Peak Guardian. When you play me, buff me. Then, if I am at a battlefield, buff all other friendly units there. (To buff a unit, give it a +1 [S] buff if it doesn't already have one.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "巅峰守护者",
@@ -30387,6 +30636,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Salvage. [Action] (Play on your turn or in showdowns.)\nYou may kill a gear. Draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "废物利用",
@@ -30494,6 +30744,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Solari Chief. When you play me, choose an enemy unit. If it is stunned, kill it. Otherwise, stun it. (It doesn't deal combat damage this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "烈阳首领",
@@ -30590,6 +30841,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Spectral Matron. When you play me, you may play a unit costing no more than [3] and no more than [A] from your trash, ignoring its cost."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "幽灵主母",
@@ -30699,6 +30951,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Symbol of the Solari. If a combat where you are the attacker ends in a tie, recall ALL units instead. (Send them to base. This isn't a move. Ties are calculated after combat damage is dealt.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "烈阳徽记",
@@ -30784,6 +31037,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Vanguard Helm. When a buffed friendly unit dies, buff another friendly unit. (If it doesn't have a buff, it gets a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "先锋之盔",
@@ -30877,6 +31131,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Vengeance. Kill a unit."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "复仇",
@@ -30956,6 +31211,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Albus Ferros. When you play me, spend any number of buffs. For each buff spent, channel 1 rune exhausted."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "阿不思·菲罗斯",
@@ -31074,6 +31330,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Commander Ledros. As you play me, you may kill any number of friendly units as an additional cost. Reduce my cost by [C] for each killed this way.\n[Deflect] (Opponents must pay [A] to choose me with a spell or ability.)\n[Ganking] (I can move from battlefield to battlefield.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "莱卓斯指挥官",
@@ -31282,6 +31539,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Fiora, Victorious. While I'm [Mighty], I have [Deflect], [Ganking], and [Shield]. (I'm Mighty while I have 5+ [S].)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "菲奥娜",
@@ -31450,6 +31708,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Grand Strategem. [Action] (Play on your turn or in showdowns.)\nGive friendly units +5 [S] this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "宏伟战略",
@@ -31574,6 +31833,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Harnessed Dragon. When you play me, kill an enemy unit."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "龙骑兵",
@@ -31673,6 +31933,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Karma, Channeler. [Vision] (When you play me, look at the top card of your Main Deck. You may recycle it.)\nWhen you recycle one or more cards, buff a friendly unit. (If it doesn't have a buff, it gets a +1 [M] buff. Runes aren't cards.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "卡尔玛",
@@ -31806,6 +32067,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Karthus, Eternal. Your [Deathknell] effects trigger an additional time."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "卡尔萨斯",
@@ -31901,6 +32163,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: King's Edict. Starting with the next player, each other player chooses a unit you don't control that hasn't been chosen for this spell. Kill those units."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "国王诏令",
@@ -32000,6 +32263,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Leona, Determined. [Shield] (+1 [S] while I'm a defender.)\nWhen I attack, stun an enemy unit here. (It doesn't deal combat damage this turn.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "蕾欧娜",
@@ -32143,6 +32407,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Leona, Determined. [Shield] (+1 [S] while I'm a defender.)\nWhen I attack, stun an enemy unit here. (It doesn't deal combat damage this turn.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "蕾欧娜",
@@ -32278,6 +32543,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Machine Evangel. [Deathknell] — Play three 1 [S] Recruit unit tokens into your base. (When I die, get the effect.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "机械戏法师",
@@ -32403,6 +32669,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Sett, Kingpin. [Tank] (I must be assigned combat damage first.)\nI get +1 [S] for each buffed friendly unit at my battlefield."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "瑟提",
@@ -32546,6 +32813,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Sett, Kingpin. [Tank] (I must be assigned combat damage first.)\nI get +1 [S] for each buffed friendly unit at my battlefield."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "瑟提",
@@ -32705,6 +32973,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Shen, Kinkou. [Reaction] (Play any time, even before spells and abilities resolve, including to a battlefield you control.)\n[Shield 2] (+2 [S] while I'm a defender.)\n[Tank] (I must be assigned combat damage first.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "慎",
@@ -32882,6 +33151,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Baited Hook. [1][C], [E]: Kill a friendly unit. Look at the top 5 cards of your Main Deck. You may banish a unit from among them that has Might up to 1 more than the killed unit and play it, ignoring its cost. Then recycle the rest."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "海兽钓钩",
@@ -33030,6 +33300,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Darius, Executioner. [Legion] — When you play me, ready me. (Get the effect if you've played another card this turn)\nOther friendly units have +1 [S] here."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "德莱厄斯",
@@ -33174,6 +33445,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Darius, Executioner. [Legion] — When you play me, ready me. (Get the effect if you've played another card this turn)\nOther friendly units have +1 [S] here."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "德莱厄斯",
@@ -33295,6 +33567,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Divine Judgment. Each player chooses 2 units, 2 gear, 2 runes, and 2 cards in their hands. Recycle the rest."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "圣裁之刻",
@@ -33400,6 +33673,7 @@
    "height": 1039,
    "alt": "Riftbound Gear: Seal of Unity. [T]: [Reaction] — [Add] [C]. (Abilities that add resources can't be reacted to.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "团结之印",
@@ -33540,6 +33814,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Viktor, Leader. When another non-Recruit unit you control dies, play a 1 [S] Recruit unit token into your base."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "维克托",
@@ -33644,6 +33919,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Viktor, Leader. When another non-Recruit unit you control dies, play a 1 [S] Recruit unit token into your base."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "维克托",
@@ -33768,6 +34044,7 @@
    "height": 1040,
    "alt": "Riftbound Legend: Daughter of the Void. [T]: [Reaction] — [Add] [C]. Use only to play spells. (Abilities that add resources can't be reacted to.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "虚空之女",
@@ -33935,6 +34212,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Icathian Rain. Deal 2 to a unit.\nDeal 2 to a unit.\nDeal 2 to a unit.\nDeal 2 to a unit.\nDeal 2 to a unit.\nDeal 2 to a unit."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "艾卡西亚暴雨",
@@ -34049,6 +34327,7 @@
    "height": 1040,
    "alt": "Riftbound Legend: Relentless Storm. When you play a [Mighty] unit, you may exhaust me to channel 1 rune exhausted. (A unit is Mighty while it has 5+ [S].)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "不灭狂雷",
@@ -34147,6 +34426,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Stormbringer. Choose a friendly unit in your base. Deal damage equal to its Might to all enemy units at a battlefield, then move your unit there."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "天声震落",
@@ -34227,6 +34507,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Loose Cannon. At start of your Beginning Phase, draw 1 if you have one or fewer cards in your hand."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "暴走萝莉",
@@ -34314,6 +34595,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Super Mega Death Rocket!. Deal 5 to a unit.\nWhen you conquer, you may discard 1 to return this from your trash to your hand."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "超究极死神飞弹！",
@@ -34448,6 +34730,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Hand of Noxus. [T]: [Reaction], [Legion] — [Add] [1]. (Abilities that add resources can't be reacted to. Get the effect if you've played a card this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "诺克萨斯之手",
@@ -34620,6 +34903,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Noxian Guillotine. [Action] (Play on your turn or in showdowns.)\nChoose a unit. Kill it the next time it takes damage this turn.\n[Legion] — Kill it now instead. (Get the effect if you've played another card this turn.)"
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "诺克萨斯断头台",
@@ -34772,6 +35056,7 @@
    "height": 1040,
    "alt": "Riftbound Legend: Nine-Tailed Fox. When an enemy unit attacks a battlefield you control, give it -1 [S] this turn, to a minimum of 1 [S]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "九尾妖狐",
@@ -34922,6 +35207,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Fox-Fire. [Hidden] (Hide now for [A] to react with later for [0].)\n[Action] (Play on your turn or in showdowns.)\nKill any number of units at a battlefield with total Might 4 or less."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "妖异狐火",
@@ -35110,6 +35396,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Blind Monk. [1], [T]: Buff a friendly unit. (If it doesn't have a buff, it gets a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "盲僧",
@@ -35238,6 +35525,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Dragon's Rage. Move an enemy unit. Then choose another enemy unit at its destination. They deal damage equal to their Mights to each other."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "猛龙摆尾",
@@ -35330,6 +35618,7 @@
    "height": 1040,
    "alt": "Riftbound Legend: Unforgiven. [2], [T]: Move a friendly unit to or from its base."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "疾风剑豪",
@@ -35453,6 +35742,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Last Breath. [Action] (Play on your turn or in showdowns.)\nReady a friendly unit. It deals damage equal to its Might to an enemy unit at a battlefield."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "狂风绝息斩",
@@ -35569,6 +35859,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Radiant Dawn. When you stun one or more enemy units, buff a friendly unit. (If it doesn't have a buff, it gets a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "曙光女神",
@@ -35676,6 +35967,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Zenith Blade. [Action] (Play on your turn or in showdowns.)\nStun an enemy unit at a battlefield. You may move a friendly unit to that enemy unit's battlefield. (A stunned unit doesn't deal combat damage this turn.)"
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "天顶之刃",
@@ -35827,6 +36119,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Swift Scout. You may pay [1] to hide a card with [Hidden] instead of [C].\n[1], [T]: Put a Teemo unit you own into your hand from your Champion Zone or the board."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "迅捷斥候",
@@ -36015,6 +36308,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Guerilla Warfare. Return up to two cards with [Hidden] from your trash to your hand. You can hide cards ignoring costs this turn."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "游击战",
@@ -36133,6 +36427,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Herald of the Arcane. [1], [T]: Play a 1 [S] Recruit unit token."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "奥术先驱",
@@ -36296,6 +36591,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Siphon Power. [Reaction] (Play any time, even before spells and abilities resolve.)\nChoose a battlefield. Give friendly units there +1 [S] this turn and enemy units there -1 [S] this turn, to a minimum of 1 [S]."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "虹吸能量",
@@ -36464,6 +36760,7 @@
    "height": 1040,
    "alt": "Riftbound Legend: Bounty Hunter. [T]: Give a unit [Ganking] this turn. (It can move from battlefield to battlefield.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "赏金猎人",
@@ -36589,6 +36886,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Bullet Time. [Action] (Play on your turn or in showdowns.)\nPay any amount of [C] to deal that much damage to all enemy units at a battlefield."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "弹幕时间",
@@ -36728,6 +37026,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: The Boss. When a buffed unit you control would die, you may pay [C] and exhaust me to spend its buff and recall it exhausted instead. (Send it to base. This isn't a move.)\nWhen you conquer, ready me."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "腕豪",
@@ -36850,6 +37149,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Showstopper. Buff a friendly unit in your base, then move it to a battlefield. (If it doesn't have a buff, it gets a +1 [S] buff.)"
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "叹为观止",
@@ -36935,6 +37235,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Recruit (DE)."
   },
+  "subtype": "token",
   "zh": {
    "cn": {
     "name": "随从（德玛西亚）",
@@ -36984,6 +37285,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Recruit (NX)."
   },
+  "subtype": "token",
   "zh": {
    "cn": {
     "name": "随从（诺克萨斯）",
@@ -37033,6 +37335,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Recruit (ZN)."
   },
+  "subtype": "token",
   "zh": {
    "cn": {
     "name": "随从（祖安）",
@@ -37096,6 +37399,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Sprite. [Temporary] (Kill me at the start of your Beginning Phase, before scoring.)"
   },
+  "subtype": "token",
   "zh": {
    "cn": {
     "name": "精灵",
@@ -37191,6 +37495,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Altar to Unity. When you hold here, play a 1 [S] Recruit unit token in your base."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "团结圣坛",
@@ -37284,6 +37589,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Aspirant's Climb. Increase the points needed to win the game by 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "攀圣长阶",
@@ -37369,6 +37675,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Back-Alley Bar. When a unit moves from here, give it +1 [S] this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "后巷酒吧",
@@ -37462,6 +37769,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Bandle Tree. You may hide an additional card here."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "班德尔树",
@@ -37574,6 +37882,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Fortified Position. When you defend here, choose a unit. It gains [Shield 2] this combat. (+2 [S] while it's a defender.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "强化阵地",
@@ -37687,6 +37996,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Grove of the God-Willow. When you hold here, draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "帝柳之林",
@@ -37764,6 +38074,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Hallowed Tomb. When you hold here, you may return your Chosen Champion from your trash to your Champion Zone if it is empty."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "圣化之墓",
@@ -37841,6 +38152,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Monastery of Hirana. When you conquer here, you may spend a buff to draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "希拉娜修道院",
@@ -37926,6 +38238,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Navori Fighting Pit. When you hold here, buff a unit here. (If it doesn't have a buff, it gets a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "纳沃利角斗场",
@@ -38019,6 +38332,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Obelisk of Power. At the start of each player's first Beginning Phase, that player channels 1 rune."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "力量方尖碑",
@@ -38096,6 +38410,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Reaver's Row. When you defend here, you may move a friendly unit here to base."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "劫掠船巷",
@@ -38173,6 +38488,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Reckoner's Arena. When you hold here, activate the conquer effects of units here."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "清算人竞技场",
@@ -38250,6 +38566,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Sigil of the Storm. When you conquer here, recycle one of your runes."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "雷霆之纹",
@@ -38327,6 +38644,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Startipped Peak. When you hold here, you may channel 1 rune exhausted."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "星尖峰",
@@ -38404,6 +38722,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Targon's Peak. When you conquer here, ready 2 runes at the end of this turn."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "巨神峰之巅",
@@ -38481,6 +38800,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: The Arena's Greatest. At the start of each player's first Beginning Phase, that player gains 1 point."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "荣耀竞技场",
@@ -38558,6 +38878,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: The Candlelit Sanctum. When you conquer here, look at the top two cards of your Main Deck. You may recycle one or both of them. Put those you don't back in any order."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "烛光圣殿",
@@ -38635,6 +38956,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: The Dreaming Tree. When a player chooses a friendly unit here with a spell for the first time each turn, they draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "幻梦之树",
@@ -38712,6 +39034,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: The Grand Plaza. When you hold here, if you have 7+ units here, you win the game."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "宏伟广场",
@@ -38797,6 +39120,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Trifarian War Camp. Units here have +1 [S]. (This includes attackers.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "崔法利兵营",
@@ -38890,6 +39214,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Vilemaw's Lair. Units can't move from here to base."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "卑鄙之喉的巢穴",
@@ -38967,6 +39292,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Void Gate. Spells and abilities affecting units here each deal 1 Bonus Damage. (Each instance of damage the spell deals is increased by 1.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "虚空之门",
@@ -39052,6 +39378,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Windswept Hillock. Units here have [Ganking]. (They can move from battlefield to battlefield.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "疾风山丘",
@@ -39147,6 +39474,7 @@
    "height": 744,
    "alt": "Riftbound Battlefield: Zaun Warrens. When you conquer here, discard 1, then draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "祖安地沟",
@@ -39255,6 +39583,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Daughter of the Void. [T]: [Reaction] — [Add] [C]. Use only to play spells. (Abilities that add resources can't be reacted to.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "虚空之女",
@@ -39415,6 +39744,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Daughter of the Void. [T]: [Reaction] — [Add] [C]. Use only to play spells. (Abilities that add resources can't be reacted to.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "虚空之女",
@@ -39563,6 +39893,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Relentless Storm. When you play a [Mighty] unit, you may exhaust me to channel 1 rune exhausted. (A unit is Mighty while it has 5+ [S].)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "不灭狂雷",
@@ -39677,6 +40008,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Relentless Storm. When you play a [Mighty] unit, you may exhaust me to channel 1 rune exhausted. (A unit is Mighty while it has 5+ [S].)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "不灭狂雷",
@@ -39775,6 +40107,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Loose Cannon. At start of your Beginning Phase, draw 1 if you have one or fewer cards in your hand."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "暴走萝莉",
@@ -39855,6 +40188,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Loose Cannon. At start of your Beginning Phase, draw 1 if you have one or fewer cards in your hand."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "暴走萝莉",
@@ -39971,6 +40305,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Hand of Noxus. [T]: [Reaction], [Legion] — [Add] [1]. (Abilities that add resources can't be reacted to. Get the effect if you've played a card this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "诺克萨斯之手",
@@ -40157,6 +40492,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Hand of Noxus. [T]: [Reaction], [Legion] — [Add] [1]. (Abilities that add resources can't be reacted to. Get the effect if you've played a card this turn.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "诺克萨斯之手",
@@ -40323,6 +40659,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Nine-Tailed Fox. When an enemy unit attacks a battlefield you control, give it -1 [S] this turn, to a minimum of 1 [S]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "九尾妖狐",
@@ -40451,6 +40788,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Nine-Tailed Fox. When an enemy unit attacks a battlefield you control, give it -1 [S] this turn, to a minimum of 1 [S]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "九尾妖狐",
@@ -40583,6 +40921,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Blind Monk. [1], [T]: Buff a friendly unit. (If it doesn't have a buff, it gets a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "盲僧",
@@ -40731,6 +41070,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Blind Monk. [1], [T]: Buff a friendly unit. (If it doesn't have a buff, it gets a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "盲僧",
@@ -40871,6 +41211,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Unforgiven. [2], [T]: Move a friendly unit to or from its base."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "疾风剑豪",
@@ -40995,6 +41336,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Unforgiven. [2], [T]: Move a friendly unit to or from its base."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "疾风剑豪",
@@ -41115,6 +41457,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Radiant Dawn. When you stun one or more enemy units, buff a friendly unit. (If it doesn't have a buff, it gets a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "曙光女神",
@@ -41219,6 +41562,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Radiant Dawn. When you stun one or more enemy units, buff a friendly unit. (If it doesn't have a buff, it gets a +1 [S] buff.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "曙光女神",
@@ -41358,6 +41702,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Swift Scout. You may pay [1] to hide a card with [Hidden] instead of [C].\n[1], [T]: Put a Teemo unit you own into your hand from your Champion Zone or the board."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "迅捷斥候",
@@ -41581,6 +41926,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Swift Scout. You may pay [1] to hide a card with [Hidden] instead of [C].\n[1], [T]: Put a Teemo unit you own into your hand from your Champion Zone or the board."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "迅捷斥候",
@@ -41781,6 +42127,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Herald of the Arcane. [1], [T]: Play a 1 [S] Recruit unit token."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "奥术先驱",
@@ -41929,6 +42276,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Herald of the Arcane. [1], [T]: Play a 1 [S] Recruit unit token."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "奥术先驱",
@@ -42069,6 +42417,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Bounty Hunter. [T]: Give a unit [Ganking] this turn. (It can move from battlefield to battlefield.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "赏金猎人",
@@ -42187,6 +42536,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: Bounty Hunter. [T]: Give a unit [Ganking] this turn. (It can move from battlefield to battlefield.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "赏金猎人",
@@ -42308,6 +42658,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: The Boss. When a buffed unit you control would die, you may pay [C] and exhaust me to spend its buff and recall it exhausted instead. (Send it to base. This isn't a move.)\nWhen you conquer, ready me."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "腕豪",
@@ -42437,6 +42788,7 @@
    "height": 2078,
    "alt": "Riftbound Legend: The Boss. When a buffed unit you control would die, you may pay [C] and exhaust me to spend its buff and recall it exhausted instead. (Send it to base. This isn't a move.)\nWhen you conquer, ready me."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "腕豪",
@@ -42551,6 +42903,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Annie, Fiery. Your spells and abilities deal 1 Bonus Damage. (Each instance of damage the spell deals is increased by 1.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "安妮",
@@ -42628,6 +42981,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Firestorm. Deal 3 to all enemy units at a battlefield."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "烈火风暴",
@@ -42716,6 +43070,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Incinerate. [Action] (Play on your turn or in showdowns.)\nDeal 2 to a unit at a battlefield."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "焚烧",
@@ -42832,6 +43187,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Yi, Meditative. While you have 8+ runes, I have +4 [S]."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "易",
@@ -42940,6 +43296,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Zephyr Sage. [Shield] (+1 [S] while I'm a defender.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "和风贤者",
@@ -43062,6 +43419,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Lux, Illuminated. When you play a spell that costs [5] or more, give me +3 [S] this turn."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "拉克丝",
@@ -43197,6 +43555,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Garen, Rugged. [Assault 2], [Shield 2] (+2 [S] while I'm an attacker or defender.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "盖伦",
@@ -43367,6 +43726,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Gentlemen's Duel. [Action] (Play on your turn or in showdowns.)\nGive a friendly unit +3 [S] this turn. Then choose an enemy unit. They deal damage equal to their Mights to each other."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "绅士决斗",
@@ -43502,6 +43862,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Yi, Honed. [Ganking] (I can move from battlefield to battlefield.)\nI enter ready."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "易",
@@ -43610,6 +43971,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Annie, Stubborn. When you play me, return a spell from your trash to your hand."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "安妮",
@@ -43698,6 +44060,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Flash. [Reaction] (Play any time, even before spells and abilities resolve.)\nMove up to 2 friendly units to base."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "闪现",
@@ -43814,6 +44177,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Blast of Power. [Action] (Play on your turn or in showdowns.)\nKill a unit at a battlefield."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "爆能术",
@@ -43931,6 +44295,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Garen, Commander. Other friendly units have +1 [S] here."
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "盖伦",
@@ -44055,6 +44420,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Lux, Crownguard. [T]: [Reaction] — [Add] [2]. Use only to play spells. (Abilities that add resources can't be reacted to.)"
   },
+  "subtype": "champion",
   "zh": {
    "cn": {
     "name": "拉克丝",
@@ -44203,6 +44569,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Recruit the Vanguard. [Action] (Play on your turn or in showdowns.)\nPlay four 1 [S] Recruit unit tokens. (They can be played to your base or to battlefields you control.)"
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "共同献身",
@@ -44327,6 +44694,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Vanguard Attendant. I enter ready."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "先锋扈从",
@@ -44407,6 +44775,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Dark Child - Starter. At the end of your turn, ready 2 runes."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "黑暗之女",
@@ -44487,6 +44856,7 @@
    "height": 1039,
    "alt": "Riftbound Unit: Tibbers. When you play me, deal 3 to all units at battlefields."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "提伯斯",
@@ -44575,6 +44945,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Wuju Bladesman - Starter. While a friendly unit defends alone, it gets +2 [S]."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "无极剑圣",
@@ -44682,6 +45053,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Highlander. [Reaction] (Play any time, even before spells and abilities resolve.)\nChoose a friendly unit. The next time it dies this turn, recall it exhausted instead. (Send it to base. This isn't a move.)"
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "高原血统",
@@ -44798,6 +45170,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Lady of Luminosity - Starter. When you play a spell that costs [5] or more, draw 1."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "光辉女郎",
@@ -44905,6 +45278,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Final Spark. [Action] (Play on your turn or in showdowns.)\nDeal 8 to a unit."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "终极闪光",
@@ -45013,6 +45387,7 @@
    "height": 1039,
    "alt": "Riftbound Legend: Might of Demacia - Starter. When you conquer, if you have 4+ units at that battlefield, draw 2."
   },
+  "subtype": null,
   "zh": {
    "cn": {
     "name": "德玛西亚之力",
@@ -45112,6 +45487,7 @@
    "height": 1039,
    "alt": "Riftbound Spell: Decisive Strike. [Action] (Play on your turn or in showdowns.)\nGive friendly units +2 [S] this turn."
   },
+  "subtype": "signature",
   "zh": {
    "cn": {
     "name": "致命打击",
