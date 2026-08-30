@@ -28,7 +28,9 @@ export function DeckLegality({ result, lang }: { result: LegalityResult; lang: T
           data-legal={result.legal}
         >
           {result.legal
-            ? '✓ 符合核心規則的構築限制'
+            ? warnings.length === 0
+              ? '✓ 符合核心規則的構築限制'
+              : `✓ 沒有違規，但有 ${warnings.length} 項提醒`
             : `尚未完成：${errors.length} 項待處理`}
         </p>
 

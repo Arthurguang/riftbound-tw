@@ -10,6 +10,8 @@ import { expect, test, type Page } from '@playwright/test';
 async function gotoOdds(page: Page, query = '') {
   await page.goto(`/odds${query}`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: '機率計算', level: 1 })).toBeVisible();
+  // 等 React 接手再操作 —— 否則打字只改到 DOM，狀態不會更新
+  await expect(page.locator('[data-odds-ready="true"]')).toBeAttached();
 }
 
 /**
@@ -95,6 +97,7 @@ test.describe('機率計算', () => {
     await page.getByRole('link', { name: '計算機率' }).click();
 
     await expect(page.getByRole('heading', { name: '機率計算', level: 1 })).toBeVisible();
+    await expect(page.locator('[data-odds-ready="true"]')).toBeAttached();
     await expect(page.getByText(/主牌組\s*2\s*張/)).toBeVisible();
     await expect(page.getByRole('heading', { name: '逐回合抽到的機率' })).toBeVisible();
   });
@@ -105,6 +108,7 @@ test.describe('機率計算', () => {
     await page.getByRole('tab', { name: '主牌組', exact: true }).click();
     await page.getByRole('button', { name: /^加入牌組/ }).first().click();
     await page.getByRole('link', { name: '計算機率' }).click();
+    await expect(page.locator('[data-odds-ready="true"]')).toBeAttached();
 
     const firstRow = page.getByRole('row').filter({ hasText: 'T1' }).last();
 
@@ -142,6 +146,7 @@ test.describe('符文機率', () => {
     await page.getByRole('button', { name: '檢查' }).click();
     await page.getByRole('button', { name: /^匯入 \d+ 種卡$/ }).click();
     await page.getByRole('link', { name: '計算機率' }).click();
+    await expect(page.locator('[data-odds-ready="true"]')).toBeAttached();
     await expect(page.getByRole('heading', { name: '各特性符文召出的機率' })).toBeVisible();
   }
 

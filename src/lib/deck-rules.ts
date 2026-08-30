@@ -243,14 +243,34 @@ export function checkLegality(deck: Deck, cardsById: Map<string, Card>): Legalit
     });
   }
 
-  // ── 選定英雄（103.2.a）──
+  /*
+   * ── 選定英雄（103.2.a）──
+   *
+   * 官方規則確實要求指定一張選定英雄：
+   *   103.2　　　主牌堆包含「一張選定英雄單位」
+   *   103.2.a.1　遊戲開始時置於英雄區域
+   *   402.1　　　賽事：40 張「including a chosen champion」
+   *
+   * 但這裡刻意標成「提醒」而不是「錯誤」，是使用者的選擇 ——
+   * 邊組牌邊被紅字擋著很煩，而且隨意玩的時候沒人在意這條。
+   * 訊息裡保留條號並寫明官方要求，這樣要帶去賽事的人不會被誤導。
+   *
+   * 另外：還沒選傳奇時不顯示這條。沒有傳奇就無從指定英雄（103.2.a.2
+   * 要求標籤一致），那時候提醒只是噪音。
+   */
   const champion = deck.championId ? get(deck.championId) : undefined;
   if (!champion) {
-    issues.push({
-      severity: 'error',
-      rule: '103.2.a',
-      message: msg('尚未指定選定英雄。', '尚未指定选定英雄。', 'No Chosen Champion selected.'),
-    });
+    if (legend) {
+      issues.push({
+        severity: 'warning',
+        rule: '103.2.a',
+        message: msg(
+          '尚未指定選定英雄。官方規則要求主牌組包含一張選定英雄，正式賽事會檢查這一項。',
+          '尚未指定选定英雄。官方规则要求主牌堆包含一张选定英雄，正式赛事会检查这一项。',
+          'No Chosen Champion selected. The official rules require one in your main deck, and tournaments check for it.',
+        ),
+      });
+    }
   } else {
     if (champion.subtype !== 'champion') {
       issues.push({

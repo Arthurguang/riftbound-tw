@@ -147,7 +147,7 @@ describe('合法性檢查', () => {
   it('空牌組會逐條指出缺什麼，且每條都附官方條號', () => {
     const result = checkLegality(EMPTY_DECK, byId);
     expect(result.legal).toBe(false);
-    expect(result.issues.length).toBeGreaterThanOrEqual(5);
+    expect(result.issues.length).toBeGreaterThanOrEqual(4);
     for (const issue of result.issues) {
       // 條號格式如 103.2 / 485.4.a —— 沒有條號的訊息不該存在
       expect(issue.rule).toMatch(/^\d{3}(\.\d+)*(\.[a-z])?(\.\d+)?$/);
@@ -241,12 +241,39 @@ describe('合法性檢查', () => {
 });
 
 describe('選定英雄（103.2.a）', () => {
-  it('沒指定選定英雄會被擋下', () => {
+  /*
+   * 官方規則要求指定選定英雄（103.2「一張選定英雄單位」、402.1
+   * 「including a chosen champion」），但本站刻意標成「提醒」而非「錯誤」，
+   * 讓人可以邊組邊調整。訊息裡必須保留條號與「官方規則要求」的字樣，
+   * 否則要帶去賽事的人會被誤導。
+   */
+  it('沒指定選定英雄是「提醒」，不會擋下牌組', () => {
     const deck = buildDeck({ championId: null });
-    expect(checkLegality(deck, byId).issues.some((i) => i.rule.startsWith('103.2.a'))).toBe(true);
+    const result = checkLegality(deck, byId);
+
+    const issue = result.issues.find((i) => i.rule === '103.2.a');
+    expect(issue).toBeDefined();
+    expect(issue?.severity).toBe('warning');
+    expect(result.legal).toBe(true);
   });
 
-  it('選定英雄必須是英雄單位，不能是普通單位', () => {
+  it('提醒訊息要說明官方規則其實有要求', () => {
+    const deck = buildDeck({ championId: null });
+    const issue = checkLegality(deck, byId).issues.find((i) => i.rule === '103.2.a')!;
+
+    expect(issue.message['zh-TW']).toContain('官方規則要求');
+    expect(issue.message['zh-CN']).toContain('官方规则要求');
+    expect(issue.message.en).toMatch(/official rules require/i);
+  });
+
+  it('還沒選傳奇時不提這條 —— 那時候無從指定英雄', () => {
+    const result = checkLegality(EMPTY_DECK, byId);
+    expect(result.issues.some((i) => i.rule === '103.2.a')).toBe(false);
+    // 該提的是「先選傳奇」
+    expect(result.issues.some((i) => i.rule === '103.1')).toBe(true);
+  });
+
+  it('指定了不合規的英雄仍然是錯誤 —— 那是主動選錯，不是還沒選', () => {
     const deck = buildDeck();
     const notChampion = legalCards.find((c) => c.subtype !== 'champion')!;
     const wrong = {
@@ -254,8 +281,13 @@ describe('選定英雄（103.2.a）', () => {
       championId: notChampion.id,
       main: { ...deck.main, [notChampion.id]: 1 },
     };
-    expect(checkLegality(wrong, byId).issues.some((i) => i.rule.startsWith('103.2.a'))).toBe(true);
+    const result = checkLegality(wrong, byId);
+
+    const issue = result.issues.find((i) => i.rule === '103.2.a.2');
+    expect(issue?.severity).toBe('error');
+    expect(result.legal).toBe(false);
   });
+
 });
 
 describe('資料本身', () => {

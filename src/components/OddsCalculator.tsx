@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { cardName } from '@/lib/cards';
@@ -100,6 +100,16 @@ export function OddsCalculator({ cards }: { cards: Card[] }) {
 
   const [onThePlay, setOnThePlay] = useState(true);
 
+  /**
+   * 掛載完成的標記。
+   *
+   * 端對端測試要等 React 真的接手之後才能操作輸入框 ——
+   * 在那之前打字只會改到 DOM 的值，React 的狀態不會跟著變，
+   * 畫面上的機率就不會更新（這個問題實際發生過）。
+   */
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
+
   // ── 快速計算 ──────────────────────────────────────────────────
   const [population, setPopulation] = useState(40);
   const [copies, setCopies] = useState(3);
@@ -173,7 +183,7 @@ export function OddsCalculator({ cards }: { cards: Card[] }) {
   const head = 'px-2 py-1.5 text-right text-xs font-medium text-ink-dim';
 
   return (
-    <div className="mx-auto w-full max-w-[1100px] px-4 py-8 sm:px-6">
+    <div className="mx-auto w-full max-w-[1100px] px-4 py-8 sm:px-6" data-odds-ready={ready}>
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">機率計算</h1>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-dim">
