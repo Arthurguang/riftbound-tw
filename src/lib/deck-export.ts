@@ -11,12 +11,17 @@
  * 上線當天 CI 就抓到過一個套件（postcss）本身的高風險漏洞 ——
  * 那不是我們寫錯，但如果沒有自動掃描就不會有人發現。
  * 能不裝就不裝。
+ *
+ * ── 收藏與牌組合併在同一份檔案 ──────────────────────────────────
+ * 開啟收藏記錄後，每種格式都會**在同一份檔案裡**標出你各有幾張、還缺幾張。
+ * 實體卡玩家帶去卡店時只要看一張表，不必在「牌表」和「缺卡清單」之間切換。
  */
 
 import { cardName } from './cards';
 import { TYPE_LABELS, DOMAIN_LABELS } from './labels';
-import { RULES_VERSION, type Deck } from './deck-rules';
+import { RULES_VERSION, deckNeeds, type Deck } from './deck-rules';
 import { shortCode } from './deck-url';
+import type { Collection } from './collection';
 import type { TextLang } from './i18n';
 import type { Card } from './types';
 
@@ -78,19 +83,103 @@ const ZONE_LABELS: Record<ExportRow['zone'], Record<TextLang, string>> = {
 
 export const zoneLabel = (zone: ExportRow['zone'], lang: TextLang) => ZONE_LABELS[zone][lang];
 
+// ─── 把收藏狀況標到每一列上 ──────────────────────────────────────
+
+export type AnnotatedRow = ExportRow & {
+  /**
+   * 這個卡名你總共有幾張、還缺幾張。
+   *
+   * 為什麼是 null 而不是 0：
+   *   · 沒有開啟收藏記錄時，全部是 null —— 匯出就完全不會出現這些欄位
+   *   · 同一個卡名出現在多列時（異畫版、或選定英雄同時列在主牌組），
+   *     只有**第一列**帶數字，其餘是 null。
+   *     否則把每列的「還缺」加起來會重複計算。
+   */
+  owned: number | null;
+  short: number | null;
+};
+
+/**
+ * 幫每一列標上收藏狀況。
+ *
+ * 官方以「卡名」計算張數上限，異畫版與普通版同名 ——
+ * 所以擁有與缺卡都要以卡名為單位彙總，否則「我有異畫版」會被誤判成缺卡。
+ */
+export function annotateRows(
+  deck: Deck,
+  byId: Map<string, Card>,
+  collection: Collection | null,
+): AnnotatedRow[] {
+  const rows = deckRows(deck, byId);
+  if (!collection) {
+    return rows.map((row) => ({ ...row, owned: null, short: null }));
+  }
+
+  // 依卡名彙總「你有幾張」
+  const ownedByName = new Map<string, number>();
+  for (const [id, qty] of Object.entries(collection)) {
+    const name = byId.get(id)?.name;
+    if (name === undefined) continue;
+    ownedByName.set(name, (ownedByName.get(name) ?? 0) + qty);
+  }
+
+  // 依卡名彙總「牌組需要幾張」
+  const neededByName = new Map<string, number>();
+  for (const [id, qty] of Object.entries(deckNeeds(deck))) {
+    const name = byId.get(id)?.name;
+    if (name === undefined) continue;
+    neededByName.set(name, (neededByName.get(name) ?? 0) + qty);
+  }
+
+  const seen = new Set<string>();
+  return rows.map((row) => {
+    const name = row.card.name;
+    if (seen.has(name)) return { ...row, owned: null, short: null };
+    seen.add(name);
+
+    const owned = ownedByName.get(name) ?? 0;
+    const needed = neededByName.get(name) ?? 0;
+    return { ...row, owned, short: Math.max(0, needed - owned) };
+  });
+}
+
+/** 缺卡總計，用在標題與摘要。 */
+export function shortSummary(rows: AnnotatedRow[]): { cards: number; kinds: number } {
+  const missing = rows.filter((r) => (r.short ?? 0) > 0);
+  return {
+    cards: missing.reduce((sum, r) => sum + (r.short ?? 0), 0),
+    kinds: missing.length,
+  };
+}
+
+const MISSING_HEADING: Record<TextLang, string> = {
+  'zh-TW': '還需要蒐集',
+  'zh-CN': '还需要收集',
+  en: 'Still Needed',
+};
+
+const ALL_OWNED: Record<TextLang, string> = {
+  'zh-TW': '這副牌組你已經湊齊了。',
+  'zh-CN': '这副卡组你已经凑齐了。',
+  en: 'You already own every card in this deck.',
+};
+
 // ─── 純文字 ──────────────────────────────────────────────────────
 
 /**
  * 卡牌遊戲通用的牌表格式：「張數 卡名 (卡號)」。
  * 適合貼到論壇或 Discord。
+ *
+ * 開啟收藏記錄時，缺卡會直接標在該列後面，並在最後附上彙整清單。
  */
 export function toPlainText(
   deck: Deck,
   byId: Map<string, Card>,
   lang: TextLang,
   deckName: string,
+  collection: Collection | null = null,
 ): string {
-  const rows = deckRows(deck, byId);
+  const rows = annotateRows(deck, byId, collection);
   const lines: string[] = [deckName, ''];
 
   for (const zone of ['legend', 'champion', 'main', 'runes', 'battlefields'] as const) {
@@ -98,10 +187,29 @@ export function toPlainText(
     if (inZone.length === 0) continue;
     const total = inZone.reduce((sum, r) => sum + r.qty, 0);
     lines.push(`【${zoneLabel(zone, lang)}】${total}`);
-    for (const { card, qty } of inZone) {
+
+    for (const { card, qty, owned, short } of inZone) {
       const name = cardName(card, lang);
       const english = lang === 'en' ? '' : ` / ${card.name}`;
-      lines.push(`${qty} ${name}${english} (${card.code})`);
+      // 只有缺的才標記，湊齊的不加雜訊
+      const mark = short !== null && short > 0 ? `　← 有 ${owned}，缺 ${short}` : '';
+      lines.push(`${qty} ${name}${english} (${card.code})${mark}`);
+    }
+    lines.push('');
+  }
+
+  if (collection) {
+    const { cards, kinds } = shortSummary(rows);
+    lines.push(`【${MISSING_HEADING[lang]}】`);
+    if (cards === 0) {
+      lines.push(ALL_OWNED[lang]);
+    } else {
+      lines.push(`共缺 ${cards} 張，${kinds} 種`);
+      for (const row of rows) {
+        if ((row.short ?? 0) <= 0) continue;
+        const name = cardName(row.card, lang);
+        lines.push(`${row.short} ${name} (${row.card.code})　（已有 ${row.owned}）`);
+      }
     }
     lines.push('');
   }
@@ -118,11 +226,33 @@ const CSV_HEADERS: Record<TextLang, string[]> = {
   en: ['Zone', 'Qty', 'Name', 'English Name', 'Code', 'Type', 'Domain', 'Energy', 'Might'],
 };
 
-export function toCsv(deck: Deck, byId: Map<string, Card>, lang: TextLang): string {
-  const rows: (string | number)[][] = [CSV_HEADERS[lang]];
+/** 開啟收藏時多出來的兩欄。 */
+const CSV_COLLECTION_HEADERS: Record<TextLang, string[]> = {
+  'zh-TW': ['擁有', '還缺'],
+  'zh-CN': ['拥有', '还缺'],
+  en: ['Owned', 'Short'],
+};
 
-  for (const { zone, card, qty } of deckRows(deck, byId)) {
-    rows.push([
+/**
+ * 匯出成 CSV。
+ *
+ * 開啟收藏記錄時會多出「擁有」「還缺」兩欄 —— 在 Excel 裡對「還缺」
+ * 由大到小排序，就是一份可以直接帶去卡店的採購清單。
+ * 不另外做第二張表，是為了讓整份檔案維持成單一可排序、可篩選的表格。
+ */
+export function toCsv(
+  deck: Deck,
+  byId: Map<string, Card>,
+  lang: TextLang,
+  collection: Collection | null = null,
+): string {
+  const header = [...CSV_HEADERS[lang]];
+  if (collection) header.push(...CSV_COLLECTION_HEADERS[lang]);
+
+  const rows: (string | number)[][] = [header];
+
+  for (const { zone, card, qty, owned, short } of annotateRows(deck, byId, collection)) {
+    const row: (string | number)[] = [
       zoneLabel(zone, lang),
       qty,
       cardName(card, lang),
@@ -132,35 +262,12 @@ export function toCsv(deck: Deck, byId: Map<string, Card>, lang: TextLang): stri
       card.domains.map((d) => DOMAIN_LABELS[d][lang]).join(' / '),
       card.energy ?? '',
       card.might ?? '',
-    ]);
-  }
-  return toCsvText(rows);
-}
-
-/** 缺卡清單的 CSV —— 可以直接印出來帶去卡店。 */
-export function missingToCsv(
-  missing: { cardId: string; needed: number; owned: number; short: number }[],
-  byId: Map<string, Card>,
-  lang: TextLang,
-): string {
-  const header: Record<TextLang, string[]> = {
-    'zh-TW': ['卡名', '英文卡名', '卡號', '牌組需要', '目前擁有', '還缺'],
-    'zh-CN': ['卡名', '英文卡名', '卡号', '卡组需要', '目前拥有', '还缺'],
-    en: ['Name', 'English Name', 'Code', 'Needed', 'Owned', 'Short'],
-  };
-
-  const rows: (string | number)[][] = [header[lang]];
-  for (const entry of missing) {
-    const card = byId.get(entry.cardId);
-    if (!card) continue;
-    rows.push([
-      cardName(card, lang),
-      card.name,
-      card.code,
-      entry.needed,
-      entry.owned,
-      entry.short,
-    ]);
+    ];
+    if (collection) {
+      // 同名卡的第二列起留白 —— 數字已經算在第一列，重複填會讓加總失真
+      row.push(owned ?? '', short ?? '');
+    }
+    rows.push(row);
   }
   return toCsvText(rows);
 }

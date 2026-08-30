@@ -20,7 +20,6 @@ import { buildCodeIndex, decodeDeck, encodeDeck } from '@/lib/deck-url';
 import {
   loadCollection,
   loadTracking,
-  missingCards,
   saveCollection,
   saveTracking,
   type Collection,
@@ -174,20 +173,6 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
   const rowsFor = (zone: 'main' | 'runes' | 'battlefields') =>
     rows.filter((r) => r.zone === zone).map(({ card, qty }) => ({ card, qty }));
 
-  /** 整副牌組需要的所有卡（用來算缺卡）。 */
-  const allNeeds = useMemo(() => {
-    const needs: Record<string, number> = { ...deck.main };
-    for (const [id, qty] of Object.entries(deck.runes)) needs[id] = (needs[id] ?? 0) + qty;
-    for (const [id, qty] of Object.entries(deck.battlefields)) needs[id] = (needs[id] ?? 0) + qty;
-    if (deck.legendId) needs[deck.legendId] = (needs[deck.legendId] ?? 0) + 1;
-    return needs;
-  }, [deck]);
-
-  const missing = useMemo(
-    () => missingCards(allNeeds, collection, (id) => byId.get(id)?.name),
-    [allNeeds, collection, byId],
-  );
-
   /** 費用曲線（只看主牌組）。 */
   const curve = useMemo(() => {
     const buckets = new Map<number, number>();
@@ -321,7 +306,6 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
             byId={byId}
             cards={cards}
             lang={lang}
-            missing={missing}
             collection={collection}
             trackCollection={trackCollection}
             saveFailed={saveFailed}

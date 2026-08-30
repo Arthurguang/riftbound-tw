@@ -137,33 +137,73 @@ body {
 
 /* 列印版牌表：只印 #deck-print，其餘全部隱藏。
    這就是「PDF 匯出」—— 瀏覽器內建的「列印 → 另存為 PDF」，
-   不需要任何 PDF 套件（少一個套件就少一份供應鏈風險）。 */
+   不需要任何 PDF 套件（少一個套件就少一份供應鏈風險）。
+
+   #deck-print 是用 React portal 掛在 <body> 底下的，不是埋在元件樹裡。
+   原因：如果它是頁面深處的子元素，就只能用 visibility: hidden 藏住其他東西，
+   但 visibility: hidden 仍然佔版面高度 —— 印出來會多好幾張空白紙。
+   掛在 body 底下才能用 display: none 真正把其他東西收掉。 */
 #deck-print {
   display: none;
 }
 
 @media print {
-  body * {
-    visibility: hidden;
+  html,
+  body {
+    background: #fff;
   }
-  #deck-print,
-  #deck-print * {
-    visibility: visible;
+
+  /* 除了列印版牌表，body 底下其他東西全部收起來（不佔版面） */
+  body > *:not(#deck-print) {
+    display: none !important;
   }
+
   #deck-print {
     display: block;
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    padding: 0;
-    background: #fff;
     color: #000;
     font-size: 11pt;
+    line-height: 1.5;
   }
-  #deck-print a {
-    color: #000;
-    text-decoration: none;
+
+  /* Tailwind 的樣式重置把標題變得跟內文一樣大，列印時要自己指定回來 */
+  #deck-print h1 {
+    margin: 0 0 4mm;
+    font-size: 18pt;
+    font-weight: 700;
   }
+
+  #deck-print h2 {
+    margin: 6mm 0 2mm;
+    padding-bottom: 1mm;
+    border-bottom: 1px solid #999;
+    font-size: 12pt;
+    font-weight: 700;
+  }
+
+  #deck-print ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  #deck-print li {
+    padding: 0.8mm 0;
+    /* 一個區域盡量不要被切到下一頁中間 */
+    break-inside: avoid;
+  }
+
+  #deck-print p {
+    margin: 2mm 0;
+  }
+
+  #deck-print .print-footer {
+    margin-top: 8mm;
+    padding-top: 2mm;
+    border-top: 1px solid #ccc;
+    font-size: 9pt;
+    color: #555;
+  }
+
   @page {
     margin: 15mm;
   }

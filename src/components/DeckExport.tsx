@@ -1,20 +1,21 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { cardName } from '@/lib/cards';
 import {
+  annotateRows,
   collectionFromCsv,
   collectionToCsv,
-  deckRows,
   downloadText,
-  missingToCsv,
   safeFilename,
+  shortSummary,
   toCsv,
   toPlainText,
   zoneLabel,
 } from '@/lib/deck-export';
 import { downloadBlob, renderDeckImage } from '@/lib/deck-image';
-import type { Collection, MissingEntry } from '@/lib/collection';
+import type { Collection } from '@/lib/collection';
 import type { Deck } from '@/lib/deck-rules';
 import type { TextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
@@ -30,7 +31,6 @@ export function DeckExport({
   byId,
   cards,
   lang,
-  missing,
   collection,
   trackCollection,
   saveFailed,
@@ -42,7 +42,6 @@ export function DeckExport({
   byId: Map<string, Card>;
   cards: Card[];
   lang: TextLang;
-  missing: MissingEntry[];
   collection: Collection;
   trackCollection: boolean;
   saveFailed: boolean;
@@ -50,11 +49,22 @@ export function DeckExport({
   onTrackChange: (on: boolean) => void;
 }) {
   const [notice, setNotice] = useState<Notice>(null);
+  /**
+   * 列印版面要掛到 <body> 底下（見 globals.css 的說明），
+   * 而 document 只有在瀏覽器端才存在，所以要等掛載後才建立。
+   */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const rows = deckRows(deck, byId);
+  /** 沒開啟收藏記錄就傳 null —— 匯出的檔案不會多出任何欄位。 */
+  const withCollection = trackCollection ? collection : null;
+
+  const rows = annotateRows(deck, byId, withCollection);
   const isEmpty = rows.length === 0;
+  const shortfall = shortSummary(rows);
 
   const say = (kind: NonNullable<Notice>['kind'], text: string) => setNotice({ kind, text });
 
@@ -71,7 +81,7 @@ export function DeckExport({
   };
 
   const exportText = () =>
-    copyToClipboard(toPlainText(deck, byId, lang, deckName), '牌表文字');
+    copyToClipboard(toPlainText(deck, byId, lang, deckName, withCollection), '牌表文字');
 
   const exportShareUrl = () => {
     const url = `${window.location.origin}${window.location.pathname}${window.location.search}`;
@@ -79,14 +89,19 @@ export function DeckExport({
   };
 
   const exportCsv = () => {
-    downloadText(safeFilename(deckName, 'csv'), toCsv(deck, byId, lang), 'text/csv');
-    say('ok', 'CSV 已下載（Excel 可直接開啟）');
+    downloadText(safeFilename(deckName, 'csv'), toCsv(deck, byId, lang, withCollection), 'text/csv');
+    say(
+      'ok',
+      withCollection
+        ? 'CSV 已下載，含「擁有」「還缺」兩欄'
+        : 'CSV 已下載（Excel 可直接開啟）',
+    );
   };
 
   const exportPng = async () => {
     setBusy(true);
     try {
-      const blob = await renderDeckImage(deck, byId, lang, deckName);
+      const blob = await renderDeckImage(deck, byId, lang, deckName, withCollection);
       if (!blob) {
         say('error', '這個瀏覽器不支援圖片輸出，請改用其他格式');
         return;
@@ -102,15 +117,6 @@ export function DeckExport({
     // 用瀏覽器內建的列印功能，在對話框裡選「另存為 PDF」
     say('ok', '請在列印視窗選擇「另存為 PDF」');
     window.print();
-  };
-
-  const exportMissing = () => {
-    downloadText(
-      safeFilename(`${deckName}-缺卡清單`, 'csv'),
-      missingToCsv(missing, byId, lang),
-      'text/csv',
-    );
-    say('ok', '缺卡清單已下載');
   };
 
   // ── 收藏的匯出／匯入 ───────────────────────────────────────────
@@ -271,45 +277,39 @@ export function DeckExport({
 
       {/* ── 缺卡清單 ── */}
       {trackCollection && !isEmpty && (
-        <section className="mb-5 rounded-lg border border-line bg-surface-1 p-3">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold text-ink">還需要蒐集</h3>
-            {missing.length > 0 && (
-              <button type="button" onClick={exportMissing} className={btn}>
-                下載清單
-              </button>
-            )}
-          </div>
+        <section
+          data-testid="deck-missing"
+          className="mb-5 rounded-lg border border-line bg-surface-1 p-3"
+        >
+          <h3 className="mb-2 text-sm font-semibold text-ink">還需要蒐集</h3>
 
-          {missing.length === 0 ? (
+          {shortfall.cards === 0 ? (
             <p className="text-xs text-emerald-300">這副牌組你已經湊齊了。</p>
           ) : (
             <>
               <p className="mb-2 text-xs text-ink-faint">
-                共缺 {missing.reduce((sum, m) => sum + m.short, 0)} 張，
-                {missing.length} 種。異畫版與普通版視為同一張卡（官方以卡名計算張數上限）。
+                共缺 {shortfall.cards} 張，{shortfall.kinds} 種。
+                異畫版與普通版視為同一張卡（官方以卡名計算張數上限）。
+                <br />
+                這份清單已經包含在上面每一種匯出格式裡，不需要另外下載。
               </p>
               <ul className="space-y-1">
-                {missing.map((entry) => {
-                  const card = byId.get(entry.cardId);
-                  if (!card) return null;
-                  return (
+                {rows
+                  .filter((row) => (row.short ?? 0) > 0)
+                  .map((row) => (
                     <li
-                      key={entry.cardId}
+                      key={row.card.id}
                       className="flex items-center justify-between gap-2 rounded border border-line px-2 py-1 text-xs"
                     >
                       <span className="min-w-0 flex-1 truncate text-ink">
-                        {cardName(card, lang)}
+                        {cardName(row.card, lang)}
                       </span>
                       <span className="shrink-0 font-mono text-[0.7rem] text-ink-faint">
-                        {card.code}
+                        {row.card.code}
                       </span>
-                      <span className="shrink-0 text-amber-400">
-                        {entry.owned}/{entry.needed}
-                      </span>
+                      <span className="shrink-0 text-amber-400">缺 {row.short}</span>
                     </li>
-                  );
-                })}
+                  ))}
               </ul>
             </>
           )}
@@ -317,7 +317,9 @@ export function DeckExport({
       )}
 
       {/* ── 列印專用版面（畫面上看不到，只在列印/存 PDF 時出現） ── */}
-      <div id="deck-print" aria-hidden="true">
+      {mounted &&
+        createPortal(
+          <div id="deck-print" aria-hidden="true">
         <h1>{deckName}</h1>
         {(['legend', 'champion', 'main', 'runes', 'battlefields'] as const).map((zone) => {
           const inZone = rows.filter((r) => r.zone === zone);
@@ -329,18 +331,48 @@ export function DeckExport({
                 {zoneLabel(zone, lang)}（{total}）
               </h2>
               <ul>
-                {inZone.map(({ card, qty }) => (
+                {inZone.map(({ card, qty, short, owned }) => (
                   <li key={card.id}>
                     {qty} × {cardName(card, lang)}
                     {lang !== 'en' && ` / ${card.name}`} （{card.code}）
+                    {short !== null && short > 0 && ` — 已有 ${owned}，還缺 ${short}`}
                   </li>
                 ))}
               </ul>
             </div>
           );
         })}
-        <p>符文戰場資料庫 · 本頁由瀏覽器列印功能產生</p>
-      </div>
+
+        {/* 缺卡清單印在同一張紙上 —— 帶去卡店只要看這一份 */}
+        {trackCollection && (
+          <div>
+            <h2>還需要蒐集</h2>
+            {shortfall.cards === 0 ? (
+              <p>這副牌組你已經湊齊了。</p>
+            ) : (
+              <>
+                <p>
+                  共缺 {shortfall.cards} 張，{shortfall.kinds} 種
+                </p>
+                <ul>
+                  {rows
+                    .filter((row) => (row.short ?? 0) > 0)
+                    .map((row) => (
+                      <li key={`missing-${row.card.id}`}>
+                        {row.short} × {cardName(row.card, lang)} （{row.card.code}）— 已有{' '}
+                        {row.owned}
+                      </li>
+                    ))}
+                </ul>
+              </>
+            )}
+          </div>
+        )}
+
+            <p className="print-footer">符文戰場資料庫 · 本頁由瀏覽器列印功能產生</p>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
