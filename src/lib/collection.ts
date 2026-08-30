@@ -84,59 +84,6 @@ export function saveCollection(collection: Collection): boolean {
   }
 }
 
-// ─── 缺卡計算 ────────────────────────────────────────────────────
-
-export type MissingEntry = {
-  cardId: string;
-  /** 牌組需要幾張 */
-  needed: number;
-  /** 你有幾張 */
-  owned: number;
-  /** 還差幾張 */
-  short: number;
-};
-
-/**
- * 算出「照這副牌組，你還缺哪些卡、各缺幾張」。
- *
- * 這是實體卡牌玩家最實用的功能 —— 可以直接拿著清單去卡店或交換。
- *
- * 注意同名卡的處理：官方以「卡名」計算張數上限，異畫版與普通版同名。
- * 所以缺卡也要以卡名為單位計算，否則會把「我有異畫版」誤判成缺卡。
- */
-export function missingCards(
-  needs: Record<string, number>,
-  collection: Collection,
-  nameOf: (cardId: string) => string | undefined,
-): MissingEntry[] {
-  // 先把「擁有張數」依卡名彙總
-  const ownedByName = new Map<string, number>();
-  for (const [id, qty] of Object.entries(collection)) {
-    const name = nameOf(id);
-    if (name === undefined) continue;
-    ownedByName.set(name, (ownedByName.get(name) ?? 0) + qty);
-  }
-
-  // 同一張卡名在牌組裡可能來自不同版本，也要先彙總
-  const neededByName = new Map<string, { qty: number; cardId: string }>();
-  for (const [id, qty] of Object.entries(needs)) {
-    if (qty <= 0) continue;
-    const name = nameOf(id);
-    if (name === undefined) continue;
-    const existing = neededByName.get(name);
-    neededByName.set(name, { qty: (existing?.qty ?? 0) + qty, cardId: existing?.cardId ?? id });
-  }
-
-  const missing: MissingEntry[] = [];
-  for (const [name, { qty, cardId }] of neededByName) {
-    const owned = ownedByName.get(name) ?? 0;
-    if (owned < qty) {
-      missing.push({ cardId, needed: qty, owned, short: qty - owned });
-    }
-  }
-  return missing;
-}
-
 // ─── 開關偏好 ────────────────────────────────────────────────────
 
 /** 讀取「是否開啟收藏記錄」。沒有存過就依收藏是否為空來判斷。 */

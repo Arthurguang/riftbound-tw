@@ -12,15 +12,16 @@
 
 import { describe, expect, it } from 'vitest';
 import { ALL_CARDS } from '../../src/lib/cards';
-import { EMPTY_DECK, type Deck } from '../../src/lib/deck-rules';
+import { EMPTY_DECK, zoneForCard, type Deck } from '../../src/lib/deck-rules';
 import { buildCodeIndex, decodeDeck, encodeDeck, shortCode } from '../../src/lib/deck-url';
-import { loadCollection, missingCards } from '../../src/lib/collection';
+import { loadCollection } from '../../src/lib/collection';
 import {
+  annotateRows,
   collectionFromCsv,
   collectionToCsv,
   deckRows,
-  missingToCsv,
   safeFilename,
+  shortSummary,
   toCsv,
   toPlainText,
 } from '../../src/lib/deck-export';
@@ -174,18 +175,26 @@ describe('收藏的讀取驗證', () => {
 });
 
 describe('缺卡計算', () => {
-  const nameOf = (id: string) => byId.get(id)?.name;
+  /** 取某個卡名那一列的收藏狀況。 */
+  const statusOf = (deck: Deck, collection: Record<string, number>, cardId: string) =>
+    annotateRows(deck, byId, collection).find((r) => r.card.name === byId.get(cardId)!.name);
 
   it('沒有收藏時，牌組需要的每一張都算缺', () => {
-    const missing = missingCards({ [unit.id]: 3 }, {}, nameOf);
-    expect(missing).toHaveLength(1);
-    expect(missing[0]!.short).toBe(3);
-    expect(missing[0]!.owned).toBe(0);
+    const deck = { ...EMPTY_DECK, main: { [unit.id]: 3 } };
+    const status = statusOf(deck, {}, unit.id);
+    expect(status).toMatchObject({ owned: 0, short: 3 });
   });
 
-  it('湊齊了就不列入缺卡', () => {
-    expect(missingCards({ [unit.id]: 3 }, { [unit.id]: 3 }, nameOf)).toEqual([]);
-    expect(missingCards({ [unit.id]: 3 }, { [unit.id]: 5 }, nameOf)).toEqual([]);
+  it('湊齊了就不算缺', () => {
+    const deck = { ...EMPTY_DECK, main: { [unit.id]: 3 } };
+    expect(statusOf(deck, { [unit.id]: 3 }, unit.id)).toMatchObject({ short: 0 });
+    // 有多的也不會算成負數
+    expect(statusOf(deck, { [unit.id]: 5 }, unit.id)).toMatchObject({ owned: 5, short: 0 });
+  });
+
+  it('部分擁有時只算差額', () => {
+    const deck = { ...EMPTY_DECK, main: { [unit.id]: 3 } };
+    expect(statusOf(deck, { [unit.id]: 1 }, unit.id)).toMatchObject({ owned: 1, short: 2 });
   });
 
   it('異畫版與普通版同名，應該視為同一張卡', () => {
@@ -199,12 +208,45 @@ describe('缺卡計算', () => {
 
     const [normalId, altId] = pair as [string, string];
     // 牌組要 2 張普通版，手上有 2 張異畫版 → 不算缺
-    expect(missingCards({ [normalId]: 2 }, { [altId]: 2 }, nameOf)).toEqual([]);
+    const deck = { ...EMPTY_DECK, main: { [normalId]: 2 } };
+    expect(statusOf(deck, { [altId]: 2 }, normalId)).toMatchObject({ short: 0 });
   });
 
-  it('部分擁有時只算差額', () => {
-    const missing = missingCards({ [unit.id]: 3 }, { [unit.id]: 1 }, nameOf);
-    expect(missing[0]).toMatchObject({ needed: 3, owned: 1, short: 2 });
+  it('同名卡出現在多列時，數字只算一次 —— 否則加總會重複', () => {
+    const groups = new Map<string, string[]>();
+    for (const card of ALL_CARDS) {
+      if (zoneForCard(card) !== 'main') continue;
+      groups.set(card.name, [...(groups.get(card.name) ?? []), card.id]);
+    }
+    const pair = [...groups.values()].find((ids) => ids.length >= 2);
+    expect(pair).toBeDefined();
+
+    const [a, b] = pair as [string, string];
+    const deck = { ...EMPTY_DECK, main: { [a]: 1, [b]: 1 } };
+    const rows = annotateRows(deck, byId, {});
+
+    const withNumbers = rows.filter((r) => r.short !== null);
+    expect(withNumbers).toHaveLength(1);
+    expect(withNumbers[0]!.short).toBe(2); // 兩列合計需要 2 張
+    expect(shortSummary(rows).cards).toBe(2);
+  });
+
+  it('選定英雄不會被重複計算 —— 它本來就是主牌組的一張', () => {
+    const champion = ALL_CARDS.find((c) => c.subtype === 'champion')!;
+    const deck = { ...EMPTY_DECK, championId: champion.id, main: { [champion.id]: 1 } };
+
+    // deckRows 會為了顯示各列一次（選定英雄 + 主牌組），但需求只有 1 張
+    expect(deckRows(deck, byId).filter((r) => r.card.id === champion.id)).toHaveLength(2);
+    expect(shortSummary(annotateRows(deck, byId, {})).cards).toBe(1);
+  });
+
+  it('沒開啟收藏記錄時，每一列都不帶收藏數字', () => {
+    const deck = { ...EMPTY_DECK, main: { [unit.id]: 3 } };
+    for (const row of annotateRows(deck, byId, null)) {
+      expect(row.owned).toBeNull();
+      expect(row.short).toBeNull();
+    }
+    expect(shortSummary(annotateRows(deck, byId, null)).cards).toBe(0);
   });
 });
 
@@ -212,7 +254,6 @@ describe('匯出格式', () => {
   it('CSV 開頭有 BOM —— 否則 Excel 開啟中文會亂碼', () => {
     expect(toCsv(sample, byId, 'zh-TW').charCodeAt(0)).toBe(0xfeff);
     expect(collectionToCsv({ [unit.id]: 2 }, byId, 'zh-TW').charCodeAt(0)).toBe(0xfeff);
-    expect(missingToCsv([], byId, 'zh-TW').charCodeAt(0)).toBe(0xfeff);
   });
 
   it('含逗號或引號的卡名會被正確跳脫', () => {
@@ -276,6 +317,78 @@ describe('匯出格式', () => {
     const result = collectionFromCsv(csv, ALL_CARDS);
     expect(result.collection).toEqual({});
     expect(Object.prototype).not.toHaveProperty('polluted');
+  });
+
+  // ── 牌組與缺卡合併在同一份檔案 ──
+
+  it('沒開啟收藏時，匯出的檔案跟以前完全一樣', () => {
+    const csv = toCsv(sample, byId, 'zh-TW');
+    expect(csv.split('\r\n')[0]!.split(',')).toHaveLength(9);
+    expect(csv).not.toContain('還缺');
+    expect(toPlainText(sample, byId, 'zh-TW', '測試')).not.toContain('還需要蒐集');
+  });
+
+  it('開啟收藏後，CSV 多出「擁有」「還缺」兩欄', () => {
+    const csv = toCsv(sample, byId, 'zh-TW', { [unit.id]: 1 });
+    const header = csv.split('\r\n')[0]!.split(',');
+
+    expect(header).toHaveLength(11);
+    expect(header.slice(-2)).toEqual(['擁有', '還缺']);
+
+    // 牌組要 3 張、手上 1 張 → 該列的最後兩欄是 1 與 2
+    const unitLine = csv.split('\r\n').find((l) => l.includes(unit.code))!;
+    expect(unitLine.split(',').slice(-2)).toEqual(['1', '2']);
+  });
+
+  it('CSV 是單一張表：一列標題、沒有空行、列數等於牌組列數', () => {
+    // 含逗號的卡名（資料裡有 80 張）也要能正確包在引號裡，
+    // 所以這裡不用逗號數量判斷，改驗「一份檔案就是一張表」這個性質。
+    const withComma = ALL_CARDS.find((c) => c.name.includes(','))!;
+    const deck = { ...sample, main: { ...sample.main, [withComma.id]: 1 } };
+    const csv = toCsv(deck, byId, 'zh-TW', { [unit.id]: 1 });
+    const lines = csv.split('\r\n');
+
+    expect(lines.filter((l) => l.trim() === '')).toEqual([]);
+    expect(lines).toHaveLength(deckRows(deck, byId).length + 1);
+    expect(lines[0]).toContain('還缺');
+    // 標題只出現一次 —— 沒有第二張表接在後面
+    expect(lines.filter((l) => l === lines[0])).toHaveLength(1);
+    expect(csv).toContain(`"${withComma.name}"`);
+  });
+
+  it('純文字牌表把缺卡標在該列，並在最後附上彙整清單', () => {
+    const text = toPlainText(sample, byId, 'zh-TW', '測試牌組', { [unit.id]: 1 });
+
+    expect(text).toContain('還需要蒐集');
+    expect(text).toContain('共缺');
+    // 缺卡直接標在該張卡那一列
+    expect(text).toMatch(new RegExp(`${unit.code.replace(/[/]/g, '\/')}.*缺 2`));
+  });
+
+  it('全部湊齊時，檔案會明說已湊齊而不是留白', () => {
+    const full = {
+      [legend.id]: 1,
+      [unit.id]: 3,
+      [rune.id]: 12,
+      [battlefield.id]: 3,
+    };
+    const text = toPlainText(sample, byId, 'zh-TW', '測試', full);
+
+    expect(text).toContain('已經湊齊');
+    expect(text).not.toContain('共缺');
+  });
+
+  it('三種語言的合併欄位都有對應翻譯', () => {
+    const expected = {
+      'zh-TW': ['擁有', '還缺'],
+      'zh-CN': ['拥有', '还缺'],
+      en: ['Owned', 'Short'],
+    } as const;
+
+    for (const lang of ['zh-TW', 'zh-CN', 'en'] as const) {
+      const header = toCsv(sample, byId, lang, {}).split('\r\n')[0]!.split(',');
+      expect(header.slice(-2)).toEqual([...expected[lang]]);
+    }
   });
 
   it('檔名會去掉檔案系統不允許的字元', () => {

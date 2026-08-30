@@ -84,6 +84,27 @@ export function zoneForCard(card: Card): DeckZone | null {
 export const totalCards = (zone: Record<string, number>): number =>
   Object.values(zone).reduce((sum, n) => sum + n, 0);
 
+/**
+ * 整副牌組實際需要的張數（卡片 id → 張數）。
+ *
+ * 用來算「還缺哪些牌」，也用在匯出。
+ *
+ * 注意**不能**把 championId 另外加一張：選定英雄本來就是主牌組的一張
+ * （核心規則 103.2），加了會變成需要兩張，缺卡清單就會多算。
+ */
+export function deckNeeds(deck: Deck): Record<string, number> {
+  const needs: Record<string, number> = {};
+  const add = (id: string, qty: number) => {
+    if (qty > 0) needs[id] = (needs[id] ?? 0) + qty;
+  };
+
+  if (deck.legendId) add(deck.legendId, 1);
+  for (const zone of [deck.main, deck.runes, deck.battlefields]) {
+    for (const [id, qty] of Object.entries(zone)) add(id, qty);
+  }
+  return needs;
+}
+
 // ─── 符文特性（領域）檢查 ────────────────────────────────────────
 
 /**

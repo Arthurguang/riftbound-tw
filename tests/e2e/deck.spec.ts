@@ -151,9 +151,10 @@ test.describe('牌組編輯器', () => {
     await page.getByRole('button', { name: /^加入牌組/ }).first().click();
     await page.getByRole('button', { name: /^增加擁有張數/ }).first().click();
 
-    const missing = page.getByRole('heading', { name: '還需要蒐集' });
-    await expect(missing).toBeVisible();
-    await expect(page.getByText(/共缺 1 張/)).toBeVisible();
+    // 列印用的隱藏版面也有同樣的文字，所以要指名畫面上的那個面板
+    const panel = page.getByTestId('deck-missing');
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText('共缺 1 張');
   });
 
   test('匯出的檔案真的有內容', async ({ page }, testInfo) => {
@@ -182,6 +183,57 @@ test.describe('牌組編輯器', () => {
     const content = await readFile((await csv.path())!, 'utf8');
     expect(content.charCodeAt(0)).toBe(0xfeff);
     expect(content).toContain('卡號');
+    // 沒開收藏就不該多出欄位
+    expect(content).not.toContain('還缺');
+  });
+
+  test('開啟收藏後，同一份匯出檔案裡就看得到缺卡', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'firefox', 'Firefox 下載行為不穩定');
+
+    await gotoDeck(page);
+    await page.getByLabel('開啟').check();
+    await openTab(page, '符文');
+
+    // 牌組放 2 張，手上只有 1 張
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+    await page.getByRole('button', { name: /^增加擁有張數/ }).first().click();
+    await expect(page.getByTestId('deck-missing')).toContainText('共缺 1 張');
+
+    const [csv] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: '下載 CSV' }).click(),
+    ]);
+    const content = await readFile((await csv.path())!, 'utf8');
+
+    // 牌表與缺卡在同一份檔案裡
+    const lines = content.split(String.fromCharCode(13) + String.fromCharCode(10));
+    expect(lines[0]).toContain('擁有');
+    expect(lines[0]).toContain('還缺');
+    expect(lines[1]).toMatch(/,1,1$/); // 擁有 1、還缺 1
+    expect(lines.filter((l) => l.trim() === '')).toEqual([]);
+  });
+
+  test('列印版面只印牌表，不會多出空白頁', async ({ page }, testInfo) => {
+    // page.pdf() 只有 Chromium 支援
+    test.skip(testInfo.project.name !== 'chromium', 'page.pdf() 僅 Chromium 支援');
+
+    await gotoDeck(page);
+    await openTab(page, '符文');
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+
+    const pdf = await page.pdf({ format: 'A4' });
+    const text = pdf.toString('latin1');
+    const pages = text.match(/\/Type\s*\/Page[^s]/g) ?? [];
+
+    // 列印版面若留在頁面深處只用 visibility 隱藏，會佔著版面高度印出好幾張空白紙
+    expect(pages).toHaveLength(1);
+
+    // 列印版面是用 portal 掛在 body 底下的
+    const isDirectChild = await page.evaluate(
+      () => document.getElementById('deck-print')?.parentElement === document.body,
+    );
+    expect(isDirectChild).toBe(true);
   });
 
   test('CSP 沒有因為新頁面而被違反', async ({ page }) => {
