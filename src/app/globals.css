@@ -97,3 +97,74 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── 牌組編輯器 ────────────────────────────────────────── */
+
+/* 費用曲線的柱高。用類別而非 inline style：CSP 不允許 style 屬性。 */
+.curve-bar-0 {
+  height: 2px;
+}
+.curve-bar-1 {
+  height: 8px;
+}
+.curve-bar-2 {
+  height: 16px;
+}
+.curve-bar-3 {
+  height: 24px;
+}
+.curve-bar-4 {
+  height: 32px;
+}
+.curve-bar-5 {
+  height: 40px;
+}
+.curve-bar-6 {
+  height: 48px;
+}
+.curve-bar-7 {
+  height: 56px;
+}
+.curve-bar-8 {
+  height: 64px;
+}
+.curve-bar-9 {
+  height: 72px;
+}
+.curve-bar-10 {
+  height: 80px;
+}
+
+/* 列印版牌表：只印 #deck-print，其餘全部隱藏。
+   這就是「PDF 匯出」—— 瀏覽器內建的「列印 → 另存為 PDF」，
+   不需要任何 PDF 套件（少一個套件就少一份供應鏈風險）。 */
+#deck-print {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #deck-print,
+  #deck-print * {
+    visibility: visible;
+  }
+  #deck-print {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    padding: 0;
+    background: #fff;
+    color: #000;
+    font-size: 11pt;
+  }
+  #deck-print a {
+    color: #000;
+    text-decoration: none;
+  }
+  @page {
+    margin: 15mm;
+  }
+}

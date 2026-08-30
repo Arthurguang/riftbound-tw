@@ -1,0 +1,201 @@
+import { readFile, stat } from 'node:fs/promises';
+import { expect, test, type Page } from '@playwright/test';
+
+/**
+ * 牌組編輯器的端對端驗證。
+ *
+ * 除了功能本身，這裡也順帶驗證兩件資安相關的事：
+ *   · 收藏功能真的只寫進 localStorage，不會發出任何網路請求
+ *   · 惡意網址不會讓頁面壞掉或注入內容
+ */
+
+/** 等到元件掛載完成再操作 —— 否則會在 hydration 前就點下去。 */
+async function gotoDeck(page: Page, query = '') {
+  await page.goto(`/deck${query}`, { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-deck-ready="true"]')).toBeAttached();
+}
+
+/** 切到某個區域分頁。 */
+async function openTab(page: Page, name: string) {
+  await page.getByRole('tab', { name, exact: true }).click();
+}
+
+test.describe('牌組編輯器', () => {
+  test('開啟時是空牌組，並列出所有待處理項目', async ({ page }) => {
+    await gotoDeck(page);
+    await expect(page.getByRole('heading', { name: '牌組編輯器', level: 1 })).toBeVisible();
+
+    const legality = page.getByTestId('deck-legality');
+    await expect(legality).toContainText('尚未完成');
+    // 每一條都要附官方條號
+    await expect(legality).toContainText('103.2');
+    await expect(legality).toContainText('485.4.a');
+  });
+
+  test('選傳奇後，主牌組只顯示特性相符的卡', async ({ page }) => {
+    await gotoDeck(page);
+
+    await page.getByRole('button', { name: '選為傳奇' }).first().click();
+    await expect(page.getByRole('button', { name: '已選為傳奇' })).toBeVisible();
+
+    await openTab(page, '主牌組');
+    const filterLabel = page.getByText('只顯示符合');
+    await expect(filterLabel).toBeVisible();
+
+    const list = page.getByTestId('picker-list').locator('> li');
+    const filteredCount = await list.count();
+
+    // 取消篩選後應該看到更多卡 —— 證明篩選確實有作用
+    await page.getByLabel(/^只顯示符合/).uncheck();
+    const allCount = await list.count();
+    expect(allCount).toBeGreaterThan(filteredCount);
+  });
+
+  test('加入卡片會反映到牌組與網址', async ({ page }) => {
+    await gotoDeck(page);
+    await openTab(page, '符文');
+
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+
+    // 牌組面板顯示張數
+    await expect(page.getByRole('heading', { name: /符文牌組\s*2/ })).toBeVisible();
+    // 網址帶上編碼。要等它真的帶到 2 張才重整 ——
+    // router.replace 是非同步的，太早重整會讀到只有 1 張的舊網址。
+    await expect(page).toHaveURL(/[?&]d=1%7C/);
+    await expect(page).toHaveURL(/x2/);
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-deck-ready="true"]')).toBeAttached();
+    await expect(page.getByRole('heading', { name: /符文牌組\s*2/ })).toBeVisible();
+  });
+
+  test('清空會把牌組與網址一起還原', async ({ page }) => {
+    await gotoDeck(page);
+    await openTab(page, '戰場');
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+    await expect(page).toHaveURL(/[?&]d=/);
+
+    await page.getByRole('button', { name: '清空' }).click();
+    await expect(page).toHaveURL(/\/deck$/);
+  });
+
+  test('分享網址可以還原同一副牌組', async ({ page, context }) => {
+    await gotoDeck(page);
+    await openTab(page, '符文');
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+    await expect(page).toHaveURL(/[?&]d=/);
+
+    const shared = page.url();
+
+    // 用另一個分頁開同一個網址 —— 模擬別人收到連結
+    const other = await context.newPage();
+    await other.goto(shared, { waitUntil: 'domcontentloaded' });
+    await expect(other.locator('[data-deck-ready="true"]')).toBeAttached();
+    await expect(other.getByRole('heading', { name: /符文牌組\s*1/ })).toBeVisible();
+    await other.close();
+  });
+
+  test('惡意網址被安全丟棄，頁面照常運作', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+
+    await gotoDeck(
+      page,
+      `?d=${encodeURIComponent("1|<script>alert(1)</script>|__proto__|evil999x99|'; DROP TABLE--|")}`,
+    );
+
+    // 頁面正常，牌組為空，並且明白告訴使用者有東西被略過
+    await expect(page.getByRole('heading', { name: '牌組編輯器', level: 1 })).toBeVisible();
+    await expect(page.getByText(/無法辨識的內容已被略過/)).toBeVisible();
+    await expect(page.getByTestId('deck-legality')).toContainText('尚未完成');
+    expect(errors).toEqual([]);
+  });
+
+  test('收藏功能不會送出任何網路請求', async ({ page }) => {
+    await gotoDeck(page);
+
+    // 記下所有非靜態資源的請求
+    const posts: string[] = [];
+    page.on('request', (req) => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) posts.push(req.url());
+    });
+
+    await page.getByLabel('開啟').check();
+    await openTab(page, '符文');
+    await page.getByRole('button', { name: /^增加擁有張數/ }).first().click();
+
+    await expect(page.getByText(/已標記 1 種卡/)).toBeVisible();
+    expect(posts).toEqual([]);
+  });
+
+  test('收藏會留在瀏覽器，重新整理後還在', async ({ page }) => {
+    await gotoDeck(page);
+    await page.getByLabel('開啟').check();
+    await openTab(page, '符文');
+    await page.getByRole('button', { name: /^增加擁有張數/ }).first().click();
+    await expect(page.getByText(/已標記 1 種卡/)).toBeVisible();
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-deck-ready="true"]')).toBeAttached();
+    await expect(page.getByText(/已標記 1 種卡/)).toBeVisible();
+  });
+
+  test('缺卡清單會算出還差幾張', async ({ page }) => {
+    await gotoDeck(page);
+    await page.getByLabel('開啟').check();
+
+    await openTab(page, '符文');
+    // 牌組放 2 張，手上只有 1 張 → 缺 1 張
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+    await page.getByRole('button', { name: /^增加擁有張數/ }).first().click();
+
+    const missing = page.getByRole('heading', { name: '還需要蒐集' });
+    await expect(missing).toBeVisible();
+    await expect(page.getByText(/共缺 1 張/)).toBeVisible();
+  });
+
+  test('匯出的檔案真的有內容', async ({ page }, testInfo) => {
+    // Firefox 的下載處理在 CI 容器裡不穩定，這裡只在 Chromium/WebKit 驗
+    test.skip(testInfo.project.name === 'firefox', 'Firefox 下載行為不穩定');
+
+    await gotoDeck(page);
+    await openTab(page, '符文');
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+
+    // PNG：畫布輸出。空白圖片會小得離譜，用大小當作「有畫東西」的下限。
+    const [png] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: '下載圖片' }).click(),
+    ]);
+    expect(png.suggestedFilename()).toMatch(/.png$/);
+    const pngPath = await png.path();
+    expect(pngPath).toBeTruthy();
+    expect((await stat(pngPath!)).size).toBeGreaterThan(3000);
+
+    // CSV：必須有 BOM，否則 Excel 開中文會亂碼
+    const [csv] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: '下載 CSV' }).click(),
+    ]);
+    const content = await readFile((await csv.path())!, 'utf8');
+    expect(content.charCodeAt(0)).toBe(0xfeff);
+    expect(content).toContain('卡號');
+  });
+
+  test('CSP 沒有因為新頁面而被違反', async ({ page }) => {
+    const violations: string[] = [];
+    page.on('console', (m) => {
+      if (m.type() === 'error' && /Content Security Policy/i.test(m.text())) {
+        violations.push(m.text());
+      }
+    });
+
+    await gotoDeck(page);
+    await openTab(page, '主牌組');
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+
+    expect(violations).toEqual([]);
+  });
+});
