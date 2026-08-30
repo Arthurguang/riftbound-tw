@@ -49,6 +49,12 @@ function SiteHeader({ lang }: { lang: TextLang }) {
         >
           {strings.navDeck}
         </Link>
+        <Link
+          href="/odds"
+          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
+        >
+          {strings.navOdds}
+        </Link>
         <div className="ml-auto">
           {/* 語言切換要讀網址參數，因此需要一層 Suspense。 */}
           <Suspense fallback={null}>

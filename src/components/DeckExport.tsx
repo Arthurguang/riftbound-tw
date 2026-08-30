@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import Link from 'next/link';
 import { cardName } from '@/lib/cards';
 import {
   annotateRows,
@@ -15,6 +16,7 @@ import {
   zoneLabel,
 } from '@/lib/deck-export';
 import { downloadBlob, renderDeckImage } from '@/lib/deck-image';
+import { encodeDeck } from '@/lib/deck-url';
 import type { Collection } from '@/lib/collection';
 import type { Deck } from '@/lib/deck-rules';
 import type { TextLang } from '@/lib/i18n';
@@ -61,6 +63,9 @@ export function DeckExport({
 
   /** 沒開啟收藏記錄就傳 null —— 匯出的檔案不會多出任何欄位。 */
   const withCollection = trackCollection ? collection : null;
+
+  /** 牌組的網址編碼，用來把牌組帶去機率計算頁。 */
+  const deckCode = encodeDeck(deck, cards);
 
   const rows = annotateRows(deck, byId, withCollection);
   const isEmpty = rows.length === 0;
@@ -188,6 +193,14 @@ export function DeckExport({
           >
             {busy ? '產生中…' : '下載圖片'}
           </button>
+          {/* 把牌組帶到機率計算 —— 用同一組網址編碼，不需要另外傳資料 */}
+          <Link
+            href={`/odds?d=${encodeURIComponent(deckCode)}`}
+            aria-disabled={isEmpty}
+            className={`${btn} block text-center ${isEmpty ? 'pointer-events-none opacity-40' : ''}`}
+          >
+            計算機率
+          </Link>
         </div>
 
         {notice && (
