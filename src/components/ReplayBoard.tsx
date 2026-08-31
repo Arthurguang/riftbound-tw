@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BoardSide } from './BoardSide';
+import { BattlefieldPicker } from './BattlefieldPicker';
 import { EMPTY_BOARD, type BoardState, type PlayerBoard } from '@/lib/board-state';
 import { decodeBoard, emptyBoardCode, encodeBoard } from '@/lib/board-url';
 import { buildCodeIndex } from '@/lib/deck-url';
@@ -63,6 +64,16 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
     (side: 'you' | 'opponent') => (next: PlayerBoard) =>
       setBoard((prev) => ({ ...prev, [side]: next })),
     [],
+  );
+
+  /** 各方牌組裡的戰場（1v1 每人帶 3 張，實際用 1 張 —— 485.4.a、485.5）。 */
+  const battlefieldOptions = useCallback(
+    (side: 'you' | 'opponent') =>
+      Object.keys(board[side].deck.battlefields)
+        .map((id) => byId.get(id))
+        .filter((c): c is Card => Boolean(c))
+        .sort((a, b) => a.number - b.number),
+    [board, byId],
   );
 
   /** 依回合推算應該召出過幾張符文，方便使用者對照有沒有擺漏。 */
@@ -143,6 +154,16 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
         </button>
       </div>
 
+      <BattlefieldPicker
+        battlefields={board.battlefields}
+        yourOptions={battlefieldOptions('you')}
+        opponentOptions={battlefieldOptions('opponent')}
+        byId={byId}
+        lang={lang}
+        art={art}
+        onChange={(next) => setBoard((prev) => ({ ...prev, battlefields: next }))}
+      />
+
       <div className="grid gap-4 xl:grid-cols-2">
         <BoardSide
           title="你"
@@ -152,6 +173,8 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
           lang={lang}
           art={art}
           isOpponent={false}
+          turn={board.turn}
+          onThePlay={board.onThePlay}
           onChange={setSide('you')}
         />
         <BoardSide
@@ -162,6 +185,8 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
           lang={lang}
           art={art}
           isOpponent
+          turn={board.turn}
+          onThePlay={board.onThePlay}
           onChange={setSide('opponent')}
         />
       </div>

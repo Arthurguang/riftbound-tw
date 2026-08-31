@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { cardName } from '@/lib/cards';
 import { DeckImport } from './DeckImport';
 import { BoardZonePanel } from './BoardZonePanel';
+import { RuneTracker } from './RuneTracker';
 import {
   BOARD_ZONES,
   foreignCards,
@@ -28,6 +29,20 @@ import type { Card } from '@/lib/types';
  * 「你」與「對手」用同一個元件，差別只在對手預設用「未知手牌張數」——
  * 依規則 108.7.c 手牌是私密資訊、108.7.e 張數是公開資訊。
  */
+/**
+ * 「加到」可以選哪些區域。
+ *
+ * 戰場不在這裡：單位先加到基地或手牌，再用卡片列上的「戰一 / 戰二」
+ * 按鈕移過去 —— 這樣比較貼近實際流程（198.1：位置包括戰場和基地）。
+ */
+const ADD_TARGETS = ['hand', 'base', 'discard', 'exile'] as const;
+const ADD_LABELS: Record<(typeof ADD_TARGETS)[number], string> = {
+  hand: '手牌',
+  base: '基地',
+  discard: '廢牌堆',
+  exile: '放逐',
+};
+
 export function BoardSide({
   title,
   player,
@@ -36,6 +51,8 @@ export function BoardSide({
   lang,
   art,
   isOpponent,
+  turn,
+  onThePlay,
   onChange,
 }: {
   /** 顯示的名稱，同時也是各輸入框 id 的前綴。 */
@@ -46,6 +63,9 @@ export function BoardSide({
   lang: TextLang;
   art: ArtLang;
   isOpponent: boolean;
+  /** 目前回合，用來提示照規則應該召出幾張符文。 */
+  turn: number;
+  onThePlay: boolean;
   onChange: (next: PlayerBoard) => void;
 }) {
   const [adding, setAdding] = useState<BoardZone>('hand');
@@ -122,11 +142,20 @@ export function BoardSide({
         </p>
       ) : (
         <>
+          <RuneTracker
+            player={player}
+            byId={byId}
+            lang={lang}
+            turn={turn}
+            onThePlay={onThePlay}
+            onChange={onChange}
+          />
+
           {/* 加卡到盤面 */}
           <div className="mb-3 space-y-2 rounded-lg border border-line bg-surface-1 p-2.5">
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-xs text-ink-dim">加到</span>
-              {BOARD_ZONES.map((zone) => (
+              {ADD_TARGETS.map((zone) => (
                 <button
                   key={zone}
                   type="button"
@@ -138,7 +167,7 @@ export function BoardSide({
                       : 'text-ink-dim hover:text-ink'
                   }`}
                 >
-                  {{ hand: '手牌', base: '基地', discard: '廢牌堆', exile: '放逐' }[zone]}
+                  {ADD_LABELS[zone]}
                 </button>
               ))}
             </div>

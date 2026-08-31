@@ -34,14 +34,34 @@ export type Pile = Record<string, number>;
  * 待命區域（107.3）暫時併入基地：它每處戰場只能放一張、而且正面朝下的
  * 內容是私密資訊（107.3.f），單獨做一區的效益不高。日後有需要再拆。
  */
-export const BOARD_ZONES = ['hand', 'base', 'discard', 'exile'] as const;
+export const BOARD_ZONES = ['hand', 'base', 'bf0', 'bf1', 'discard', 'exile'] as const;
 export type BoardZone = (typeof BOARD_ZONES)[number];
 
 export const ZONE_RULES: Record<BoardZone, { rule: string; hidden: boolean }> = {
   hand: { rule: '108.7', hidden: true },
   base: { rule: '107.1', hidden: false },
+  bf0: { rule: '107.2', hidden: false },
+  bf1: { rule: '107.2', hidden: false },
   discard: { rule: '108.2', hidden: false },
   exile: { rule: '108.6', hidden: false },
+};
+
+/**
+ * 常駐牌所在的位置。
+ *
+ * 198.1　位置包括**戰場和基地**
+ * 198.2　常駐牌的位置是該常駐牌的屬性
+ *
+ * 1v1 場上有兩處戰場（485.4），各由一名玩家提供（485.5）——
+ * bf0 是你帶來的那處，bf1 是對手帶來的那處。雙方的單位都可能在任一處。
+ */
+export const LOCATIONS = ['base', 'bf0', 'bf1'] as const;
+export type LocationId = (typeof LOCATIONS)[number];
+
+export const LOCATION_RULES: Record<LocationId, string> = {
+  base: '107.1',
+  bf0: '107.2',
+  bf1: '107.2',
 };
 
 export type PlayerBoard = {
@@ -56,8 +76,16 @@ export type PlayerBoard = {
    * 只是不知道是什麼。這些牌仍然來自對手的牌堆，計算剩餘牌堆時要扣掉。
    */
   unknownHand: number;
-  /** 基地：你控制的常駐牌與符文（107.1.c）。 */
+  /**
+   * 基地：你控制的常駐牌與符文（107.1.c）。
+   *
+   * 符文**只會**在基地（107.1.c 明文如此），不會移到戰場上。
+   */
   base: Pile;
+  /** 你在第一處戰場（你帶來的那處）上的單位。 */
+  bf0: Pile;
+  /** 你在第二處戰場（對手帶來的那處）上的單位。 */
+  bf1: Pile;
   /** 廢牌堆（108.2）。 */
   discard: Pile;
   /** 放逐區域（108.6）。 */
@@ -65,6 +93,14 @@ export type PlayerBoard = {
 };
 
 export type BoardState = {
+  /**
+   * 戰場區域（107.2）。
+   *
+   * 1v1 場上有兩處戰場（485.4「戰場數量：2」），各由一名玩家從自己
+   * 構築時放進牌組的 3 張裡選出一張帶進來（485.4.a、485.5）。
+   * 索引 0 是你帶來的，索引 1 是對手帶來的。
+   */
+  battlefields: [string | null, string | null];
   /** 目前第幾回合。用來推算應該召出過幾張符文。 */
   turn: number;
   /** 你是不是先手（485.7 影響符文數）。 */
@@ -85,11 +121,14 @@ export const EMPTY_PLAYER: PlayerBoard = {
   hand: {},
   unknownHand: 0,
   base: {},
+  bf0: {},
+  bf1: {},
   discard: {},
   exile: {},
 };
 
 export const EMPTY_BOARD: BoardState = {
+  battlefields: [null, null],
   turn: 1,
   onThePlay: true,
   you: EMPTY_PLAYER,
@@ -164,10 +203,7 @@ export function remainingDeck(player: PlayerBoard): RemainingDeck {
 
   /** 盤面上（不含牌堆）某張卡出現幾次。 */
   const onBoard = (cardId: string): number =>
-    (player.hand[cardId] ?? 0) +
-    (player.base[cardId] ?? 0) +
-    (player.discard[cardId] ?? 0) +
-    (player.exile[cardId] ?? 0);
+    BOARD_ZONES.reduce((sum, zone) => sum + (player[zone][cardId] ?? 0), 0);
 
   const subtract = (source: Pile, isMain: boolean): Pile => {
     const result: Pile = {};

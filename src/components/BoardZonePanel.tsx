@@ -8,21 +8,28 @@ import type { Card } from '@/lib/types';
 const ZONE_LABELS: Record<BoardZone, string> = {
   hand: '手牌',
   base: '基地（場上）',
+  bf0: '戰場一（你帶來的）',
+  bf1: '戰場二（對手帶來的）',
   discard: '廢牌堆',
   exile: '放逐區',
 };
 
 /** 可以搬去哪些區域。順序照實際使用頻率排。 */
 const MOVE_TARGETS: Record<BoardZone, BoardZone[]> = {
-  hand: ['base', 'discard', 'exile'],
-  base: ['discard', 'hand', 'exile'],
+  hand: ['base', 'bf0', 'bf1', 'discard'],
+  // 198.1：位置包括戰場和基地，所以單位可以在這三處之間移動
+  base: ['bf0', 'bf1', 'discard', 'hand'],
+  bf0: ['base', 'bf1', 'discard'],
+  bf1: ['base', 'bf0', 'discard'],
   discard: ['hand', 'base', 'exile'],
   exile: ['hand', 'base', 'discard'],
 };
 
 const SHORT: Record<BoardZone, string> = {
   hand: '手',
-  base: '場',
+  base: '基',
+  bf0: '戰一',
+  bf1: '戰二',
   discard: '廢',
   exile: '逐',
 };
@@ -111,7 +118,7 @@ export function BoardZonePanel({
                     title={`搬到${ZONE_LABELS[target]}`}
                     aria-label={`把 ${cardName(card, lang)} 從${ZONE_LABELS[zone]}搬到${ZONE_LABELS[target]}`}
                     onClick={() => onMove(card.id, target)}
-                    className="h-5 w-5 rounded border border-line text-[0.65rem] text-ink-dim hover:border-accent hover:text-accent-soft"
+                    className="h-5 min-w-5 rounded border border-line px-0.5 text-[0.65rem] text-ink-dim hover:border-accent hover:text-accent-soft"
                   >
                     {SHORT[target]}
                   </button>

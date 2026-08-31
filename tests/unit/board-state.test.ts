@@ -20,6 +20,8 @@ import {
   runesOnBase,
   setInPile,
   ZONE_RULES,
+  LOCATIONS,
+  LOCATION_RULES,
   type PlayerBoard,
 } from '../../src/lib/board-state';
 import { decodeBoard, encodeBoard } from '../../src/lib/board-url';
@@ -226,6 +228,7 @@ describe('其他衍生資訊', () => {
 
 describe('盤面的網址編碼', () => {
   const board = {
+    battlefields: [null, null] as [string | null, string | null],
     turn: 4,
     onThePlay: false,
     you: player({ hand: { [unit.id]: 2 }, base: { [rune.id]: 6 }, discard: { [other.id]: 1 } }),
@@ -255,27 +258,27 @@ describe('盤面的網址編碼', () => {
   });
 
   it('認不得的卡片代碼會被丟棄並回報', () => {
-    const result = decodeBoard('b1!1!1!~nope999~0~~~!~~0~~~', index);
+    const result = decodeBoard('b2!1!1!~nope999~0~~~~~!~~0~~~~~!.', index);
     expect(result.board.you.hand).toEqual({});
     expect(result.dropped).toBeGreaterThan(0);
   });
 
   it('離譜的回合數會被夾回合理範圍', () => {
-    expect(decodeBoard('b1!99999!1!~~0~~~!~~0~~~', index).board.turn).toBe(1);
-    expect(decodeBoard('b1!-5!1!~~0~~~!~~0~~~', index).board.turn).toBe(1);
-    expect(decodeBoard('b1!7!1!~~0~~~!~~0~~~', index).board.turn).toBe(7);
+    expect(decodeBoard('b2!99999!1!~~0~~~~~!~~0~~~~~!.', index).board.turn).toBe(1);
+    expect(decodeBoard('b2!-5!1!~~0~~~~~!~~0~~~~~!.', index).board.turn).toBe(1);
+    expect(decodeBoard('b2!7!1!~~0~~~~~!~~0~~~~~!.', index).board.turn).toBe(7);
   });
 
   it('離譜的未知手牌張數會被拒絕', () => {
-    expect(decodeBoard('b1!1!1!~~99999~~~!~~0~~~', index).board.you.unknownHand).toBe(0);
-    expect(decodeBoard('b1!1!1!~~-3~~~!~~0~~~', index).board.you.unknownHand).toBe(0);
+    expect(decodeBoard('b2!1!1!~~99999~~~~~!~~0~~~~~!.', index).board.you.unknownHand).toBe(0);
+    expect(decodeBoard('b2!1!1!~~-3~~~~~!~~0~~~~~!.', index).board.you.unknownHand).toBe(0);
   });
 
   it('注入型內容不會變成卡片', () => {
     const attacks = [
-      'b1!1!1!~<script>alert(1)</script>~0~~~!~~0~~~',
-      'b1!1!1!~__proto__x3~0~~~!~~0~~~',
-      'b1!1!1!~constructorx3~0~~~!~~0~~~',
+      'b2!1!1!~<script>alert(1)</script>~0~~~~~!~~0~~~~~!.',
+      'b2!1!1!~__proto__x3~0~~~~~!~~0~~~~~!.',
+      'b2!1!1!~constructorx3~0~~~~~!~~0~~~~~!.',
       "b1|1!1!~'; DROP TABLE--~0~~~|~~0~~~",
     ];
     for (const attack of attacks) {
@@ -295,5 +298,95 @@ describe('盤面的網址編碼', () => {
   it('空字串與亂碼都安全回到空盤面', () => {
     expect(decodeBoard('', index).board).toEqual(EMPTY_BOARD);
     expect(decodeBoard('garbage', index).board).toEqual(EMPTY_BOARD);
+  });
+});
+
+describe('位置：戰場與基地（規則 198.1）', () => {
+  it('位置包含基地與兩處戰場', () => {
+    expect(LOCATIONS).toEqual(['base', 'bf0', 'bf1']);
+    expect(LOCATION_RULES.base).toBe('107.1');
+    expect(LOCATION_RULES.bf0).toBe('107.2');
+  });
+
+  it('單位可以在基地與戰場之間移動（198.2：位置是常駐牌的屬性）', () => {
+    const before = player({ base: { [unit.id]: 2 } });
+
+    const toBf0 = moveCard(before, 'base', 'bf0', unit.id);
+    expect(toBf0.base[unit.id]).toBe(1);
+    expect(toBf0.bf0[unit.id]).toBe(1);
+
+    const toBf1 = moveCard(toBf0, 'bf0', 'bf1', unit.id);
+    expect(toBf1.bf0).toEqual({});
+    expect(toBf1.bf1[unit.id]).toBe(1);
+  });
+
+  it('戰場上的單位也要從牌堆扣掉', () => {
+    const result = remainingDeck(player({ bf0: { [unit.id]: 1 }, bf1: { [unit.id]: 1 } }));
+    expect(result.main[unit.id]).toBe(1);
+  });
+
+  it('符文只算基地上的 —— 107.1.c 明文說符文位於基地', () => {
+    // 就算有人把符文擺到戰場欄位，資源計算也只看基地
+    const p = player({ base: { [rune.id]: 3 }, bf0: { [rune.id]: 5 } });
+    expect(runesOnBase(p, byId)).toBe(3);
+  });
+});
+
+describe('戰場區域（485.4、485.5）', () => {
+  const battlefield = ALL_CARDS.find((c) => c.types.includes('battlefield'))!;
+  const other2 = ALL_CARDS.find(
+    (c) => c.types.includes('battlefield') && c.id !== battlefield.id,
+  )!;
+
+  it('兩處戰場會編進網址並還原', () => {
+    const board = {
+      battlefields: [battlefield.id, other2.id] as [string | null, string | null],
+      turn: 3,
+      onThePlay: true,
+      you: player(),
+      opponent: player(),
+    };
+    const result = decodeBoard(encodeBoard(board, ALL_CARDS), index);
+
+    expect(result.board.battlefields).toEqual([battlefield.id, other2.id]);
+    expect(result.dropped).toBe(0);
+  });
+
+  it('只選了一處也能正確還原', () => {
+    const board = {
+      battlefields: [battlefield.id, null] as [string | null, string | null],
+      turn: 1,
+      onThePlay: true,
+      you: player(),
+      opponent: player(),
+    };
+    expect(decodeBoard(encodeBoard(board, ALL_CARDS), index).board.battlefields).toEqual([
+      battlefield.id,
+      null,
+    ]);
+  });
+
+  it('認不得的戰場代碼視為沒選，不亂猜', () => {
+    const result = decodeBoard('b2!1!1!~~0~~~~~!~~0~~~~~!nope999.alsonope', index);
+    expect(result.board.battlefields).toEqual([null, null]);
+  });
+});
+
+describe('舊版連結相容', () => {
+  it('b1 的舊連結仍然能開，戰場與戰場上的單位為空', () => {
+    const legacy = `b1!3!0!${'~'.repeat(0)}~~0~~~!~~0~~~`;
+    const result = decodeBoard(legacy, index);
+
+    expect(result.board.turn).toBe(3);
+    expect(result.board.onThePlay).toBe(false);
+    expect(result.board.battlefields).toEqual([null, null]);
+    expect(result.board.you.bf0).toEqual({});
+    expect(result.board.you.bf1).toEqual({});
+  });
+
+  it('b1 連結裡的手牌與廢牌堆照樣讀得出來', () => {
+    const legacy = `b1!1!1!2|||${'ogn001x3'}|||~ogn001~0~~~!~~0~~~`;
+    const result = decodeBoard(legacy, index);
+    expect(Object.keys(result.board.you.hand)).toHaveLength(1);
   });
 });

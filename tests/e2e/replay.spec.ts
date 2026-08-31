@@ -141,7 +141,7 @@ test.describe('對局復盤', () => {
   test('盤面會編進網址，可以分享', async ({ page, context }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    await expect(page).toHaveURL(/[?&]b=b1/);
+    await expect(page).toHaveURL(/[?&]b=b2/); // 格式版本 2（含戰場）
     const beforeCard = page.url();
 
     await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
@@ -203,5 +203,110 @@ test.describe('對局復盤', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
     expect(violations).toEqual([]);
+  });
+});
+
+test.describe('場上符文', () => {
+  test('有獨立的符文控制，不用去通用的加卡流程找', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const runes = sideOf(page, 'you').locator('[data-runes]');
+    await expect(runes).toBeVisible();
+    await expect(runes).toContainText('場上符文');
+    await expect(runes).toContainText('107.1.c');
+  });
+
+  test('加減符文會改變可用資源', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const total = sideOf(page, 'you').getByTestId('rune-total');
+    await expect(total).toHaveText('0');
+
+    const plus = sideOf(page, 'you').getByRole('button', { name: /^增加場上的/ });
+    await plus.click();
+    await plus.click();
+    await expect(total).toHaveText('2');
+
+    await sideOf(page, 'you').getByRole('button', { name: /^減少場上的/ }).click();
+    await expect(total).toHaveText('1');
+  });
+
+  test('一鍵補到該回合應有的張數', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    // 第 1 回合先手應召出 2 張（315.3.b）
+    await sideOf(page, 'you').getByRole('button', { name: '補到 2 張' }).click();
+    await expect(sideOf(page, 'you').getByTestId('rune-total')).toHaveText('2');
+
+    // 改到第 4 回合 → 8 張
+    const turn = page.getByLabel(/回合/).first();
+    await turn.fill('4');
+    await sideOf(page, 'you').getByRole('button', { name: '補到 8 張' }).click();
+    await expect(sideOf(page, 'you').getByTestId('rune-total')).toHaveText('8');
+  });
+});
+
+test.describe('戰場區域', () => {
+  const WITH_BATTLEFIELDS = [
+    ...SMALL_DECK,
+    '【戰場】',
+    '1 Altar to Unity',
+    '1 Spirit’s Refuge',
+  ];
+
+  test('可以選定雙方各帶來的戰場（485.4、485.5）', async ({ page }) => {
+    await gotoReplay(page);
+
+    const zone = page.getByTestId('battlefield-zone');
+    await expect(zone).toBeVisible();
+    await expect(zone).toContainText('107.2');
+
+    await importDeck(page, 'you', WITH_BATTLEFIELDS);
+
+    const select = page.locator('#battlefield-0');
+    await expect(select).toBeEnabled();
+    await select.selectOption({ label: '團結祭壇' });
+    await expect(zone).toContainText('團結祭壇');
+  });
+
+  test('戰場選擇會編進網址，可以分享', async ({ page, context }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', WITH_BATTLEFIELDS);
+    await page.locator('#battlefield-0').selectOption({ label: '團結祭壇' });
+
+    await expect(page).toHaveURL(/[?&]b=b2/);
+    const shared = page.url();
+
+    const other = await context.newPage();
+    await other.goto(shared, { waitUntil: 'domcontentloaded' });
+    await expect(other.locator('[data-replay-ready="true"]')).toBeAttached();
+    await expect(other.locator('#battlefield-0')).toHaveValue(/ogn/);
+    await other.close();
+  });
+
+  test('沒有戰場的牌組會提示要先匯入', async ({ page }) => {
+    await gotoReplay(page);
+    await expect(page.getByText(/這一方的牌組裡還沒有戰場/).first()).toBeVisible();
+  });
+});
+
+test.describe('單位的位置（規則 198.1）', () => {
+  test('單位可以從基地移到戰場', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    await sideOf(page, 'you').getByRole('button', { name: '基地', exact: true }).click();
+    await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+
+    await sideOf(page, 'you')
+      .getByRole('button', { name: /從基地（場上）搬到戰場一/ })
+      .first()
+      .click();
+
+    const bf0 = sideOf(page, 'you').locator('[data-zone="bf0"]');
+    await expect(bf0).toContainText('烈焰灼魂者');
   });
 });

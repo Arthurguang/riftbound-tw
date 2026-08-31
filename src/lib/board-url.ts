@@ -12,7 +12,16 @@ import { decodeDeck, encodeDeck, shortCode } from './deck-url';
 import { EMPTY_BOARD, EMPTY_PLAYER, type BoardState, type Pile, type PlayerBoard } from './board-state';
 import type { Card } from './types';
 
-const FORMAT_VERSION = 'b1';
+/**
+ * 編碼格式版本。
+ *
+ * b1：`b1!回合!先手!你!對手`
+ * b2：加上戰場區域，且一方多了兩處戰場上的單位
+ *
+ * 舊連結仍然要能開 —— 分享出去的復盤連結不能突然失效。
+ */
+const FORMAT_VERSION = 'b2';
+const SUPPORTED_VERSIONS = new Set(['b1', 'b2']);
 
 /*
  * 分隔符的層級，由外而內互不重複：
@@ -93,6 +102,8 @@ function encodePlayer(player: PlayerBoard, cards: Card[], byId: Map<string, Card
     encodePile(player.base, byId),
     encodePile(player.discard, byId),
     encodePile(player.exile, byId),
+    encodePile(player.bf0, byId),
+    encodePile(player.bf1, byId),
   ].join(PLAYER_SEP);
 }
 
@@ -100,14 +111,25 @@ function decodePlayer(
   encoded: string,
   index: Map<string, Card>,
 ): { player: PlayerBoard; dropped: number } {
-  const [deckRaw = '', handRaw = '', unknownRaw = '0', baseRaw = '', discardRaw = '', exileRaw = ''] =
-    encoded.split(PLAYER_SEP);
+  // b1 沒有最後兩段（戰場上的單位），解構時預設空字串即可
+  const [
+    deckRaw = '',
+    handRaw = '',
+    unknownRaw = '0',
+    baseRaw = '',
+    discardRaw = '',
+    exileRaw = '',
+    bf0Raw = '',
+    bf1Raw = '',
+  ] = encoded.split(PLAYER_SEP);
 
   const deck = decodeDeck(deckRaw, index);
   const hand = decodePile(handRaw, index);
   const base = decodePile(baseRaw, index);
   const discard = decodePile(discardRaw, index);
   const exile = decodePile(exileRaw, index);
+  const bf0 = decodePile(bf0Raw, index);
+  const bf1 = decodePile(bf1Raw, index);
 
   const parsedUnknown = Number(unknownRaw);
   const unknownHand =
@@ -121,10 +143,19 @@ function decodePlayer(
       hand: hand.pile,
       unknownHand,
       base: base.pile,
+      bf0: bf0.pile,
+      bf1: bf1.pile,
       discard: discard.pile,
       exile: exile.pile,
     },
-    dropped: deck.dropped + hand.dropped + base.dropped + discard.dropped + exile.dropped,
+    dropped:
+      deck.dropped +
+      hand.dropped +
+      base.dropped +
+      discard.dropped +
+      exile.dropped +
+      bf0.dropped +
+      bf1.dropped,
   };
 }
 
@@ -135,12 +166,18 @@ function decodePlayer(
  */
 export function encodeBoard(board: BoardState, cards: Card[]): string {
   const byId = new Map(cards.map((c) => [c.id, c]));
+  const bfCode = (id: string | null) => {
+    const card = id ? byId.get(id) : undefined;
+    return card ? shortCode(card) : '';
+  };
+
   return [
     FORMAT_VERSION,
     String(Math.max(1, Math.min(MAX_TURN, Math.round(board.turn)))),
     board.onThePlay ? '1' : '0',
     encodePlayer(board.you, cards, byId),
     encodePlayer(board.opponent, cards, byId),
+    `${bfCode(board.battlefields[0])}.${bfCode(board.battlefields[1])}`,
   ].join(BOARD_SEP);
 }
 
@@ -157,11 +194,11 @@ export function decodeBoard(encoded: string, index: Map<string, Card>): BoardDec
   }
 
   const parts = encoded.split(BOARD_SEP);
-  if (parts[0] !== FORMAT_VERSION) {
+  if (!SUPPORTED_VERSIONS.has(parts[0] ?? '')) {
     return { board: EMPTY_BOARD, dropped: 1 };
   }
 
-  const [, turnRaw = '1', playRaw = '1', youRaw = '', oppRaw = ''] = parts;
+  const [, turnRaw = '1', playRaw = '1', youRaw = '', oppRaw = '', bfRaw = ''] = parts;
 
   const parsedTurn = Number(turnRaw);
   const turn =
@@ -171,8 +208,16 @@ export function decodeBoard(encoded: string, index: Map<string, Card>): BoardDec
   const opponent =
     oppRaw === '' ? { player: EMPTY_PLAYER, dropped: 0 } : decodePlayer(oppRaw, index);
 
+  // 戰場：認不得的代碼視為沒選，不猜
+  const [bf0Code = '', bf1Code = ''] = bfRaw.split('.');
+  const battlefields: [string | null, string | null] = [
+    (bf0Code === '' ? null : (index.get(bf0Code)?.id ?? null)),
+    (bf1Code === '' ? null : (index.get(bf1Code)?.id ?? null)),
+  ];
+
   return {
     board: {
+      battlefields,
       turn,
       onThePlay: playRaw !== '0',
       you: you.player,
