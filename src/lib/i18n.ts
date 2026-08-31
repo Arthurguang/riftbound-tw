@@ -66,6 +66,7 @@ type UiStrings = {
   navRules: string;
   navDeck: string;
   navOdds: string;
+  navReplay: string;
   galleryTitle: string;
   gallerySubtitle: (count: number) => string;
   searchLabel: string;
@@ -114,6 +115,7 @@ const ZH_TW: UiStrings = {
   navRules: '規則說明',
   navDeck: '牌組編輯器',
   navOdds: '機率計算',
+  navReplay: '對局復盤',
   galleryTitle: '卡牌圖鑑',
   gallerySubtitle: (n) => `起源系列（Origins）與試煉場（Proving Grounds）共 ${n} 張卡。`,
   searchLabel: '搜尋卡牌',
@@ -163,6 +165,7 @@ const ZH_CN: UiStrings = {
   navRules: '规则说明',
   navDeck: '卡组编辑器',
   navOdds: '概率计算',
+  navReplay: '对局复盘',
   galleryTitle: '卡牌图鉴',
   gallerySubtitle: (n) => `起源系列（Origins）与试炼场（Proving Grounds）共 ${n} 张卡。`,
   searchLabel: '搜索卡牌',
@@ -211,6 +214,7 @@ const EN: UiStrings = {
   navRules: 'Rules',
   navDeck: 'Deck Builder',
   navOdds: 'Odds',
+  navReplay: 'Replay',
   galleryTitle: 'Card Gallery',
   gallerySubtitle: (n) => `${n} cards from Origins and Proving Grounds.`,
   searchLabel: 'Search cards',

@@ -55,6 +55,12 @@ function SiteHeader({ lang }: { lang: TextLang }) {
         >
           {strings.navOdds}
         </Link>
+        <Link
+          href="/replay"
+          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
+        >
+          {strings.navReplay}
+        </Link>
         <div className="ml-auto">
           {/* 語言切換要讀網址參數，因此需要一層 Suspense。 */}
           <Suspense fallback={null}>
