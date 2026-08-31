@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { urlAfter } from './url-assert';
+import { urlContaining } from './url-assert';
 
 /**
  * 對局復盤板的端對端驗證。
@@ -278,7 +278,8 @@ test.describe('戰場區域', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', WITH_BATTLEFIELDS);
 
-    const shared = await urlAfter(page, async () => {
+    // 團結祭壇是 OGN-275，短代碼 ogn275
+    const shared = await urlContaining(page, /ogn275/, async () => {
       await page.locator('#battlefield-0').selectOption({ label: '團結祭壇' });
       // 下拉的選項本來就含這個名字，所以要驗「值」而不是「有沒有這段文字」
       await expect(page.locator('#battlefield-0')).toHaveValue(/ogn/);
@@ -525,7 +526,8 @@ test.describe('回合狀態（規則 307–310）', () => {
   test('回合狀態會編進網址', async ({ page }) => {
     await gotoReplay(page);
 
-    const shared = await urlAfter(page, async () => {
+    // 回合狀態編成三個字元：y=你的回合、1=對決中、0=沒有結算鏈
+    const shared = await urlContaining(page, /y10/, async () => {
       await page.getByLabel(/正在法術對決或戰鬥中/).check();
       await expect(page.getByTestId('turn-state-label')).toHaveText('法術對決開環');
     });

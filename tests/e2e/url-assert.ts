@@ -44,57 +44,30 @@ export async function expectOfficialUrl(
 }
 
 /**
- * 執行一個會改變網址的動作，等網址**真的變了**之後回傳新網址。
+ * 執行一個動作，等網址裡**出現指定的內容**之後回傳網址。
  *
- * ── 為什麼不能直接 page.url() ──────────────────────────────────
+ * ── 為什麼是比對內容，不是偵測「變了沒」──────────────────────
  * 本站把牌組與盤面編在網址裡，用 router.replace 寫回去 —— 那是非同步的。
- * 動作做完不代表網址已經寫好，太早複製會拿到舊的一版，
- * 第二個分頁開起來就少了剛剛那步操作。
  *
- * ── 為什麼不能只用 toHaveURL 判斷 ──────────────────────────────
- * 如果網址在動作**之前**就已經符合要比對的樣式（例如先前的匯入已經
- * 寫入 `?b=b3`），那個斷言會立刻通過，一樣複製到舊值。
- * 這個坑實際發生過三次，其中一次是 CI 的 WebKit 才抓到。
+ * 第一版是「記下動作前的網址，等它變得不一樣」。那個做法有個致命缺陷：
+ * **上一個動作還沒落地的寫入也算一次改變**。例如先匯入牌組再選戰場，
+ * 匯入那次的寫入可能在選完戰場之後才落地，於是函式以為「我這次的改變到了」，
+ * 回傳一個只有牌組、沒有戰場的網址。
  *
- * 所以正確的判斷是「網址跟動作前不一樣了」，而不是「網址長得像什麼」。
+ * 我還為此加過一個「等網址穩定」的前置步驟，但那只是把窗口變窄 ——
+ * 在 CI 的負載下照樣會在兩次寫入之間的空檔誤判為穩定。
+ *
+ * 正確的做法是**斷言網址裡確實有我剛設定的那個東西**。
+ * 那是明確的內容判斷，跟時序無關，也不會被別的寫入騙過去。
+ *
+ * @param expected 網址裡應該要出現的內容，通常是卡片的短代碼（例如 ogn275）
  */
-export async function urlAfter(page: Page, action: () => Promise<void>): Promise<string> {
-  const before = await settledUrl(page);
+export async function urlContaining(
+  page: Page,
+  expected: RegExp,
+  action: () => Promise<void>,
+): Promise<string> {
   await action();
-  await expect.poll(() => page.url()).not.toBe(before);
+  await expect(page).toHaveURL(expected);
   return page.url();
-}
-
-/**
- * 等網址不再變動，回傳穩定後的值。
- *
- * 為什麼需要這一步：前一個動作（例如匯入牌組）觸發的 router.replace
- * 可能還沒寫完。如果直接把「目前的網址」當成基準，
- * 那次**遲來的寫入**就會被誤判成「我這次動作造成的改變」，
- * urlAfter 於是提早回傳一個還沒包含本次動作的網址。
- *
- * 這個情況實際發生過：在全套件的負載下才會重現，單獨跑那條測試永遠是綠的。
- */
-async function settledUrl(page: Page): Promise<string> {
-  /*
-   * previous 一開始必須是 null 而不是「當下的網址」。
-   *
-   * 用當下的網址當初始值的話，第一次比較必然成立 —— 這個函式就完全
-   * 沒有等待，只是看起來有。用 null 開頭可以保證至少讀兩次、中間隔一段時間。
-   */
-  let previous: string | null = null;
-
-  await expect
-    .poll(
-      () => {
-        const now = page.url();
-        const stable = previous !== null && now === previous;
-        previous = now;
-        return stable;
-      },
-      { intervals: [50, 100, 100, 200, 200, 400] },
-    )
-    .toBe(true);
-
-  return previous ?? page.url();
 }
