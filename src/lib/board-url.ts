@@ -18,11 +18,12 @@ import type { Card } from './types';
  * b1：`b1!回合!先手!你!對手`
  * b2：加上戰場區域，且一方多了兩處戰場上的單位
  * b3：一方再多一段英雄區域（108.3）
+ * b4：加上回合玩家與回合狀態（307–310）
  *
  * 舊連結仍然要能開 —— 分享出去的復盤連結不能突然失效。
  */
-const FORMAT_VERSION = 'b3';
-const SUPPORTED_VERSIONS = new Set(['b1', 'b2', 'b3']);
+const FORMAT_VERSION = 'b4';
+const SUPPORTED_VERSIONS = new Set(['b1', 'b2', 'b3', 'b4']);
 
 /*
  * 分隔符的層級，由外而內互不重複：
@@ -184,6 +185,10 @@ export function encodeBoard(board: BoardState, cards: Card[]): string {
     encodePlayer(board.you, cards, byId),
     encodePlayer(board.opponent, cards, byId),
     `${bfCode(board.battlefields[0])}.${bfCode(board.battlefields[1])}`,
+    // 回合玩家 + 對決 + 結算鏈，各一個字元
+    `${board.activePlayer === 'you' ? 'y' : 'o'}${board.phase.duel ? '1' : '0'}${
+      board.phase.chain ? '1' : '0'
+    }`,
   ].join(BOARD_SEP);
 }
 
@@ -204,7 +209,8 @@ export function decodeBoard(encoded: string, index: Map<string, Card>): BoardDec
     return { board: EMPTY_BOARD, dropped: 1 };
   }
 
-  const [, turnRaw = '1', playRaw = '1', youRaw = '', oppRaw = '', bfRaw = ''] = parts;
+  const [, turnRaw = '1', playRaw = '1', youRaw = '', oppRaw = '', bfRaw = '', stateRaw = ''] =
+    parts;
 
   const parsedTurn = Number(turnRaw);
   const turn =
@@ -221,10 +227,16 @@ export function decodeBoard(encoded: string, index: Map<string, Card>): BoardDec
     (bf1Code === '' ? null : (index.get(bf1Code)?.id ?? null)),
   ];
 
+  // 回合狀態：b3 以前沒有這段，預設回合玩家是你、普通開環
+  const activePlayer = stateRaw[0] === 'o' ? 'opponent' : 'you';
+  const phase = { duel: stateRaw[1] === '1', chain: stateRaw[2] === '1' };
+
   return {
     board: {
       battlefields,
       turn,
+      activePlayer,
+      phase,
       onThePlay: playRaw !== '0',
       you: you.player,
       opponent: opponent.player,

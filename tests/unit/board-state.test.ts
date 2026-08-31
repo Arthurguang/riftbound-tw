@@ -20,6 +20,10 @@ import {
   runesOnBase,
   setInPile,
   swapWithSideboard,
+  timingKeywords,
+  turnStateId,
+  TURN_STATE_INFO,
+  canPlayByTiming,
   ZONE_RULES,
   LOCATIONS,
   LOCATION_RULES,
@@ -254,6 +258,8 @@ describe('盤面的網址編碼', () => {
     battlefields: [null, null] as [string | null, string | null],
     turn: 4,
     onThePlay: false,
+    activePlayer: 'you' as const,
+    phase: { duel: false, chain: false },
     you: player({ hand: { [unit.id]: 2 }, base: { [rune.id]: 6 }, discard: { [other.id]: 1 } }),
     opponent: player({ unknownHand: 5, discard: { [unit.id]: 2 } }),
   };
@@ -366,6 +372,8 @@ describe('戰場區域（485.4、485.5）', () => {
       battlefields: [battlefield.id, other2.id] as [string | null, string | null],
       turn: 3,
       onThePlay: true,
+      activePlayer: 'you' as const,
+      phase: { duel: false, chain: false },
       you: player(),
       opponent: player(),
     };
@@ -380,6 +388,8 @@ describe('戰場區域（485.4、485.5）', () => {
       battlefields: [battlefield.id, null] as [string | null, string | null],
       turn: 1,
       onThePlay: true,
+      activePlayer: 'you' as const,
+      phase: { duel: false, chain: false },
       you: player(),
       opponent: player(),
     };
@@ -486,5 +496,101 @@ describe('備牌不算在盤面的牌組裡', () => {
     });
 
     expect(foreignCards(p)).toContain(sideOnly.id);
+  });
+});
+
+describe('回合狀態與打出時機（規則 307–310）', () => {
+  const withReaction = ALL_CARDS.find((c) => timingKeywords(c).reaction)!;
+  const withAction = ALL_CARDS.find((c) => timingKeywords(c).action)!;
+  const plain = ALL_CARDS.find(
+    (c) => c.types.includes('unit') && !timingKeywords(c).action && !timingKeywords(c).reaction,
+  )!;
+
+  it('四種狀態由兩個維度疊加而成（310）', () => {
+    expect(turnStateId({ duel: false, chain: false })).toBe('normal-open');
+    expect(turnStateId({ duel: false, chain: true })).toBe('normal-closed');
+    expect(turnStateId({ duel: true, chain: false })).toBe('duel-open');
+    expect(turnStateId({ duel: true, chain: true })).toBe('duel-closed');
+  });
+
+  it('每種狀態都標明官方條號', () => {
+    expect(TURN_STATE_INFO['normal-open'].rule).toBe('310.1');
+    expect(TURN_STATE_INFO['normal-closed'].rule).toBe('310.2');
+    expect(TURN_STATE_INFO['duel-open'].rule).toBe('310.3');
+    expect(TURN_STATE_INFO['duel-closed'].rule).toBe('310.4');
+  });
+
+  it('資料裡認得出迅捷（Action）與反應（Reaction）', () => {
+    expect(timingKeywords(withAction)).toMatchObject({ action: true });
+    expect(timingKeywords(withReaction)).toMatchObject({ reaction: true });
+    expect(timingKeywords(plain)).toEqual({ action: false, reaction: false });
+  });
+
+  it('普通開環：回合玩家可以打出任何卡（310.1.a）', () => {
+    expect(canPlayByTiming(plain, 'normal-open', true)).toBe(true);
+    expect(canPlayByTiming(withAction, 'normal-open', true)).toBe(true);
+    expect(canPlayByTiming(withReaction, 'normal-open', true)).toBe(true);
+  });
+
+  it('普通開環：不是你的回合就只有反應打得出來', () => {
+    expect(canPlayByTiming(plain, 'normal-open', false)).toBe(false);
+    expect(canPlayByTiming(withAction, 'normal-open', false)).toBe(false);
+    expect(canPlayByTiming(withReaction, 'normal-open', false)).toBe(true);
+  });
+
+  it('閉環狀態：只有反應（309.1.a），跟是不是回合玩家無關', () => {
+    for (const isTurnPlayer of [true, false]) {
+      expect(canPlayByTiming(plain, 'normal-closed', isTurnPlayer)).toBe(false);
+      expect(canPlayByTiming(withAction, 'normal-closed', isTurnPlayer)).toBe(false);
+      expect(canPlayByTiming(withReaction, 'normal-closed', isTurnPlayer)).toBe(true);
+    }
+  });
+
+  it('法術對決開環：只有迅捷或反應（308.1.a）', () => {
+    expect(canPlayByTiming(plain, 'duel-open', true)).toBe(false);
+    expect(canPlayByTiming(withAction, 'duel-open', true)).toBe(true);
+    expect(canPlayByTiming(withReaction, 'duel-open', true)).toBe(true);
+    // 對決中不分回合玩家
+    expect(canPlayByTiming(withAction, 'duel-open', false)).toBe(true);
+  });
+
+  it('法術對決閉環：兩條限制疊加後只剩反應', () => {
+    expect(canPlayByTiming(withAction, 'duel-closed', true)).toBe(false);
+    expect(canPlayByTiming(withReaction, 'duel-closed', true)).toBe(true);
+  });
+
+  it('大多數單位只能在普通開環打出 —— 這正是階段會影響召喚的原因', () => {
+    const units = ALL_CARDS.filter((c) => c.types.includes('unit') && c.subtype !== 'token');
+    const timed = units.filter((c) => {
+      const k = timingKeywords(c);
+      return k.action || k.reaction;
+    });
+
+    // 絕大多數單位沒有時機關鍵字
+    expect(timed.length).toBeLessThan(units.length * 0.1);
+    for (const unit of units.filter((u) => !timed.includes(u)).slice(0, 20)) {
+      expect(canPlayByTiming(unit, 'duel-open', true)).toBe(false);
+      expect(canPlayByTiming(unit, 'normal-open', true)).toBe(true);
+    }
+  });
+
+  it('回合狀態會編進網址並還原', () => {
+    const board = {
+      ...EMPTY_BOARD,
+      activePlayer: 'opponent' as const,
+      phase: { duel: true, chain: true },
+    };
+    const result = decodeBoard(encodeBoard(board, ALL_CARDS), index);
+
+    expect(result.board.activePlayer).toBe('opponent');
+    expect(result.board.phase).toEqual({ duel: true, chain: true });
+  });
+
+  it('b3 以前的舊連結預設為你的回合、普通開環', () => {
+    const legacy = 'b3!1!1!~~0~~~~~~!~~0~~~~~~!.';
+    const result = decodeBoard(legacy, index);
+
+    expect(result.board.activePlayer).toBe('you');
+    expect(result.board.phase).toEqual({ duel: false, chain: false });
   });
 });

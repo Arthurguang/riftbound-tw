@@ -122,6 +122,10 @@ export type BoardState = {
   battlefields: [string | null, string | null];
   /** 目前第幾回合。用來推算應該召出過幾張符文。 */
   turn: number;
+  /** 現在是誰的回合。影響誰能打出卡（310.1.a）。 */
+  activePlayer: 'you' | 'opponent';
+  /** 回合狀態的兩個維度（308、309）。 */
+  phase: TurnPhase;
   /** 你是不是先手（485.7 影響符文數）。 */
   onThePlay: boolean;
   you: PlayerBoard;
@@ -150,6 +154,8 @@ export const EMPTY_PLAYER: PlayerBoard = {
 export const EMPTY_BOARD: BoardState = {
   battlefields: [null, null],
   turn: 1,
+  activePlayer: 'you',
+  phase: { duel: false, chain: false },
   onThePlay: true,
   you: EMPTY_PLAYER,
   opponent: EMPTY_PLAYER,
@@ -332,4 +338,92 @@ export function swapWithSideboard(
     next.championId = null;
   }
   return next;
+}
+
+// ─── 回合狀態與打出時機（規則 307–310）────────────────────────────
+
+/**
+ * 回合狀態的兩個維度。官方把它們疊加成四種狀態（310）。
+ *
+ * 308　回合處於「普通狀態」或「法術對決狀態」
+ * 309　回合處於「開環狀態」或「閉環狀態」
+ */
+export type TurnPhase = {
+  /** 正在進行法術對決或戰鬥（308.1）。 */
+  duel: boolean;
+  /** 結算鏈存在（309.1）。 */
+  chain: boolean;
+};
+
+export type TurnStateId = 'normal-open' | 'normal-closed' | 'duel-open' | 'duel-closed';
+
+export const turnStateId = ({ duel, chain }: TurnPhase): TurnStateId =>
+  duel ? (chain ? 'duel-closed' : 'duel-open') : chain ? 'normal-closed' : 'normal-open';
+
+/** 每種狀態能打出什麼。條號直接對應官方規則，介面上要顯示出來。 */
+export const TURN_STATE_INFO: Record<
+  TurnStateId,
+  { label: string; rule: string; allows: string }
+> = {
+  'normal-open': {
+    label: '普通開環',
+    rule: '310.1',
+    allows: '回合玩家擁有優先行動權時，可以打出任何卡牌或技能（310.1.a）',
+  },
+  'normal-closed': {
+    label: '普通閉環',
+    rule: '310.2',
+    allows: '結算鏈存在，只有帶有 [反應] 的卡牌或技能可以打出（309.1.a）',
+  },
+  'duel-open': {
+    label: '法術對決開環',
+    rule: '310.3',
+    allows: '對決或戰鬥中，只有帶有 [迅捷] 或 [反應] 的可以打出（308.1.a）',
+  },
+  'duel-closed': {
+    label: '法術對決閉環',
+    rule: '310.4',
+    allows: '對決中且結算鏈存在，只有帶有 [反應] 的可以打出（309.1.a）',
+  },
+};
+
+/** 這張卡帶有哪些時機關鍵字。Action 的官方簡中名是「迅捷」，Reaction 是「反應」。 */
+export function timingKeywords(card: Card): { action: boolean; reaction: boolean } {
+  const names = new Set<string>();
+  // 能力文字有兩種區塊：段落與清單，關鍵字兩種裡面都可能出現
+  for (const block of card.text) {
+    const tokens = block.kind === 'paragraph' ? block.tokens : block.items.flat();
+    for (const token of tokens) {
+      if (token.type === 'keyword') names.add(token.name);
+    }
+  }
+  return { action: names.has('Action'), reaction: names.has('Reaction') };
+}
+
+/**
+ * 這張卡在目前的回合狀態下打不打得出來 —— **只看時機**。
+ *
+ * 309.1.a　閉環狀態：只有 [反應]
+ * 308.1.a　法術對決狀態：只有 [迅捷] 或 [反應]
+ * 310.1.a　預設：只能在自己回合的普通開環、且擁有優先行動權時打出
+ *
+ * ⚠️ 這裡**不檢查**費用、目標、以及卡牌自身的其他限制 ——
+ * 那需要規則引擎。資源夠不夠是另外算的。
+ */
+export function canPlayByTiming(
+  card: Card,
+  state: TurnStateId,
+  isTurnPlayer: boolean,
+): boolean {
+  const { action, reaction } = timingKeywords(card);
+
+  // 309.1.a：閉環狀態下只有反應，跟是不是回合玩家無關
+  if (state === 'normal-closed' || state === 'duel-closed') return reaction;
+
+  // 308.1.a：法術對決狀態下只有迅捷或反應
+  if (state === 'duel-open') return action || reaction;
+
+  // 普通開環：回合玩家可以打出任何卡（310.1.a）；
+  // 非回合玩家只有反應可以打（反應的官方說明是「可在任意時機打出」）
+  return isTurnPlayer || reaction;
 }

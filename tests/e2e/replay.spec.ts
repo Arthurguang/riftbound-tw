@@ -113,8 +113,8 @@ test.describe('對局復盤', () => {
     await sideOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }).click();
     await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
-    const affordable = sideOf(page, 'you').getByRole('heading', { name: /手牌裡現在付得起的/ });
-    await expect(affordable).toBeVisible();
+    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    await expect(hand).toBeVisible();
 
     // 還沒放符文 → 兩張都付不起
     await expect(page.getByText('基地上 0 張符文')).toBeVisible();
@@ -142,7 +142,7 @@ test.describe('對局復盤', () => {
   test('盤面會編進網址，可以分享', async ({ page, context }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    await expect(page).toHaveURL(/[?&]b=b3/); // 格式版本 2（含戰場）
+    await expect(page).toHaveURL(/[?&]b=b4/); // 格式版本 2（含戰場）
     const beforeCard = page.url();
 
     await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
@@ -280,7 +280,8 @@ test.describe('戰場區域', () => {
 
     const shared = await urlAfter(page, async () => {
       await page.locator('#battlefield-0').selectOption({ label: '團結祭壇' });
-      await expect(page.getByTestId('battlefield-zone')).toContainText('團結祭壇');
+      // 下拉的選項本來就含這個名字，所以要驗「值」而不是「有沒有這段文字」
+      await expect(page.locator('#battlefield-0')).toHaveValue(/ogn/);
     });
 
     const other = await context.newPage();
@@ -419,5 +420,118 @@ test.describe('直接選擇加到哪一區', () => {
     await scope.getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
     await expect(scope.locator('[data-zone="bf1"]')).toContainText('烈焰灼魂者');
+  });
+});
+
+test.describe('回合狀態（規則 307–310）', () => {
+  /** Cleave 有 [迅捷]、Shakedown 有 [反應]、Blazing Scorcher 兩者皆無。 */
+  const TIMING_DECK = [
+    '【主牌組】',
+    '3 Cleave',
+    '3 Shakedown',
+    '3 Blazing Scorcher',
+    '【符文牌組】',
+    '12 Fury Rune',
+  ];
+
+  /** 把三張代表性的卡放進手牌，並補滿符文避免資源不足干擾判讀。 */
+  async function setUpHand(page: Page) {
+    await importDeck(page, 'you', TIMING_DECK);
+    const you = sideOf(page, 'you');
+    await you.getByRole('button', { name: '補到 2 張' }).click();
+    for (const name of ['劈砍', '勒索', '烈焰灼魂者']) {
+      const button = you.getByRole('button', { name, exact: true });
+      if (await button.count()) await button.click();
+    }
+  }
+
+  test('四種狀態切換得到，並顯示對應條號', async ({ page }) => {
+    await gotoReplay(page);
+
+    const label = page.getByTestId('turn-state-label');
+    await expect(label).toHaveText('普通開環');
+    await expect(page.getByTestId('turn-state')).toContainText('310.1');
+
+    await page.getByLabel(/結算鏈上有東西/).check();
+    await expect(label).toHaveText('普通閉環');
+    await expect(page.getByTestId('turn-state')).toContainText('309.1.a');
+
+    await page.getByLabel(/結算鏈上有東西/).uncheck();
+    await page.getByLabel(/正在法術對決或戰鬥中/).check();
+    await expect(label).toHaveText('法術對決開環');
+    await expect(page.getByTestId('turn-state')).toContainText('308.1.a');
+
+    await page.getByLabel(/結算鏈上有東西/).check();
+    await expect(label).toHaveText('法術對決閉環');
+  });
+
+  test('普通開環：你的回合什麼都打得出來', async ({ page }) => {
+    await gotoReplay(page);
+    await setUpHand(page);
+
+    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    await expect(hand).toBeVisible();
+    // 三張都是「時機可」
+    await expect(hand.getByText('時機不可')).toHaveCount(0);
+  });
+
+  test('法術對決：沒有迅捷或反應的卡打不出來（308.1.a）', async ({ page }) => {
+    await gotoReplay(page);
+    await setUpHand(page);
+    await page.getByLabel(/正在法術對決或戰鬥中/).check();
+
+    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    // 烈焰灼魂者兩個關鍵字都沒有 → 時機不可
+    await expect(hand.getByText('時機不可')).toHaveCount(1);
+    // 迅捷與反應那兩張還是可以
+    await expect(hand.getByText('時機可')).toHaveCount(2);
+  });
+
+  test('閉環：只剩反應（309.1.a）', async ({ page }) => {
+    await gotoReplay(page);
+    await setUpHand(page);
+    await page.getByLabel(/結算鏈上有東西/).check();
+
+    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    // 只有帶反應的那一張可以
+    await expect(hand.getByText('時機可')).toHaveCount(1);
+    await expect(hand.getByText('時機不可')).toHaveCount(2);
+  });
+
+  test('不是你的回合時，只有反應打得出來（310.1.a）', async ({ page }) => {
+    await gotoReplay(page);
+    await setUpHand(page);
+    await page.getByRole('button', { name: '對手的回合' }).click();
+
+    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    await expect(hand.getByText('時機可')).toHaveCount(1);
+  });
+
+  test('時機與資源分開顯示 —— 打不出來的原因不同', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', TIMING_DECK);
+
+    // 不補符文，把 5 費的烈焰灼魂者放進手牌
+    await sideOf(page, 'you')
+      .getByRole('button', { name: '烈焰灼魂者', exact: true })
+      .click();
+
+    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    // 普通開環 → 時機可，但沒有符文 → 資源不足
+    await expect(hand).toContainText('時機可');
+    await expect(hand).toContainText('資源差');
+  });
+
+  test('回合狀態會編進網址', async ({ page }) => {
+    await gotoReplay(page);
+
+    const shared = await urlAfter(page, async () => {
+      await page.getByLabel(/正在法術對決或戰鬥中/).check();
+      await expect(page.getByTestId('turn-state-label')).toHaveText('法術對決開環');
+    });
+
+    await page.goto(shared, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-replay-ready="true"]')).toBeAttached();
+    await expect(page.getByTestId('turn-state-label')).toHaveText('法術對決開環');
   });
 });

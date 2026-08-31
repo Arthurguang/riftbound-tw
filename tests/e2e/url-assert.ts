@@ -59,8 +59,42 @@ export async function expectOfficialUrl(
  * 所以正確的判斷是「網址跟動作前不一樣了」，而不是「網址長得像什麼」。
  */
 export async function urlAfter(page: Page, action: () => Promise<void>): Promise<string> {
-  const before = page.url();
+  const before = await settledUrl(page);
   await action();
   await expect.poll(() => page.url()).not.toBe(before);
   return page.url();
+}
+
+/**
+ * 等網址不再變動，回傳穩定後的值。
+ *
+ * 為什麼需要這一步：前一個動作（例如匯入牌組）觸發的 router.replace
+ * 可能還沒寫完。如果直接把「目前的網址」當成基準，
+ * 那次**遲來的寫入**就會被誤判成「我這次動作造成的改變」，
+ * urlAfter 於是提早回傳一個還沒包含本次動作的網址。
+ *
+ * 這個情況實際發生過：在全套件的負載下才會重現，單獨跑那條測試永遠是綠的。
+ */
+async function settledUrl(page: Page): Promise<string> {
+  /*
+   * previous 一開始必須是 null 而不是「當下的網址」。
+   *
+   * 用當下的網址當初始值的話，第一次比較必然成立 —— 這個函式就完全
+   * 沒有等待，只是看起來有。用 null 開頭可以保證至少讀兩次、中間隔一段時間。
+   */
+  let previous: string | null = null;
+
+  await expect
+    .poll(
+      () => {
+        const now = page.url();
+        const stable = previous !== null && now === previous;
+        previous = now;
+        return stable;
+      },
+      { intervals: [50, 100, 100, 200, 200, 400] },
+    )
+    .toBe(true);
+
+  return previous ?? page.url();
 }

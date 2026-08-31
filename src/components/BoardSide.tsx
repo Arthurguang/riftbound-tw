@@ -9,6 +9,7 @@ import { SideboardSwap } from './SideboardSwap';
 import { ChampionZone } from './ChampionZone';
 import {
   BOARD_ZONES,
+  canPlayByTiming,
   foreignCards,
   handSize,
   hasDeck,
@@ -16,6 +17,9 @@ import {
   remainingDeck,
   runesOnBase,
   setInPile,
+  timingKeywords,
+  turnStateId,
+  TURN_STATE_INFO,
   type BoardZone,
   type PlayerBoard,
 } from '@/lib/board-state';
@@ -57,6 +61,8 @@ export function BoardSide({
   isOpponent,
   turn,
   onThePlay,
+  phase,
+  isTurnPlayer,
   onChange,
 }: {
   /** 顯示的名稱，同時也是各輸入框 id 的前綴。 */
@@ -70,6 +76,10 @@ export function BoardSide({
   /** 目前回合，用來提示照規則應該召出幾張符文。 */
   turn: number;
   onThePlay: boolean;
+  /** 回合狀態（308、309），決定手牌哪幾張現在打得出來。 */
+  phase: { duel: boolean; chain: boolean };
+  /** 現在是不是這一方的回合（310.1.a）。 */
+  isTurnPlayer: boolean;
   onChange: (next: PlayerBoard) => void;
 }) {
   const [adding, setAdding] = useState<BoardZone>('hand');
@@ -112,15 +122,32 @@ export function BoardSide({
     onChange({ ...player, [zone]: setInPile(player[zone], cardId, (player[zone][cardId] ?? 0) + 1) });
   };
 
-  /** 目前這回合付得起的手牌（只看資源，不判斷時機或合法性）。 */
-  const affordable = useMemo(() => {
+  const state = turnStateId(phase);
+
+  /**
+   * 手牌裡每一張的兩個獨立檢查：
+   *   時機　目前的回合狀態允不允許打出（307–310）
+   *   資源　基地上的符文夠不夠付（131.2、131.3、164.2）
+   *
+   * 分開顯示是刻意的 —— 「打不出來」有兩種完全不同的原因，
+   * 混成一個燈號會讓人不知道該補資源還是該等時機。
+   */
+  const playable = useMemo(() => {
     return Object.entries(player.hand)
       .map(([id, qty]) => ({ card: byId.get(id), qty }))
       .filter((e): e is { card: Card; qty: number } => Boolean(e.card) && e.qty > 0)
-      .map(({ card }) => ({ card, needed: runesNeeded(card) }))
-      .filter((e) => e.needed !== null)
-      .map((e) => ({ ...e, ok: (e.needed ?? 0) <= runes }));
-  }, [player.hand, byId, runes]);
+      .map(({ card }) => {
+        const needed = runesNeeded(card);
+        const timing = timingKeywords(card);
+        return {
+          card,
+          needed,
+          timingOk: canPlayByTiming(card, state, isTurnPlayer),
+          resourceOk: needed === null || needed <= runes,
+          timing,
+        };
+      });
+  }, [player.hand, byId, runes, state, isTurnPlayer]);
 
   return (
     <div
@@ -299,32 +326,58 @@ export function BoardSide({
             </p>
           )}
 
-          {/* 這回合付得起什麼 */}
-          {affordable.length > 0 && (
-            <section className="mt-3 rounded-lg border border-line bg-surface-1 p-2.5">
+          {/* 手牌現在打不打得出來 */}
+          {playable.length > 0 && (
+            <section
+              className="mt-3 rounded-lg border border-line bg-surface-1 p-2.5"
+              data-testid="playable-hand"
+            >
               <h4 className="mb-1 text-sm font-semibold text-ink">
-                手牌裡現在付得起的
+                手牌現在打不打得出來
                 <span className="ml-2 text-xs font-normal text-ink-faint">
-                  基地上 {runes} 張符文
+                  {TURN_STATE_INFO[state].label}　基地上 {runes} 張符文
                 </span>
               </h4>
               <p className="mb-2 text-[0.7rem] leading-relaxed text-ink-faint">
-                只比較「法力＋符能」與符文張數（131.2、131.3、164.2）。
-                <strong className="text-ink-dim">不判斷時機、目標或能力是否合法</strong>
+                分成兩個獨立的檢查：<strong className="text-ink-dim">時機</strong>
+                （回合狀態允不允許，307–310）與<strong className="text-ink-dim">資源</strong>
+                （符文夠不夠，131.2、131.3、164.2）。
+                <strong className="text-ink-dim">不判斷目標或卡牌自身的其他限制</strong>
                 —— 那需要規則引擎。
               </p>
-              <ul className="flex flex-wrap gap-1">
-                {affordable.map(({ card, needed, ok }) => (
-                  <li
-                    key={card.id}
-                    className={`rounded border px-1.5 py-0.5 text-[0.7rem] ${
-                      ok
-                        ? 'border-emerald-500/50 text-emerald-300'
-                        : 'border-line text-ink-faint line-through'
-                    }`}
-                    title={`需要 ${needed} 張符文`}
-                  >
-                    {cardName(card, lang)} · {needed}
+              <ul className="space-y-1">
+                {playable.map(({ card, needed, timingOk, resourceOk, timing }) => (
+                  <li key={card.id} className="flex flex-wrap items-center gap-1.5 text-[0.7rem]">
+                    <span
+                      className={
+                        timingOk && resourceOk ? 'text-emerald-300' : 'text-ink-faint'
+                      }
+                    >
+                      {cardName(card, lang)}
+                    </span>
+                    {timing.reaction && (
+                      <span className="rounded bg-sky-500/15 px-1 text-sky-300">反應</span>
+                    )}
+                    {timing.action && (
+                      <span className="rounded bg-violet-500/15 px-1 text-violet-300">迅捷</span>
+                    )}
+                    <span
+                      className={`rounded px-1 ${
+                        timingOk ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'
+                      }`}
+                    >
+                      時機{timingOk ? '可' : '不可'}
+                    </span>
+                    <span
+                      className={`rounded px-1 ${
+                        resourceOk
+                          ? 'bg-emerald-500/15 text-emerald-300'
+                          : 'bg-amber-500/15 text-amber-300'
+                      }`}
+                      title={needed === null ? '這張卡沒有費用' : `需要 ${needed} 張符文`}
+                    >
+                      資源{resourceOk ? '夠' : `差 ${(needed ?? 0) - runes}`}
+                    </span>
                   </li>
                 ))}
               </ul>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BoardSide } from './BoardSide';
 import { BattlefieldPicker } from './BattlefieldPicker';
+import { TurnStateControl } from './TurnStateControl';
 import { EMPTY_BOARD, type BoardState, type PlayerBoard } from '@/lib/board-state';
 import { decodeBoard, emptyBoardCode, encodeBoard } from '@/lib/board-url';
 import { buildCodeIndex } from '@/lib/deck-url';
@@ -154,6 +155,11 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
         </button>
       </div>
 
+      <TurnStateControl
+        board={board}
+        onChange={(next) => setBoard((prev) => ({ ...prev, ...next }))}
+      />
+
       <BattlefieldPicker
         battlefields={board.battlefields}
         yourOptions={battlefieldOptions('you')}
@@ -175,6 +181,8 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
           isOpponent={false}
           turn={board.turn}
           onThePlay={board.onThePlay}
+          phase={board.phase}
+          isTurnPlayer={board.activePlayer === 'you'}
           onChange={setSide('you')}
         />
         <BoardSide
@@ -187,6 +195,8 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
           isOpponent
           turn={board.turn}
           onThePlay={board.onThePlay}
+          phase={board.phase}
+          isTurnPlayer={board.activePlayer === 'opponent'}
           onChange={setSide('opponent')}
         />
       </div>
@@ -205,6 +215,13 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
             要判斷「這個局面怎麼打最好」，程式必須看得懂 376 張卡各自的能力文字，
             還要能執行戰鬥、據守、對決那整套流程 —— 那是一個完整的規則引擎。
             沒有引擎卻跳出「建議」，那個建議是編的。
+          </p>
+          <p>
+            <strong className="text-ink">會做：依回合狀態判斷打不打得出來。</strong>
+            規則 307–310 把回合拆成四種狀態，每種能打出的卡不同 ——
+            閉環只有 [反應]、法術對決只有 [迅捷] 或 [反應]。
+            這條規則明確且可驗證，所以有做。但仍然
+            <strong className="text-ink-dim">不檢查目標與卡牌自身的其他限制</strong>。
           </p>
           <p>
             <strong className="text-ink">不會做：判斷動作合不合法。</strong>
