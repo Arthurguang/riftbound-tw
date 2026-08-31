@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { urlAfter } from './url-assert';
 
 /**
  * 對局復盤板的端對端驗證。
@@ -276,10 +277,11 @@ test.describe('戰場區域', () => {
   test('戰場選擇會編進網址，可以分享', async ({ page, context }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', WITH_BATTLEFIELDS);
-    await page.locator('#battlefield-0').selectOption({ label: '團結祭壇' });
 
-    await expect(page).toHaveURL(/[?&]b=b3/);
-    const shared = page.url();
+    const shared = await urlAfter(page, async () => {
+      await page.locator('#battlefield-0').selectOption({ label: '團結祭壇' });
+      await expect(page.getByTestId('battlefield-zone')).toContainText('團結祭壇');
+    });
 
     const other = await context.newPage();
     await other.goto(shared, { waitUntil: 'domcontentloaded' });

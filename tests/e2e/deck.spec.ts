@@ -1,5 +1,6 @@
 import { readFile, stat } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
+import { urlAfter } from './url-assert';
 
 /**
  * 牌組編輯器的端對端驗證。
@@ -83,10 +84,11 @@ test.describe('牌組編輯器', () => {
   test('分享網址可以還原同一副牌組', async ({ page, context }) => {
     await gotoDeck(page);
     await openTab(page, '符文');
-    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
-    await expect(page).toHaveURL(/[?&]d=/);
 
-    const shared = page.url();
+    const shared = await urlAfter(page, async () => {
+      await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+      await expect(page).toHaveURL(/[?&]d=/);
+    });
 
     // 用另一個分頁開同一個網址 —— 模擬別人收到連結
     const other = await context.newPage();
@@ -317,11 +319,13 @@ test.describe('備牌區', () => {
   test('備牌會編進分享網址', async ({ page, context }) => {
     await gotoDeck(page);
     await openTab(page, '主牌組');
-    await page.getByRole('button', { name: /^加入備牌/ }).first().click();
-    await expect(page).toHaveURL(/[?&]d=/);
+    const shared = await urlAfter(page, async () => {
+      await page.getByRole('button', { name: /^加入備牌/ }).first().click();
+      await expect(page).toHaveURL(/[?&]d=/);
+    });
 
     const other = await context.newPage();
-    await other.goto(page.url(), { waitUntil: 'domcontentloaded' });
+    await other.goto(shared, { waitUntil: 'domcontentloaded' });
     await expect(other.locator('[data-deck-ready="true"]')).toBeAttached();
     await expect(other.getByRole('heading', { name: /備牌\s*1/ })).toBeVisible();
     await other.close();

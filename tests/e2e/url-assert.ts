@@ -1,4 +1,4 @@
-import { expect, type Locator } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 /**
  * 斷言某個屬性是「主機名稱剛好等於指定值」的 https 網址。
@@ -41,4 +41,26 @@ export async function expectOfficialUrl(
   // 比對「完整主機名稱」而不是「包含某段字串」
   expect(url.hostname, `${value} 的主機名稱不符`).toBe(expectedHost);
   return url;
+}
+
+/**
+ * 執行一個會改變網址的動作，等網址**真的變了**之後回傳新網址。
+ *
+ * ── 為什麼不能直接 page.url() ──────────────────────────────────
+ * 本站把牌組與盤面編在網址裡，用 router.replace 寫回去 —— 那是非同步的。
+ * 動作做完不代表網址已經寫好，太早複製會拿到舊的一版，
+ * 第二個分頁開起來就少了剛剛那步操作。
+ *
+ * ── 為什麼不能只用 toHaveURL 判斷 ──────────────────────────────
+ * 如果網址在動作**之前**就已經符合要比對的樣式（例如先前的匯入已經
+ * 寫入 `?b=b3`），那個斷言會立刻通過，一樣複製到舊值。
+ * 這個坑實際發生過三次，其中一次是 CI 的 WebKit 才抓到。
+ *
+ * 所以正確的判斷是「網址跟動作前不一樣了」，而不是「網址長得像什麼」。
+ */
+export async function urlAfter(page: Page, action: () => Promise<void>): Promise<string> {
+  const before = page.url();
+  await action();
+  await expect.poll(() => page.url()).not.toBe(before);
+  return page.url();
 }
