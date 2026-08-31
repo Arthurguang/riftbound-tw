@@ -1,7 +1,7 @@
 'use client';
 
 import { cardImageUrl, cardName } from '@/lib/cards';
-import { pileSize, ZONE_RULES, type BoardZone, type Pile } from '@/lib/board-state';
+import { isInPlayZone, pileSize, ZONE_RULES, type BoardZone, type Pile } from '@/lib/board-state';
 import type { ArtLang, TextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
 
@@ -52,6 +52,8 @@ export function BoardZonePanel({
   art,
   onMove,
   onRemove,
+  dormant,
+  onDormantChange,
   extra,
 }: {
   zone: BoardZone;
@@ -61,6 +63,9 @@ export function BoardZonePanel({
   art: ArtLang;
   onMove: (cardId: string, to: BoardZone) => void;
   onRemove: (cardId: string) => void;
+  /** 這個位置有幾張處於休眠（只有場上的位置會傳）。 */
+  dormant?: Pile;
+  onDormantChange?: (cardId: string, count: number) => void;
   /** 額外的控制項，例如手牌的「未知張數」。 */
   extra?: React.ReactNode;
 }) {
@@ -113,6 +118,35 @@ export function BoardZonePanel({
                 {cardName(card, lang)}
               </span>
               {qty > 1 && <span className="shrink-0 text-xs text-ink-dim">×{qty}</span>}
+
+              {/* 活躍／休眠（414、415）。只有場上的位置有這個狀態。 */}
+              {isInPlayZone(zone) && onDormantChange && (
+                <button
+                  type="button"
+                  aria-label={`切換 ${cardName(card, lang)} 的活躍或休眠狀態`}
+                  title={
+                    (dormant?.[card.id] ?? 0) > 0
+                      ? '休眠：耗盡了能量（414.1）。點一下改為活躍'
+                      : '活躍：可以行動（415.1）。點一下改為休眠'
+                  }
+                  onClick={() => {
+                    const current = dormant?.[card.id] ?? 0;
+                    // 一次切一張：全活躍 → 全休眠 → 逐張喚醒
+                    onDormantChange(card.id, current >= qty ? 0 : current + 1);
+                  }}
+                  className={`shrink-0 rounded border px-1 text-[0.65rem] ${
+                    (dormant?.[card.id] ?? 0) > 0
+                      ? 'border-amber-500/50 text-amber-300'
+                      : 'border-emerald-500/40 text-emerald-300'
+                  }`}
+                >
+                  {(dormant?.[card.id] ?? 0) > 0
+                    ? qty > 1
+                      ? `休眠 ${dormant?.[card.id]}`
+                      : '休眠'
+                    : '活躍'}
+                </button>
+              )}
 
               <div className="flex shrink-0 gap-0.5">
                 {MOVE_TARGETS[zone].map((target) => (

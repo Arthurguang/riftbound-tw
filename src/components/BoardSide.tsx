@@ -15,8 +15,12 @@ import {
   hasDeck,
   moveCard,
   remainingDeck,
-  runesOnBase,
+  activeRunesOnBase,
+  entersDormant,
+  isInPlayZone,
+  setDormant,
   setInPile,
+  wakeAll,
   timingKeywords,
   turnStateId,
   TURN_STATE_INFO,
@@ -87,7 +91,11 @@ export function BoardSide({
 
   const remaining = useMemo(() => remainingDeck(player), [player]);
   const foreign = useMemo(() => foreignCards(player), [player]);
-  const runes = runesOnBase(player, byId);
+  /**
+   * 只有**活躍**的符文算資源：消耗符文取得法力（164.2.a）要它是活躍的，
+   * 休眠代表「耗盡了能量」（414.1）。
+   */
+  const runes = activeRunesOnBase(player, byId);
 
   /** 可以加進盤面的候選卡：以這副牌組為主，找不到時退回全部卡片。 */
   const candidates = useMemo(() => {
@@ -119,7 +127,26 @@ export function BoardSide({
   }, [player, byId, cards, query]);
 
   const addCard = (zone: BoardZone, cardId: string) => {
-    onChange({ ...player, [zone]: setInPile(player[zone], cardId, (player[zone][cardId] ?? 0) + 1) });
+    const card = byId.get(cardId);
+    const next: PlayerBoard = {
+      ...player,
+      [zone]: setInPile(player[zone], cardId, (player[zone][cardId] ?? 0) + 1),
+    };
+
+    /*
+     * 進場的預設狀態依卡種而定：
+     *   143.4、359.2.c　單位以休眠狀態進場
+     *   359.2.d　　　　 非單位裝備以活躍狀態進場
+     *   430.2.a　　　　 符文預設以活躍狀態召出
+     *
+     * 這只是預設 —— [急速] 之類的效果會改變它（143.4.a），使用者可以自己切。
+     */
+    if (card && isInPlayZone(zone) && entersDormant(card)) {
+      const already = next.dormant[zone][cardId] ?? 0;
+      onChange(setDormant(next, zone, cardId, already + 1));
+      return;
+    }
+    onChange(next);
   };
 
   const state = turnStateId(phase);
@@ -156,9 +183,19 @@ export function BoardSide({
     >
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-base font-semibold text-ink">{title}</h3>
-        <span className="text-xs text-ink-dim" data-testid="side-summary">
-          手牌 {handSize(player)}　牌堆 {remaining.mainSize}　符文 {runes}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-ink-dim" data-testid="side-summary">
+            手牌 {handSize(player)}　牌堆 {remaining.mainSize}　活躍符文 {runes}
+          </span>
+          <button
+            type="button"
+            onClick={() => onChange(wakeAll(player))}
+            title="喚醒階段：把控制的所有非法術遊戲物體設為活躍（415.3.a）"
+            className="rounded border border-line px-2 py-0.5 text-[0.7rem] text-ink-dim hover:border-accent hover:text-accent-soft"
+          >
+            全部喚醒
+          </button>
+        </div>
       </div>
 
       <DeckImport
@@ -266,6 +303,12 @@ export function BoardSide({
                 byId={byId}
                 lang={lang}
                 art={art}
+                dormant={isInPlayZone(zone) ? player.dormant[zone] : undefined}
+                onDormantChange={
+                  isInPlayZone(zone)
+                    ? (cardId, count) => onChange(setDormant(player, zone, cardId, count))
+                    : undefined
+                }
                 onMove={(cardId, to) => onChange(moveCard(player, zone, to, cardId))}
                 onRemove={(cardId) =>
                   onChange({

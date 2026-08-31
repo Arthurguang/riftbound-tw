@@ -105,6 +105,18 @@ export type PlayerBoard = {
   bf0: Pile;
   /** 你在第二處戰場（對手帶來的那處）上的單位。 */
   bf1: Pile;
+  /**
+   * 場上各位置有幾張處於**休眠**狀態（414）。
+   *
+   * 只有場上的位置需要這個 —— 手牌、廢牌堆、放逐區沒有活躍／休眠之分。
+   * 數量不會超過該位置實際有幾張。
+   *
+   * 進場的預設狀態依卡種而不同：
+   *   143.4、359.2.c　單位以**休眠**狀態進場（可被 [急速] 改變，143.4.a）
+   *   359.2.d　　　　 非單位裝備以**活躍**狀態進場
+   *   430.2.a　　　　 符文預設以**活躍**狀態召出
+   */
+  dormant: { base: Pile; bf0: Pile; bf1: Pile };
   /** 廢牌堆（108.2）。 */
   discard: Pile;
   /** 放逐區域（108.6）。 */
@@ -147,6 +159,7 @@ export const EMPTY_PLAYER: PlayerBoard = {
   base: {},
   bf0: {},
   bf1: {},
+  dormant: { base: {}, bf0: {}, bf1: {} },
   discard: {},
   exile: {},
 };
@@ -427,3 +440,85 @@ export function canPlayByTiming(
   // 非回合玩家只有反應可以打（反應的官方說明是「可在任意時機打出」）
   return isTurnPlayer || reaction;
 }
+
+// ─── 活躍與休眠（規則 414、415）──────────────────────────────────
+
+/** 場上的位置。只有這些位置的卡有活躍／休眠之分。 */
+export const IN_PLAY_ZONES = ['base', 'bf0', 'bf1'] as const;
+export type InPlayZone = (typeof IN_PLAY_ZONES)[number];
+
+export const isInPlayZone = (zone: BoardZone): zone is InPlayZone =>
+  (IN_PLAY_ZONES as readonly string[]).includes(zone);
+
+/**
+ * 一張卡進場時預設是活躍還是休眠。
+ *
+ * 143.4　　單位以休眠狀態進入場地
+ * 359.2.c　打出的單位以休眠狀態進場
+ * 359.2.d　非單位裝備以活躍狀態進場
+ * 430.2.a　符文預設以活躍狀態召出
+ *
+ * 143.4.a 說單位的進場狀態可以被 [急速] 之類的效果改變，
+ * 所以這只是**預設值**，使用者隨時可以自己改。
+ */
+export function entersDormant(card: Card): boolean {
+  if (card.types.includes('rune')) return false;
+  return card.types.includes('unit');
+}
+
+/** 某個位置有幾張某卡處於休眠。 */
+export const dormantCount = (player: PlayerBoard, zone: InPlayZone, cardId: string): number =>
+  player.dormant[zone][cardId] ?? 0;
+
+/** 設定休眠張數。上限是該位置實際有幾張，不會超出。 */
+export function setDormant(
+  player: PlayerBoard,
+  zone: InPlayZone,
+  cardId: string,
+  count: number,
+): PlayerBoard {
+  const total = player[zone][cardId] ?? 0;
+  const clamped = Math.max(0, Math.min(total, Math.round(count)));
+
+  return {
+    ...player,
+    dormant: {
+      ...player.dormant,
+      [zone]: setInPile(player.dormant[zone], cardId, clamped),
+    },
+  };
+}
+
+/**
+ * 喚醒階段：把控制的所有非法術遊戲物體設為活躍（415.3.a）。
+ *
+ * 這是每個回合開始都會發生的事，所以做成一個按鈕。
+ */
+export function wakeAll(player: PlayerBoard): PlayerBoard {
+  return { ...player, dormant: { base: {}, bf0: {}, bf1: {} } };
+}
+
+/**
+ * 基地上**活躍**的符文有幾張。
+ *
+ * 這才是實際可用的資源：消耗符文取得法力（164.2.a）需要它是活躍的，
+ * 休眠代表「耗盡了能量」（414.1）。
+ */
+export function activeRunesOnBase(player: PlayerBoard, byId: Map<string, Card>): number {
+  let count = 0;
+  for (const [cardId, qty] of Object.entries(player.base)) {
+    if (qty <= 0) continue;
+    if (!byId.get(cardId)?.types.includes('rune')) continue;
+    count += Math.max(0, qty - dormantCount(player, 'base', cardId));
+  }
+  return count;
+}
+
+/**
+ * 休眠的單位能不能做標準移動（去別的戰場）。
+ *
+ * 414.3.a：一名單位進行標準移動的費用，**是進入休眠狀態** ——
+ * 已經休眠的就付不出這個費用（414.1.b：已經休眠的無法再次進入休眠）。
+ */
+export const canStandardMove = (player: PlayerBoard, zone: InPlayZone, cardId: string): boolean =>
+  (player[zone][cardId] ?? 0) > dormantCount(player, zone, cardId);

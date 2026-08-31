@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { urlContaining } from './url-assert';
+import { shareUrl } from './url-assert';
 
 /**
  * 對局復盤板的端對端驗證。
@@ -142,18 +142,10 @@ test.describe('對局復盤', () => {
   test('盤面會編進網址，可以分享', async ({ page, context }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    await expect(page).toHaveURL(/[?&]b=b4/); // 格式版本 2（含戰場）
-    const beforeCard = page.url();
-
-    await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
-    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
-
-    /*
-     * router.replace 寫網址是非同步的。太早複製會拿到「還沒加手牌」那一版，
-     * 第二頁自然看不到手牌 —— 要等網址真的變了再取。
-     */
-    await expect.poll(() => page.url()).not.toBe(beforeCard);
-    const shared = page.url();
+    const shared = await shareUrl(page, async () => {
+      await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+      await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
+    });
 
     const other = await context.newPage();
     await other.goto(shared, { waitUntil: 'domcontentloaded' });
@@ -278,8 +270,7 @@ test.describe('戰場區域', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', WITH_BATTLEFIELDS);
 
-    // 團結祭壇是 OGN-275，短代碼 ogn275
-    const shared = await urlContaining(page, /ogn275/, async () => {
+    const shared = await shareUrl(page, async () => {
       await page.locator('#battlefield-0').selectOption({ label: '團結祭壇' });
       // 下拉的選項本來就含這個名字，所以要驗「值」而不是「有沒有這段文字」
       await expect(page.locator('#battlefield-0')).toHaveValue(/ogn/);
@@ -526,8 +517,7 @@ test.describe('回合狀態（規則 307–310）', () => {
   test('回合狀態會編進網址', async ({ page }) => {
     await gotoReplay(page);
 
-    // 回合狀態編成三個字元：y=你的回合、1=對決中、0=沒有結算鏈
-    const shared = await urlContaining(page, /y10/, async () => {
+    const shared = await shareUrl(page, async () => {
       await page.getByLabel(/正在法術對決或戰鬥中/).check();
       await expect(page.getByTestId('turn-state-label')).toHaveText('法術對決開環');
     });
@@ -535,5 +525,93 @@ test.describe('回合狀態（規則 307–310）', () => {
     await page.goto(shared, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('[data-replay-ready="true"]')).toBeAttached();
     await expect(page.getByTestId('turn-state-label')).toHaveText('法術對決開環');
+  });
+});
+
+test.describe('活躍與休眠（規則 414、415）', () => {
+  test('單位加到場上預設是休眠（143.4、359.2.c）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const you = sideOf(page, 'you');
+    await you.getByRole('button', { name: '基地', exact: true }).click();
+    await you.getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+
+    await expect(you.locator('[data-zone="base"]')).toContainText('休眠');
+  });
+
+  test('符文加到場上預設是活躍（430.2.a）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const you = sideOf(page, 'you');
+    await you.getByRole('button', { name: '補到 2 張' }).click();
+
+    // 兩張都活躍 → 可用資源 2
+    await expect(you.getByTestId('rune-total')).toHaveText('2');
+    await expect(you.locator('[data-runes]')).toContainText('全活躍');
+  });
+
+  test('休眠的符文不算可用資源（164.2.a、414.1）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const you = sideOf(page, 'you');
+    await you.getByRole('button', { name: '補到 2 張' }).click();
+    await expect(you.getByTestId('rune-total')).toHaveText('2');
+
+    // 切一張進休眠
+    await you.getByRole('button', { name: /^切換 狂怒符文 的休眠張數/ }).click();
+    await expect(you.getByTestId('rune-total')).toHaveText('1');
+    await expect(you.getByTestId('side-summary')).toContainText('活躍符文 1');
+  });
+
+  test('全部喚醒會把所有東西變回活躍（415.3.a）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const you = sideOf(page, 'you');
+    await you.getByRole('button', { name: '補到 2 張' }).click();
+    await you.getByRole('button', { name: /^切換 狂怒符文 的休眠張數/ }).click();
+    await expect(you.getByTestId('rune-total')).toHaveText('1');
+
+    await you.getByRole('button', { name: '全部喚醒' }).click();
+    await expect(you.getByTestId('rune-total')).toHaveText('2');
+  });
+
+  test('休眠影響手牌能不能打出 —— 資源少了', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const you = sideOf(page, 'you');
+    await you.getByRole('button', { name: '補到 2 張' }).click();
+    // 劈砍 1 費，兩張活躍符文夠付
+    await you.getByRole('button', { name: '劈砍', exact: true }).click();
+    await expect(you.getByTestId('playable-hand')).toContainText('資源夠');
+
+    // 把兩張符文都休眠 → 付不起
+    const toggle = you.getByRole('button', { name: /^切換 狂怒符文 的休眠張數/ });
+    await toggle.click();
+    await toggle.click();
+    await expect(you.getByTestId('playable-hand')).toContainText('資源差');
+  });
+
+  test('休眠狀態會編進網址', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const you = sideOf(page, 'you');
+    await you.getByRole('button', { name: '補到 2 張' }).click();
+    // 先確認前置狀態到位，再做下一步 —— 否則可能點在還沒更新的畫面上
+    await expect(you.getByTestId('rune-total')).toHaveText('2');
+
+    const shared = await shareUrl(page, async () => {
+      await you.getByRole('button', { name: /^切換 狂怒符文 的休眠張數/ }).click();
+      await expect(you.getByTestId('rune-total')).toHaveText('1');
+    });
+
+    await page.goto(shared, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-replay-ready="true"]')).toBeAttached();
+    await expect(sideOf(page, 'you').getByTestId('rune-total')).toHaveText('1');
   });
 });

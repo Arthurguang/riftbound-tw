@@ -19,11 +19,12 @@ import type { Card } from './types';
  * b2：加上戰場區域，且一方多了兩處戰場上的單位
  * b3：一方再多一段英雄區域（108.3）
  * b4：加上回合玩家與回合狀態（307–310）
+ * b5：一方再多三段休眠狀態（414、415）
  *
  * 舊連結仍然要能開 —— 分享出去的復盤連結不能突然失效。
  */
-const FORMAT_VERSION = 'b4';
-const SUPPORTED_VERSIONS = new Set(['b1', 'b2', 'b3', 'b4']);
+const FORMAT_VERSION = 'b5';
+const SUPPORTED_VERSIONS = new Set(['b1', 'b2', 'b3', 'b4', 'b5']);
 
 /*
  * 分隔符的層級，由外而內互不重複：
@@ -107,6 +108,9 @@ function encodePlayer(player: PlayerBoard, cards: Card[], byId: Map<string, Card
     encodePile(player.bf0, byId),
     encodePile(player.bf1, byId),
     encodePile(player.champion, byId),
+    encodePile(player.dormant.base, byId),
+    encodePile(player.dormant.bf0, byId),
+    encodePile(player.dormant.bf1, byId),
   ].join(PLAYER_SEP);
 }
 
@@ -125,6 +129,9 @@ function decodePlayer(
     bf0Raw = '',
     bf1Raw = '',
     championRaw = '',
+    dormantBaseRaw = '',
+    dormantBf0Raw = '',
+    dormantBf1Raw = '',
   ] = encoded.split(PLAYER_SEP);
 
   const deck = decodeDeck(deckRaw, index);
@@ -135,6 +142,9 @@ function decodePlayer(
   const bf0 = decodePile(bf0Raw, index);
   const bf1 = decodePile(bf1Raw, index);
   const champion = decodePile(championRaw, index);
+  const dormantBase = decodePile(dormantBaseRaw, index);
+  const dormantBf0 = decodePile(dormantBf0Raw, index);
+  const dormantBf1 = decodePile(dormantBf1Raw, index);
 
   const parsedUnknown = Number(unknownRaw);
   const unknownHand =
@@ -148,6 +158,11 @@ function decodePlayer(
       hand: hand.pile,
       unknownHand,
       champion: champion.pile,
+      dormant: {
+        base: dormantBase.pile,
+        bf0: dormantBf0.pile,
+        bf1: dormantBf1.pile,
+      },
       base: base.pile,
       bf0: bf0.pile,
       bf1: bf1.pile,
@@ -162,7 +177,10 @@ function decodePlayer(
       exile.dropped +
       bf0.dropped +
       bf1.dropped +
-      champion.dropped,
+      champion.dropped +
+      dormantBase.dropped +
+      dormantBf0.dropped +
+      dormantBf1.dropped,
   };
 }
 

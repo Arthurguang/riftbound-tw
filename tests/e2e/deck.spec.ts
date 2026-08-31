@@ -1,6 +1,6 @@
 import { readFile, stat } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
-import { urlContaining } from './url-assert';
+import { shareUrl } from './url-assert';
 
 /**
  * 牌組編輯器的端對端驗證。
@@ -85,9 +85,10 @@ test.describe('牌組編輯器', () => {
     await gotoDeck(page);
     await openTab(page, '符文');
 
-    // 符文分頁第一張是狂怒符文 OGN-007a，短代碼 ogn007a
-    const shared = await urlContaining(page, /ogn007a/, async () => {
+    const shared = await shareUrl(page, async () => {
       await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+      // 動作內要斷言畫面狀態已定案 —— 這是 shareUrl 能可靠等待的前提
+      await expect(page.getByRole('heading', { name: /符文牌組\s*1/ })).toBeVisible();
     });
 
     // 用另一個分頁開同一個網址 —— 模擬別人收到連結
@@ -319,9 +320,9 @@ test.describe('備牌區', () => {
   test('備牌會編進分享網址', async ({ page, context }) => {
     await gotoDeck(page);
     await openTab(page, '主牌組');
-    // 備牌是編碼的最後一段，等第一張主牌組的卡出現在那裡
-    const shared = await urlContaining(page, /ogn001/, async () => {
+    const shared = await shareUrl(page, async () => {
       await page.getByRole('button', { name: /^加入備牌/ }).first().click();
+      await expect(page.getByRole('heading', { name: /備牌\s*1/ })).toBeVisible();
     });
 
     const other = await context.newPage();

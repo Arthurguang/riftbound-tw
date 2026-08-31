@@ -24,6 +24,13 @@ import {
   turnStateId,
   TURN_STATE_INFO,
   canPlayByTiming,
+  activeRunesOnBase,
+  canStandardMove,
+  dormantCount,
+  entersDormant,
+  isInPlayZone,
+  setDormant,
+  wakeAll,
   ZONE_RULES,
   LOCATIONS,
   LOCATION_RULES,
@@ -592,5 +599,86 @@ describe('回合狀態與打出時機（規則 307–310）', () => {
 
     expect(result.board.activePlayer).toBe('you');
     expect(result.board.phase).toEqual({ duel: false, chain: false });
+  });
+});
+
+describe('活躍與休眠（規則 414、415）', () => {
+  const gear = ALL_CARDS.find((c) => c.types.includes('gear'))!;
+
+  it('進場預設狀態依卡種而不同', () => {
+    // 143.4、359.2.c：單位以休眠狀態進場
+    expect(entersDormant(unit)).toBe(true);
+    // 359.2.d：非單位裝備以活躍狀態進場
+    expect(entersDormant(gear)).toBe(false);
+    // 430.2.a：符文預設以活躍狀態召出
+    expect(entersDormant(rune)).toBe(false);
+  });
+
+  it('休眠張數不會超過該位置實際有幾張', () => {
+    const p = player({ base: { [unit.id]: 2 } });
+    expect(dormantCount(setDormant(p, 'base', unit.id, 99), 'base', unit.id)).toBe(2);
+    expect(dormantCount(setDormant(p, 'base', unit.id, -5), 'base', unit.id)).toBe(0);
+  });
+
+  it('喚醒階段把所有東西設為活躍（415.3.a）', () => {
+    const p = setDormant(
+      setDormant(player({ base: { [unit.id]: 2 }, bf0: { [other.id]: 1 } }), 'base', unit.id, 2),
+      'bf0',
+      other.id,
+      1,
+    );
+    expect(dormantCount(p, 'base', unit.id)).toBe(2);
+
+    const woken = wakeAll(p);
+    expect(woken.dormant).toEqual({ base: {}, bf0: {}, bf1: {} });
+  });
+
+  it('只有活躍的符文算資源（164.2.a、414.1）', () => {
+    const p = player({ base: { [rune.id]: 5 } });
+    expect(activeRunesOnBase(p, byId)).toBe(5);
+
+    const withDormant = setDormant(p, 'base', rune.id, 2);
+    expect(activeRunesOnBase(withDormant, byId)).toBe(3);
+
+    // 全部休眠 → 沒有可用資源
+    expect(activeRunesOnBase(setDormant(p, 'base', rune.id, 5), byId)).toBe(0);
+  });
+
+  it('休眠的單位付不出標準移動的費用（414.3.a、414.1.b）', () => {
+    const p = player({ base: { [unit.id]: 2 } });
+    expect(canStandardMove(p, 'base', unit.id)).toBe(true);
+
+    // 兩張都休眠 → 沒有能付費用的
+    expect(canStandardMove(setDormant(p, 'base', unit.id, 2), 'base', unit.id)).toBe(false);
+    // 只有一張休眠 → 另一張還能動
+    expect(canStandardMove(setDormant(p, 'base', unit.id, 1), 'base', unit.id)).toBe(true);
+  });
+
+  it('只有場上的位置有活躍／休眠之分', () => {
+    expect(isInPlayZone('base')).toBe(true);
+    expect(isInPlayZone('bf0')).toBe(true);
+    expect(isInPlayZone('bf1')).toBe(true);
+    expect(isInPlayZone('hand')).toBe(false);
+    expect(isInPlayZone('discard')).toBe(false);
+    expect(isInPlayZone('champion')).toBe(false);
+  });
+
+  it('休眠狀態會編進網址並還原', () => {
+    const you = setDormant(player({ base: { [rune.id]: 4 }, bf0: { [unit.id]: 2 } }), 'base', rune.id, 3);
+    const board = {
+      ...EMPTY_BOARD,
+      you: setDormant(you, 'bf0', unit.id, 1),
+    };
+    const result = decodeBoard(encodeBoard(board, ALL_CARDS), index);
+
+    expect(dormantCount(result.board.you, 'base', rune.id)).toBe(3);
+    expect(dormantCount(result.board.you, 'bf0', unit.id)).toBe(1);
+    expect(result.dropped).toBe(0);
+  });
+
+  it('b4 以前的舊連結預設全部活躍', () => {
+    const legacy = 'b4!1!1!~~0~~~~~~!~~0~~~~~~!.!y00';
+    const result = decodeBoard(legacy, index);
+    expect(result.board.you.dormant).toEqual({ base: {}, bf0: {}, bf1: {} });
   });
 });

@@ -2,7 +2,13 @@
 
 import { cardName } from '@/lib/cards';
 import { DomainDot } from './CardBadges';
-import { runesOnBase, setInPile, type PlayerBoard } from '@/lib/board-state';
+import {
+  activeRunesOnBase,
+  dormantCount,
+  setDormant,
+  setInPile,
+  type PlayerBoard,
+} from '@/lib/board-state';
 import { runesSummonedByTurn } from '@/lib/draw-model';
 import type { TextLang } from '@/lib/i18n';
 import type { Card, Domain } from '@/lib/types';
@@ -39,7 +45,9 @@ export function RuneTracker({
 
   if (runeTypes.length === 0) return null;
 
-  const total = runesOnBase(player, byId);
+  /** 場上總共幾張符文，以及其中活躍的有幾張。 */
+  const onBase = runeTypes.reduce((sum, card) => sum + (player.base[card.id] ?? 0), 0);
+  const active = activeRunesOnBase(player, byId);
   const expected = runesSummonedByTurn(turn, onThePlay);
 
   const setQty = (cardId: string, qty: number) => {
@@ -78,7 +86,10 @@ export function RuneTracker({
       <div className="mb-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <h4 className="text-sm font-semibold text-ink">場上符文</h4>
         <span className="text-sm text-accent-soft" data-testid="rune-total">
-          {total}
+          {active}
+        </span>
+        <span className="text-xs text-ink-faint">
+          活躍 / 場上 {onBase}
         </span>
         <span
           className="rounded bg-surface-2 px-1 font-mono text-[0.65rem] text-ink-faint"
@@ -110,6 +121,28 @@ export function RuneTracker({
               </span>
               <span className="shrink-0 text-[0.7rem] text-ink-faint">牌組 {inDeck}</span>
 
+              {/* 休眠的符文不能消耗來產生法力（164.2.a、414.1） */}
+              {qty > 0 && (
+                <button
+                  type="button"
+                  aria-label={`切換 ${cardName(card, lang)} 的休眠張數`}
+                  title="休眠代表耗盡了能量（414.1），不能消耗來產生法力"
+                  onClick={() => {
+                    const current = dormantCount(player, 'base', card.id);
+                    onChange(setDormant(player, 'base', card.id, current >= qty ? 0 : current + 1));
+                  }}
+                  className={`shrink-0 rounded border px-1 text-[0.65rem] ${
+                    dormantCount(player, 'base', card.id) > 0
+                      ? 'border-amber-500/50 text-amber-300'
+                      : 'border-emerald-500/40 text-emerald-300'
+                  }`}
+                >
+                  {dormantCount(player, 'base', card.id) > 0
+                    ? `休眠 ${dormantCount(player, 'base', card.id)}`
+                    : '全活躍'}
+                </button>
+              )}
+
               <div className="flex shrink-0 items-center gap-0.5">
                 <button
                   type="button"
@@ -138,6 +171,9 @@ export function RuneTracker({
       <p className="mt-1.5 text-[0.7rem] leading-relaxed text-ink-faint">
         第 {turn} 回合照規則應該召出過 <strong className="text-ink-dim">{expected}</strong> 張
         （315.3.b、485.7）。實際會更少 —— 回收符文取得符能後那張符文永久離場（164.2.b）。
+        <br />
+        只有<strong className="text-ink-dim">活躍</strong>的符文能消耗來產生法力（164.2.a）；
+        休眠代表「耗盡了能量」（414.1），喚醒階段才會全部變回活躍（415.3.a）。
       </p>
     </section>
   );
