@@ -6,6 +6,7 @@ import type { ArtLang, TextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
 
 const ZONE_LABELS: Record<BoardZone, string> = {
+  champion: '英雄區域（選定英雄）',
   hand: '手牌',
   base: '基地（場上）',
   bf0: '戰場一（你帶來的）',
@@ -16,6 +17,8 @@ const ZONE_LABELS: Record<BoardZone, string> = {
 
 /** 可以搬去哪些區域。順序照實際使用頻率排。 */
 const MOVE_TARGETS: Record<BoardZone, BoardZone[]> = {
+  // 108.3.d：選定英雄可以從英雄區域照正常規則打出
+  champion: ['base', 'bf0', 'bf1', 'discard'],
   hand: ['base', 'bf0', 'bf1', 'discard'],
   // 198.1：位置包括戰場和基地，所以單位可以在這三處之間移動
   base: ['bf0', 'bf1', 'discard', 'hand'],
@@ -26,6 +29,7 @@ const MOVE_TARGETS: Record<BoardZone, BoardZone[]> = {
 };
 
 const SHORT: Record<BoardZone, string> = {
+  champion: '英',
   hand: '手',
   base: '基',
   bf0: '戰一',
@@ -123,6 +127,7 @@ export function BoardZonePanel({
                     {SHORT[target]}
                   </button>
                 ))}
+                {zone !== 'champion' && (
                 <button
                   type="button"
                   title="放回牌堆"
@@ -132,6 +137,7 @@ export function BoardZonePanel({
                 >
                   ↺
                 </button>
+                )}
               </div>
             </li>
           ))}

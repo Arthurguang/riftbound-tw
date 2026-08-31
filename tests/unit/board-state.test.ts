@@ -19,11 +19,13 @@ import {
   remainingDeck,
   runesOnBase,
   setInPile,
+  swapWithSideboard,
   ZONE_RULES,
   LOCATIONS,
   LOCATION_RULES,
   type PlayerBoard,
 } from '../../src/lib/board-state';
+import { totalCards } from '../../src/lib/deck-rules';
 import { decodeBoard, encodeBoard } from '../../src/lib/board-url';
 import { buildCodeIndex } from '../../src/lib/deck-url';
 import { ALL_CARDS } from '../../src/lib/cards';
@@ -147,7 +149,7 @@ describe('剩餘牌堆', () => {
     expect(result.runeSize).toBe(8);
   });
 
-  it('選定英雄開局就在英雄區域，不算在牌堆裡（133.4）', () => {
+  it('選定英雄在英雄區域，不算在牌堆裡（133.4、103.2.a.1）', () => {
     const withChampion = player({
       deck: {
         legendId: legend.id,
@@ -157,9 +159,30 @@ describe('剩餘牌堆', () => {
         battlefields: {},
         sideboard: {},
       },
+      // 開局時它就擺在英雄區域
+      champion: { [champion.id]: 1 },
     });
-    // 牌組有 3 張，扣掉英雄區域那張 → 牌堆剩 2 張
+    // 牌組有 3 張，英雄區域佔掉 1 張 → 牌堆剩 2 張
     expect(remainingDeck(withChampion).main[champion.id]).toBe(2);
+  });
+
+  it('選定英雄被打出後仍然不回牌堆 —— 只是換個區域', () => {
+    const base = player({
+      deck: {
+        legendId: legend.id,
+        championId: champion.id,
+        main: { [champion.id]: 3 },
+        runes: {},
+        battlefields: {},
+        sideboard: {},
+      },
+      champion: { [champion.id]: 1 },
+    });
+    const played = moveCard(base, 'champion', 'base', champion.id);
+
+    expect(played.champion).toEqual({});
+    expect(played.base[champion.id]).toBe(1);
+    expect(remainingDeck(played).main[champion.id]).toBe(2);
   });
 
   it('不知道內容的手牌只減少總張數，不指定減哪一張', () => {
@@ -258,27 +281,27 @@ describe('盤面的網址編碼', () => {
   });
 
   it('認不得的卡片代碼會被丟棄並回報', () => {
-    const result = decodeBoard('b2!1!1!~nope999~0~~~~~!~~0~~~~~!.', index);
+    const result = decodeBoard('b3!1!1!~nope999~0~~~~~~!~~0~~~~~~!.', index);
     expect(result.board.you.hand).toEqual({});
     expect(result.dropped).toBeGreaterThan(0);
   });
 
   it('離譜的回合數會被夾回合理範圍', () => {
-    expect(decodeBoard('b2!99999!1!~~0~~~~~!~~0~~~~~!.', index).board.turn).toBe(1);
-    expect(decodeBoard('b2!-5!1!~~0~~~~~!~~0~~~~~!.', index).board.turn).toBe(1);
-    expect(decodeBoard('b2!7!1!~~0~~~~~!~~0~~~~~!.', index).board.turn).toBe(7);
+    expect(decodeBoard('b3!99999!1!~~0~~~~~~!~~0~~~~~~!.', index).board.turn).toBe(1);
+    expect(decodeBoard('b3!-5!1!~~0~~~~~~!~~0~~~~~~!.', index).board.turn).toBe(1);
+    expect(decodeBoard('b3!7!1!~~0~~~~~~!~~0~~~~~~!.', index).board.turn).toBe(7);
   });
 
   it('離譜的未知手牌張數會被拒絕', () => {
-    expect(decodeBoard('b2!1!1!~~99999~~~~~!~~0~~~~~!.', index).board.you.unknownHand).toBe(0);
-    expect(decodeBoard('b2!1!1!~~-3~~~~~!~~0~~~~~!.', index).board.you.unknownHand).toBe(0);
+    expect(decodeBoard('b3!1!1!~~99999~~~~~~!~~0~~~~~~!.', index).board.you.unknownHand).toBe(0);
+    expect(decodeBoard('b3!1!1!~~-3~~~~~~!~~0~~~~~~!.', index).board.you.unknownHand).toBe(0);
   });
 
   it('注入型內容不會變成卡片', () => {
     const attacks = [
-      'b2!1!1!~<script>alert(1)</script>~0~~~~~!~~0~~~~~!.',
-      'b2!1!1!~__proto__x3~0~~~~~!~~0~~~~~!.',
-      'b2!1!1!~constructorx3~0~~~~~!~~0~~~~~!.',
+      'b3!1!1!~<script>alert(1)</script>~0~~~~~~!~~0~~~~~~!.',
+      'b3!1!1!~__proto__x3~0~~~~~~!~~0~~~~~~!.',
+      'b3!1!1!~constructorx3~0~~~~~~!~~0~~~~~~!.',
       "b1|1!1!~'; DROP TABLE--~0~~~|~~0~~~",
     ];
     for (const attack of attacks) {
@@ -367,7 +390,7 @@ describe('戰場區域（485.4、485.5）', () => {
   });
 
   it('認不得的戰場代碼視為沒選，不亂猜', () => {
-    const result = decodeBoard('b2!1!1!~~0~~~~~!~~0~~~~~!nope999.alsonope', index);
+    const result = decodeBoard('b3!1!1!~~0~~~~~!~~0~~~~~!nope999.alsonope', index);
     expect(result.board.battlefields).toEqual([null, null]);
   });
 });
@@ -388,5 +411,80 @@ describe('舊版連結相容', () => {
     const legacy = `b1!1!1!2|||${'ogn001x3'}|||~ogn001~0~~~!~~0~~~`;
     const result = decodeBoard(legacy, index);
     expect(Object.keys(result.board.you.hand)).toHaveLength(1);
+  });
+});
+
+describe('局間換牌（賽事規則 403.4）', () => {
+  const deckWithSide = {
+    legendId: legend.id,
+    championId: null,
+    main: { [unit.id]: 3, [other.id]: 1 },
+    runes: {},
+    battlefields: {},
+    sideboard: { [other.id]: 2 },
+  };
+
+  it('可以把主牌組的卡換到備牌', () => {
+    const next = swapWithSideboard(deckWithSide, unit.id, 'toSideboard');
+    expect(next.main[unit.id]).toBe(2);
+    expect(next.sideboard[unit.id]).toBe(1);
+  });
+
+  it('可以把備牌的卡換進主牌組', () => {
+    const next = swapWithSideboard(deckWithSide, other.id, 'toMain');
+    expect(next.sideboard[other.id]).toBe(1);
+    expect(next.main[other.id]).toBe(2);
+  });
+
+  it('來源沒有那張卡就不動作', () => {
+    expect(swapWithSideboard(deckWithSide, unit.id, 'toMain')).toBe(deckWithSide);
+  });
+
+  it('總張數守恆 —— 換牌只是搬移，不會憑空生出卡', () => {
+    const before = totalCards(deckWithSide.main) + totalCards(deckWithSide.sideboard);
+    const after = swapWithSideboard(deckWithSide, unit.id, 'toSideboard');
+    expect(totalCards(after.main) + totalCards(after.sideboard)).toBe(before);
+  });
+
+  it('選定英雄被換出主牌組後就不再是選定英雄（103.2）', () => {
+    const withChampion = {
+      ...deckWithSide,
+      championId: other.id,
+      main: { [other.id]: 1 },
+    };
+    const next = swapWithSideboard(withChampion, other.id, 'toSideboard');
+
+    expect(next.main[other.id]).toBeUndefined();
+    expect(next.championId).toBeNull();
+  });
+
+  it('主牌組還有同名卡時，選定英雄不會被取消', () => {
+    const withChampion = { ...deckWithSide, championId: unit.id };
+    const next = swapWithSideboard(withChampion, unit.id, 'toSideboard');
+
+    expect(next.main[unit.id]).toBe(2);
+    expect(next.championId).toBe(unit.id);
+  });
+});
+
+describe('備牌不算在盤面的牌組裡', () => {
+  it('備牌的卡出現在盤面上會被當成「牌組以外的卡」', () => {
+    // 403.4、403.5：備牌只在局間換進主牌組，對局中不在場上
+    const sideOnly = ALL_CARDS.find(
+      (c) => c.id !== unit.id && c.id !== other.id && c.types.includes('unit'),
+    )!;
+    const p = player({
+      deck: {
+        legendId: legend.id,
+        championId: null,
+        main: { [unit.id]: 3 },
+        runes: {},
+        battlefields: {},
+        sideboard: { [sideOnly.id]: 2 },
+      },
+      base: { [sideOnly.id]: 1 },
+    });
+
+    expect(foreignCards(p)).toContain(sideOnly.id);
   });
 });

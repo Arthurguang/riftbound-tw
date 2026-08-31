@@ -48,7 +48,7 @@ test.describe('對局復盤', () => {
     await importDeck(page, 'you', SMALL_DECK);
 
     // 主牌組 6 張，什麼都還沒擺 → 牌堆 6 張
-    await expect(sideOf(page, 'you').getByText(/牌堆 6/)).toBeVisible();
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 6');
   });
 
   test('把卡放進手牌會從牌堆扣掉', async ({ page }) => {
@@ -58,8 +58,8 @@ test.describe('對局復盤', () => {
     // 預設加到手牌
     await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
-    await expect(sideOf(page, 'you').getByText(/手牌 1/)).toBeVisible();
-    await expect(sideOf(page, 'you').getByText(/牌堆 5/)).toBeVisible();
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 5');
   });
 
   test('可以把卡從手牌搬到廢牌堆', async ({ page }) => {
@@ -72,7 +72,7 @@ test.describe('對局復盤', () => {
     const discard = sideOf(page, 'you').locator('[data-zone="discard"]');
     await expect(discard).toContainText('烈焰灼魂者');
     // 搬動不影響牌堆總數
-    await expect(sideOf(page, 'you').getByText(/牌堆 5/)).toBeVisible();
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 5');
   });
 
   test('擺超過牌組張數會被指出來，而不是安靜修正', async ({ page }) => {
@@ -141,11 +141,11 @@ test.describe('對局復盤', () => {
   test('盤面會編進網址，可以分享', async ({ page, context }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    await expect(page).toHaveURL(/[?&]b=b2/); // 格式版本 2（含戰場）
+    await expect(page).toHaveURL(/[?&]b=b3/); // 格式版本 2（含戰場）
     const beforeCard = page.url();
 
     await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
-    await expect(sideOf(page, 'you').getByText(/手牌 1/)).toBeVisible();
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
 
     /*
      * router.replace 寫網址是非同步的。太早複製會拿到「還沒加手牌」那一版，
@@ -157,8 +157,9 @@ test.describe('對局復盤', () => {
     const other = await context.newPage();
     await other.goto(shared, { waitUntil: 'domcontentloaded' });
     await expect(other.locator('[data-replay-ready="true"]')).toBeAttached();
-    await expect(other.locator('[data-side="you"]').getByText(/手牌 1/)).toBeVisible();
-    await expect(other.locator('[data-side="you"]').getByText(/牌堆 5/)).toBeVisible();
+    const summary = other.locator('[data-side="you"]').getByTestId('side-summary');
+    await expect(summary).toContainText('手牌 1');
+    await expect(summary).toContainText('牌堆 5');
     await other.close();
   });
 
@@ -277,7 +278,7 @@ test.describe('戰場區域', () => {
     await importDeck(page, 'you', WITH_BATTLEFIELDS);
     await page.locator('#battlefield-0').selectOption({ label: '團結祭壇' });
 
-    await expect(page).toHaveURL(/[?&]b=b2/);
+    await expect(page).toHaveURL(/[?&]b=b3/);
     const shared = page.url();
 
     const other = await context.newPage();
@@ -308,5 +309,113 @@ test.describe('單位的位置（規則 198.1）', () => {
 
     const bf0 = sideOf(page, 'you').locator('[data-zone="bf0"]');
     await expect(bf0).toContainText('烈焰灼魂者');
+  });
+});
+
+test.describe('傳奇與選定英雄', () => {
+  const WITH_LEGEND = [
+    '【傳奇】',
+    '1 Daughter of the Void',
+    '【主牌組】',
+    '3 Blazing Scorcher',
+    '【符文牌組】',
+    '12 Fury Rune',
+  ];
+
+  test('傳奇區域與英雄區域都看得到，並附條號', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', WITH_LEGEND);
+
+    const zone = sideOf(page, 'you').getByTestId('champion-zone');
+    await expect(zone).toContainText('傳奇區域');
+    await expect(zone).toContainText('107.4');
+    await expect(zone).toContainText('選定英雄');
+    await expect(zone).toContainText('108.3');
+    await expect(zone).toContainText('凱莎-虛空之女');
+  });
+
+  test('選定英雄擺進英雄區域後就不算在牌堆裡（133.4）', async ({ page }) => {
+    await gotoReplay(page);
+    // 只有一個候選時，匯入會自動推斷並擺進英雄區域
+    await importDeck(page, 'you', [
+      ...WITH_LEGEND.slice(0, 2),
+      '【主牌組】',
+      "3 Kai'Sa, Survivor",
+    ]);
+
+    // 3 張裡有 1 張在英雄區域 → 牌堆剩 2
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 2');
+    await expect(sideOf(page, 'you').locator('[data-zone="champion"]')).toContainText('凱莎');
+  });
+
+  test('可以取消選定英雄，那張卡就回到牌堆', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', [
+      ...WITH_LEGEND.slice(0, 2),
+      '【主牌組】',
+      "3 Kai'Sa, Survivor",
+    ]);
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 2');
+
+    const select = sideOf(page, 'you').getByTestId('champion-select');
+    await select.selectOption('');
+
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 3');
+  });
+});
+
+test.describe('局間換牌（403.4）', () => {
+  const WITH_SIDEBOARD = [
+    '【主牌組】',
+    '3 Blazing Scorcher',
+    '【備牌】',
+    '2 Cleave',
+  ];
+
+  test('備牌不會出現在盤面的候選卡裡（403.5：第一局不能用備牌）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', WITH_SIDEBOARD);
+
+    await expect(
+      sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }),
+    ).toBeVisible();
+    await expect(
+      sideOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }),
+    ).toHaveCount(0);
+  });
+
+  test('可以把備牌換進主牌組，牌堆跟著變', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', WITH_SIDEBOARD);
+
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 3');
+
+    await sideOf(page, 'you').getByRole('button', { name: /^調整主牌組與備牌/ }).click();
+    await sideOf(page, 'you').getByRole('button', { name: /把 劈砍 換進主牌組/ }).click();
+
+    // 主牌組多一張 → 牌堆 4
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 4');
+    // 換進來之後就能在盤面上操作了
+    await expect(
+      sideOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }),
+    ).toBeVisible();
+  });
+});
+
+test.describe('直接選擇加到哪一區', () => {
+  test('六個區域都能直接選，不用先加到基地再搬', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const scope = sideOf(page, 'you');
+    for (const label of ['手牌', '基地', '戰一', '戰二', '廢牌堆', '放逐']) {
+      await expect(scope.getByRole('button', { name: label, exact: true })).toBeVisible();
+    }
+
+    // 直接加到戰場二
+    await scope.getByRole('button', { name: '戰二', exact: true }).click();
+    await scope.getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+
+    await expect(scope.locator('[data-zone="bf1"]')).toContainText('烈焰灼魂者');
   });
 });

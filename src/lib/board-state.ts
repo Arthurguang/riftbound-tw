@@ -34,10 +34,19 @@ export type Pile = Record<string, number>;
  * 待命區域（107.3）暫時併入基地：它每處戰場只能放一張、而且正面朝下的
  * 內容是私密資訊（107.3.f），單獨做一區的效益不高。日後有需要再拆。
  */
-export const BOARD_ZONES = ['hand', 'base', 'bf0', 'bf1', 'discard', 'exile'] as const;
+export const BOARD_ZONES = [
+  'champion',
+  'hand',
+  'base',
+  'bf0',
+  'bf1',
+  'discard',
+  'exile',
+] as const;
 export type BoardZone = (typeof BOARD_ZONES)[number];
 
 export const ZONE_RULES: Record<BoardZone, { rule: string; hidden: boolean }> = {
+  champion: { rule: '108.3', hidden: false },
   hand: { rule: '108.7', hidden: true },
   base: { rule: '107.1', hidden: false },
   bf0: { rule: '107.2', hidden: false },
@@ -67,6 +76,16 @@ export const LOCATION_RULES: Record<LocationId, string> = {
 export type PlayerBoard = {
   /** 這一方的牌組。決定牌堆裡原本有些什麼。 */
   deck: Deck;
+  /**
+   * 英雄區域（108.3）。
+   *
+   * 遊戲開始時選定英雄放在這裡（103.2.a.1、133.4），所以它**不在牌堆裡**。
+   * 它可以從這裡照正常規則打出（108.3.d），打出後就移到基地或戰場。
+   *
+   * 傳奇不需要對應的疊：它在傳奇區域，而且**不能從該區移除、移動或移位**
+   * （107.4.d），所以只要顯示 deck.legendId 就好。
+   */
+  champion: Pile;
   /** 手牌裡**你知道**的卡（108.7.c 手牌是私密資訊）。 */
   hand: Pile;
   /**
@@ -118,6 +137,7 @@ export const EMPTY_PLAYER: PlayerBoard = {
     battlefields: {},
     sideboard: {},
   },
+  champion: {},
   hand: {},
   unknownHand: 0,
   base: {},
@@ -189,10 +209,10 @@ export type RemainingDeck = {
 /**
  * 算出主牌堆與符文牌堆還剩什麼。
  *
- * 主牌堆 = 牌組主牌組 − 選定英雄 − 手牌 − 基地 − 廢牌堆 − 放逐
+ * 主牌堆 = 牌組主牌組 − 盤面上所有區域的同名卡
  *
- * 為什麼要扣選定英雄：133.4 說遊戲開始時主牌堆的卡會出現在主牌堆
- * 或（如果是選定英雄）英雄區域 —— 它一開始就不在牌堆裡。
+ * 「盤面上所有區域」包含英雄區域：133.4 說遊戲開始時主牌堆的卡會出現在
+ * 主牌堆或（如果是選定英雄）英雄區域 —— 選定英雄一開始就不在牌堆裡。
  *
  * 不知道內容的手牌（unknownHand）也要從**張數**上扣掉，
  * 但因為不知道是哪幾張，只能減少總張數，不能指定減哪一張。
@@ -205,15 +225,16 @@ export function remainingDeck(player: PlayerBoard): RemainingDeck {
   const onBoard = (cardId: string): number =>
     BOARD_ZONES.reduce((sum, zone) => sum + (player[zone][cardId] ?? 0), 0);
 
-  const subtract = (source: Pile, isMain: boolean): Pile => {
+  /*
+   * 選定英雄不再特別扣一張 —— 它現在是英雄區域那一疊的內容，
+   * onBoard 已經把所有區域算進去了。兩邊都扣會重複計算。
+   */
+  const subtract = (source: Pile): Pile => {
     const result: Pile = {};
     for (const [cardId, inDeck] of Object.entries(source)) {
       if (inDeck <= 0) continue;
 
-      let used = onBoard(cardId);
-      // 選定英雄開局就在英雄區域，不在牌堆裡（133.4）
-      if (isMain && player.deck.championId === cardId) used += 1;
-
+      const used = onBoard(cardId);
       const left = inDeck - used;
       if (left < 0) {
         overflow.push({ cardId, inDeck, onBoard: used });
@@ -224,8 +245,8 @@ export function remainingDeck(player: PlayerBoard): RemainingDeck {
     return result;
   };
 
-  const main = subtract(player.deck.main, true);
-  const runes = subtract(player.deck.runes, false);
+  const main = subtract(player.deck.main);
+  const runes = subtract(player.deck.runes);
 
   // 不知道內容的手牌只能從總張數扣
   const mainSize = Math.max(0, pileSize(main) - player.unknownHand);
@@ -240,11 +261,15 @@ export function remainingDeck(player: PlayerBoard): RemainingDeck {
  * 所以這不是錯誤，只是提醒使用者確認 —— 因為它會讓剩餘牌堆的計算失準。
  */
 export function foreignCards(player: PlayerBoard): string[] {
+  /*
+   * 備牌**不算**在內：對局進行中備牌不在場上，
+   * 它只在局間 1 換 1 地換進主牌組（賽事規則 403.4、403.5）。
+   * 所以盤面上出現備牌的卡，就是真的該提醒使用者確認。
+   */
   const inDeck = new Set([
     ...Object.keys(player.deck.main),
     ...Object.keys(player.deck.runes),
     ...Object.keys(player.deck.battlefields),
-    ...Object.keys(player.deck.sideboard),
   ]);
   if (player.deck.legendId) inDeck.add(player.deck.legendId);
 
@@ -273,3 +298,38 @@ export const handSize = (player: PlayerBoard): number =>
 
 /** 牌組是否已經設定（有沒有東西可以算）。 */
 export const hasDeck = (player: PlayerBoard): boolean => totalCards(player.deck.main) > 0;
+
+// ─── 備牌調整（賽事規則 403.4）────────────────────────────────────
+
+/**
+ * 把一張卡在主牌組與備牌之間對調。
+ *
+ * 賽事規則 403.4 說備牌卡必須與主牌組的卡**1 換 1** 對調，
+ * 403.4.c 說換完後主牌組仍要符合張數要求。
+ *
+ * 這裡只做搬移，不強制 1 換 1 —— 介面上顯示前後張數讓使用者自己確認，
+ * 因為換到一半的中間狀態本來就會不平衡。
+ */
+export function swapWithSideboard(
+  deck: Deck,
+  cardId: string,
+  direction: 'toSideboard' | 'toMain',
+): Deck {
+  const fromKey = direction === 'toSideboard' ? 'main' : 'sideboard';
+  const toKey = direction === 'toSideboard' ? 'sideboard' : 'main';
+
+  const available = deck[fromKey][cardId] ?? 0;
+  if (available <= 0) return deck;
+
+  const next: Deck = {
+    ...deck,
+    [fromKey]: setInPile(deck[fromKey], cardId, available - 1),
+    [toKey]: setInPile(deck[toKey], cardId, (deck[toKey][cardId] ?? 0) + 1),
+  };
+
+  // 選定英雄被換出主牌組就不再是選定英雄（103.2 要求它是主牌組的一張）
+  if (direction === 'toSideboard' && next.main[cardId] === undefined && next.championId === cardId) {
+    next.championId = null;
+  }
+  return next;
+}

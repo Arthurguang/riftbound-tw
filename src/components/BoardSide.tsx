@@ -5,6 +5,8 @@ import { cardName } from '@/lib/cards';
 import { DeckImport } from './DeckImport';
 import { BoardZonePanel } from './BoardZonePanel';
 import { RuneTracker } from './RuneTracker';
+import { SideboardSwap } from './SideboardSwap';
+import { ChampionZone } from './ChampionZone';
 import {
   BOARD_ZONES,
   foreignCards,
@@ -30,15 +32,17 @@ import type { Card } from '@/lib/types';
  * 依規則 108.7.c 手牌是私密資訊、108.7.e 張數是公開資訊。
  */
 /**
- * 「加到」可以選哪些區域。
+ * 「加到」可以直接選任何區域。
  *
- * 戰場不在這裡：單位先加到基地或手牌，再用卡片列上的「戰一 / 戰二」
- * 按鈕移過去 —— 這樣比較貼近實際流程（198.1：位置包括戰場和基地）。
+ * 第一版刻意只讓人加到基地或手牌，再用搬移按鈕移到戰場 —— 使用者反映
+ * 這樣復盤太慢。直接選目的地才對，少一步就是少一步。
  */
-const ADD_TARGETS = ['hand', 'base', 'discard', 'exile'] as const;
+const ADD_TARGETS = ['hand', 'base', 'bf0', 'bf1', 'discard', 'exile'] as const;
 const ADD_LABELS: Record<(typeof ADD_TARGETS)[number], string> = {
   hand: '手牌',
   base: '基地',
+  bf0: '戰一',
+  bf1: '戰二',
   discard: '廢牌堆',
   exile: '放逐',
 };
@@ -83,7 +87,7 @@ export function BoardSide({
           ...Object.keys(player.deck.main),
           ...Object.keys(player.deck.runes),
           ...Object.keys(player.deck.battlefields),
-          ...Object.keys(player.deck.sideboard),
+          // 備牌不列入：對局中它不在場上（403.4、403.5）
           ...(player.deck.legendId ? [player.deck.legendId] : []),
         ]
           .map((id) => byId.get(id))
@@ -125,7 +129,7 @@ export function BoardSide({
     >
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-base font-semibold text-ink">{title}</h3>
-        <span className="text-xs text-ink-dim">
+        <span className="text-xs text-ink-dim" data-testid="side-summary">
           手牌 {handSize(player)}　牌堆 {remaining.mainSize}　符文 {runes}
         </span>
       </div>
@@ -133,7 +137,18 @@ export function BoardSide({
       <DeckImport
         cards={cards}
         byId={byId}
-        onImport={(deck) => onChange({ ...player, deck })}
+        onImport={(deck) =>
+          onChange({
+            ...player,
+            deck,
+            /*
+             * 匯入後直接把選定英雄放進英雄區域。
+             * 103.2.a.1：遊戲開始時這張卡置於英雄區域 —— 它不在牌堆裡，
+             * 不自動擺出來的話牌堆張數會多算一張。
+             */
+            champion: deck.championId ? setInPile({}, deck.championId, 1) : {},
+          })
+        }
       />
 
       {!hasDeck(player) ? (
@@ -142,6 +157,21 @@ export function BoardSide({
         </p>
       ) : (
         <>
+          <ChampionZone
+            player={player}
+            byId={byId}
+            lang={lang}
+            art={art}
+            onChange={onChange}
+          />
+
+          <SideboardSwap
+            deck={player.deck}
+            byId={byId}
+            lang={lang}
+            onChange={(deck) => onChange({ ...player, deck })}
+          />
+
           <RuneTracker
             player={player}
             byId={byId}

@@ -17,11 +17,12 @@ import type { Card } from './types';
  *
  * b1：`b1!回合!先手!你!對手`
  * b2：加上戰場區域，且一方多了兩處戰場上的單位
+ * b3：一方再多一段英雄區域（108.3）
  *
  * 舊連結仍然要能開 —— 分享出去的復盤連結不能突然失效。
  */
-const FORMAT_VERSION = 'b2';
-const SUPPORTED_VERSIONS = new Set(['b1', 'b2']);
+const FORMAT_VERSION = 'b3';
+const SUPPORTED_VERSIONS = new Set(['b1', 'b2', 'b3']);
 
 /*
  * 分隔符的層級，由外而內互不重複：
@@ -104,6 +105,7 @@ function encodePlayer(player: PlayerBoard, cards: Card[], byId: Map<string, Card
     encodePile(player.exile, byId),
     encodePile(player.bf0, byId),
     encodePile(player.bf1, byId),
+    encodePile(player.champion, byId),
   ].join(PLAYER_SEP);
 }
 
@@ -121,6 +123,7 @@ function decodePlayer(
     exileRaw = '',
     bf0Raw = '',
     bf1Raw = '',
+    championRaw = '',
   ] = encoded.split(PLAYER_SEP);
 
   const deck = decodeDeck(deckRaw, index);
@@ -130,6 +133,7 @@ function decodePlayer(
   const exile = decodePile(exileRaw, index);
   const bf0 = decodePile(bf0Raw, index);
   const bf1 = decodePile(bf1Raw, index);
+  const champion = decodePile(championRaw, index);
 
   const parsedUnknown = Number(unknownRaw);
   const unknownHand =
@@ -142,6 +146,7 @@ function decodePlayer(
       deck: deck.deck,
       hand: hand.pile,
       unknownHand,
+      champion: champion.pile,
       base: base.pile,
       bf0: bf0.pile,
       bf1: bf1.pile,
@@ -155,7 +160,8 @@ function decodePlayer(
       discard.dropped +
       exile.dropped +
       bf0.dropped +
-      bf1.dropped,
+      bf1.dropped +
+      champion.dropped,
   };
 }
 
