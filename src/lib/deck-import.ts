@@ -126,7 +126,7 @@ const ZONE_HEADINGS: { zone: TargetZone; patterns: RegExp }[] = [
   { zone: 'sideboard', patterns: /^(備牌|备牌|sideboard|side\s*board)/i },
   { zone: 'runes', patterns: /^(符文|rune)/i },
   { zone: 'battlefields', patterns: /^(戰場|战场|battlefield)/i },
-  { zone: 'main', patterns: /^(主牌組|主牌堆|main\s*deck|main|選定英雄|选定英雄|chosen)/i },
+  { zone: 'main', patterns: /^(主牌組|主牌堆|main\s*deck|main|選定英雄|选定英雄|chosen|champion)/i },
 ];
 
 /** 這一行是不是區域標題？是的話回傳它代表哪一區。 */

@@ -232,6 +232,78 @@ export function toPlainText(
   return lines.join('\n');
 }
 
+/**
+ * 各區段的英文標題。
+ *
+ * 這是通用的分區牌表格式：`Section:` 一行，接著一行一張 `張數 卡名`，
+ * 區段之間空一行。多數 Riftbound 社群工具都吃這個形狀。
+ *
+ * 抽成常數是因為不同工具對標題用字可能有出入（例如 Main Deck / Deck），
+ * 要調整時只改這裡一處，不必翻整個函式。
+ */
+const SECTION_HEADINGS: Record<ExportRow['zone'], string> = {
+  legend: 'Legend',
+  champion: 'Champion',
+  main: 'Main Deck',
+  runes: 'Runes',
+  battlefields: 'Battlefields',
+  sideboard: 'Sideboard',
+};
+
+/**
+ * 匯出成分區的英文純文字牌表。
+ *
+ * 跟 toPlainText 的差別 —— 這個格式是**給其他工具讀的**，不是給人看的：
+ *
+ *   · 一律用官方英文卡名，不受介面語言影響
+ *     （其他工具的卡片資料庫以英文為索引，中文卡名它們認不得）
+ *   · 不含卡號、不含收藏標記、不含產生者署名
+ *     任何多餘的字都可能讓對方的解析器卡住
+ *   · 不含牌組名稱 —— 對方通常有自己的名稱欄位，多一行反而會被當成卡片
+ *
+ * 產出的格式本站自己的匯入也讀得回來（見 deck-import 的 ZONE_HEADINGS），
+ * 所以可以來回互轉，這件事有測試釘住。
+ */
+export function toSectionedText(deck: Deck, byId: Map<string, Card>): string {
+  const rows = deckRows(deck, byId);
+  const blocks: string[] = [];
+
+  for (const zone of ZONE_ORDER) {
+    const inZone = rows.filter((r) => r.zone === zone);
+    if (inZone.length === 0) continue;
+
+    /*
+     * 同一區裡同名的卡要併成一行。
+     *
+     * 異畫版與普通版是不同卡號但**同一個卡名**，官方也是以卡名計張數。
+     * 分成兩行的話，對方的解析器可能把第二行當成覆蓋而不是相加 ——
+     * 「8 Fury Rune」後面再來一行「4 Fury Rune」就變成 4 張。
+     */
+    const merged = new Map<string, number>();
+    for (const { card, qty } of inZone) {
+      /*
+       * 選定英雄本來就是主牌組裡的一張（103.2.a.2），所以 deckRows 會讓它
+       * 同時出現在 champion 與 main 兩區。給人看沒問題，但**給機器讀會被
+       * 算成兩張** —— 對方把每一區加總就變成 41 張。
+       *
+       * 所以主牌組這一區要扣掉已經列在 Champion 底下的那一張。
+       * 兩區加起來仍是正確的總數，而且沒有任何一張卡重複出現。
+       */
+      const listed = zone === 'main' && card.id === deck.championId ? qty - 1 : qty;
+      if (listed > 0) merged.set(card.name, (merged.get(card.name) ?? 0) + listed);
+    }
+
+    // 扣掉之後可能整區都空了（例如主牌組裡只有選定英雄那一張）
+    if (merged.size === 0) continue;
+
+    const lines = [`${SECTION_HEADINGS[zone]}:`];
+    for (const [name, qty] of merged) lines.push(`${qty} ${name}`);
+    blocks.push(lines.join('\n'));
+  }
+
+  return blocks.join('\n\n');
+}
+
 // ─── CSV ─────────────────────────────────────────────────────────
 
 const CSV_HEADERS: Record<TextLang, string[]> = {
