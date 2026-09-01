@@ -1208,6 +1208,114 @@ CI 的負載下照樣會在兩次寫入之間的空檔誤判為穩定。
 
 ---
 
+### 問題 55：第一次真正的上線後檢查（先前一直測到別人的網站）
+
+規劃書裡的「第 3 層：部署後的外部驗證」從第一階段就寫著，但**一直沒真的跑過** ——
+因為我把 `riftbound-tw.vercel.app` 當成本站，那其實是**另一個人**做的
+「台灣符文戰場情報網」。名字很像，我沒察覺，還拿它回報過「正式站沒問題」。
+
+本站真正的網址是 **`riftbound-tw-sigma.vercel.app`**（使用者從 Vercel 後台找出來的）。
+
+**另一個誤判也一併更正**：我看到某個部署網址回 302 導向登入頁，就說
+「網站被登入保護擋住、外面的人看不到」。錯了。Vercel 給**每一次建置**
+一個專屬網址，那種網址預設要登入是正常設計；對外的正式網址不受影響。
+Vercel 設定不需要動 —— `Standard Protection` 剛好就是想要的狀態
+（網站公開、中間版本不外流）。
+
+**實際檢查結果（七個頁面，真實瀏覽器）**
+
+| 項目 | 結果 |
+|---|---|
+| 八項安全標頭 | 全部到位（securityheaders.com 的 A+ 條件） |
+| CSP | `default-src 'none'`、無 `unsafe-inline`、無 `unsafe-eval`、有 Trusted Types |
+| CSP 違規 | 0 |
+| Console 紅字 | 0 |
+| Cookie | 0 |
+| 外部連線 | 只有 `cmsassets.rgpub.io`（官方卡圖） |
+| 建置檔金鑰洩漏 | 掃到 3 筆，查證**全為誤判**（React 的 `<input type="password">` 清單、URL 解析工具的欄位名） |
+
+**教訓**：驗證的第一步是確認「我在驗證的東西是不是我以為的那個東西」。
+我跳過了這一步，而且跳過了好幾個月。
+
+---
+
+### 問題 56：找到 Riot 官方的 Riftbound 第三方政策 ⭐⭐⭐
+
+使用者問「如果取得 Riot 認證是不是就合法」，並提出一個計畫：
+先做模擬對戰，只給自己和朋友用、網站不公開，等拿到認證再公開。
+
+之前我只讀過 Riot 的通用法務頁（Legal Jibber Jabber），
+那頁只有一句籠統的 *"We prohibit the use of our IP in games and apps"*。
+這次查到**Riftbound 專屬的開發者政策頁**：
+`https://developer.riotgames.com/policies/riftbound`
+
+**這份文件的內容比通用法務頁具體太多，而且直接回答了每一個問題。**
+
+**核准的用途（完整清單，只有兩項）**
+- Deck builders
+- Card libraries
+
+**不核准的用途（完整清單，逐條原文）**
+1. `Apps create a digital Riftbound gameplay experience with automated rule enforcement (where the software controls/enforces the rules)`
+2. `No standalone clients solely for Riftbound. We expect Apps or mods that facilitate manual Riftbound gameplay to live within platforms broadly applicable to multiple games.`
+3. `Apps with a small, personal audience.`
+4. `Apps that do not provide a link to a site or mockup`
+5. `Apps with "middle-man" type of data usage…`
+6. `Blockchain apps or apps that trade in the crypto space`
+7. `Gambling`
+8. `Apps that implement a skill-based matchmaking, player-facing rank, or ladder system of any kind`
+9. `Apps that publish or retain metagame-defining data for Riftbound (including play rates, win rates, or match-up win percentage differentials)`
+
+**註冊要求（原文）**
+> `If your product serves players, you must register it with us regardless of
+> whether or not your product uses official documented APIs.`
+
+也就是說**本站現在就應該去註冊**，即使我們一行官方 API 都沒呼叫。
+
+---
+
+#### 這份文件對本專案的四個直接影響
+
+**① 「先私下做、之後再申請」這個計畫在自己的前提上就不成立**
+
+第 3 條白紙黑字把 `Apps with a small, personal audience` 列為**不核准**。
+把網站關起來只給朋友用，不會讓將來比較容易通過 —— **會比較難**。
+
+**② 在本站加對戰功能，等多久都不會被核准**
+
+第 2 條：`No standalone clients solely for Riftbound`。
+本站是純 Riftbound 的站，所以「等拿到認證再公開對戰」等不到那一天。
+
+同一條也解釋了 TCG Arena 為什麼長成那樣：Riot 期待這類東西
+「住在**廣泛適用於多種遊戲**的平台裡」。TCG Arena 支援 25 種遊戲、
+自己一張卡都不提供 —— **它的形狀正是這一條寫出來的形狀**。
+我先前的分析是從觀察反推的，這次找到了 Riot 自己寫下的版本。
+
+**③ 我們沒做規則引擎，現在看是對的（但當初不知道這個理由）**
+
+第 1 條擋的是 `automated rule enforcement (where the software controls/enforces the rules)`。
+本站的復盤板從頭到尾不判斷合法性、不判勝負、不給建議 ——
+當初的理由是「沒有可驗證的依據就不該假裝知道」，
+現在看，那個決定同時也落在政策的安全側。
+
+**④ 我先前答應的「對局戰績記錄」有問題，必須重新評估**
+
+第 9 條明文包含 `win rates for certain decks or cards, or match-up win percentage differentials`
+—— 那正是我承諾要做的東西。
+
+`publish or retain` 兩個動詞都在裡面，`retain` 的範圍不清楚是否涵蓋
+「只存在使用者自己瀏覽器、不上傳、不聚合」的情況。**在釐清之前不做。**
+這件事要對使用者講明白，不能默默跳過。
+
+---
+
+#### 建議的下一步
+
+**去註冊。** 這不是為了保險，是政策明文要求（`must register`），
+而且本站的核心正好是**兩項核准用途都命中**：牌組編輯器 ＋ 卡牌圖鑑。
+
+註冊需要「a link to a working site」（第 4 條的反面），而我們現在正好有
+一個公開可連的網址 —— **這也是為什麼「先關起來」是錯的方向**。
 ### 問題 57：分區英文牌表 —— 匯出成其他工具讀得懂的格式
 
 使用者要一個「分好類、全英文」的匯出格式，好把牌組帶到其他社群工具。
