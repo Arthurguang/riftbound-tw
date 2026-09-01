@@ -13,6 +13,7 @@ import {
   shortSummary,
   toCsv,
   toPlainText,
+  toSectionedText,
   zoneLabel,
 } from '@/lib/deck-export';
 import { downloadBlob, renderDeckImage } from '@/lib/deck-image';
@@ -87,6 +88,14 @@ export function DeckExport({
 
   const exportText = () =>
     copyToClipboard(toPlainText(deck, byId, lang, deckName, withCollection), '牌表文字');
+
+  /*
+   * 分區英文牌表 —— 給其他社群工具讀的格式。
+   *
+   * 跟「複製牌表文字」的差別：那個是給人看的（介面語言、卡號、缺卡標記），
+   * 這個是給機器讀的（一律英文卡名、只有區段與張數、沒有任何多餘的字）。
+   */
+  const exportSectioned = () => copyToClipboard(toSectionedText(deck, byId), '英文分區牌表');
 
   const exportShareUrl = () => {
     const url = `${window.location.origin}${window.location.pathname}${window.location.search}`;
@@ -178,6 +187,15 @@ export function DeckExport({
           </button>
           <button type="button" onClick={exportText} disabled={isEmpty} className={btn}>
             複製牌表文字
+          </button>
+          <button
+            type="button"
+            onClick={exportSectioned}
+            disabled={isEmpty}
+            className={btn}
+            title="一律使用官方英文卡名，依區段分好並標上張數。多數社群工具可以直接貼上匯入。"
+          >
+            複製英文牌表
           </button>
           <button type="button" onClick={exportCsv} disabled={isEmpty} className={btn}>
             下載 CSV

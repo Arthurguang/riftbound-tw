@@ -217,6 +217,42 @@ test.describe('牌組編輯器', () => {
     expect(lines.filter((l) => l.trim() === '')).toEqual([]);
   });
 
+  /*
+   * 分區英文牌表是要貼到別的網站去的，所以這裡驗的是「貼過去不會壞」：
+   * 純英文、有區段標題、沒有卡號或署名那些會被對方當成卡片的雜訊。
+   */
+  test('複製英文牌表：分好區段、全英文、沒有多餘的字', async ({ page, context }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium', '只有 Chromium 能授予讀剪貼簿的權限');
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+
+    await gotoDeck(page);
+    await openTab(page, '符文');
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+    await openTab(page, '戰場');
+    await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+
+    await page.getByRole('button', { name: '複製英文牌表' }).click();
+    const text = await page.evaluate(() => navigator.clipboard.readText());
+
+    expect(text).toContain('Runes:');
+    expect(text).toContain('Battlefields:');
+    // 全英文 —— 出現任何中文就代表對方的卡片資料庫會查不到
+    expect(text).not.toMatch(/[一-鿿]/);
+    // 沒有卡號、沒有署名
+    expect(text).not.toMatch(/OGN-\d/i);
+    expect(text).not.toContain('符文戰場資料庫');
+    /*
+     * 每一行不是「Section:」就是「數字 卡名」。
+     *
+     * 切行要用 /\r?\n/ —— Windows 的剪貼簿會把 \n 換成 \r\n，
+     * 只切 \n 的話每行尾巴都會留一個看不見的 \r。
+     * （我們自己產生的字串是乾淨的 \n，這是剪貼簿加的。）
+     */
+    for (const line of text.split(/\r?\n/).filter((l) => l !== '')) {
+      expect(line).toMatch(/^([A-Za-z][A-Za-z ]*:|\d+ .+)$/);
+    }
+  });
+
   test('列印版面只印牌表，不會多出空白頁', async ({ page }, testInfo) => {
     // page.pdf() 只有 Chromium 支援
     test.skip(testInfo.project.name !== 'chromium', 'page.pdf() 僅 Chromium 支援');
