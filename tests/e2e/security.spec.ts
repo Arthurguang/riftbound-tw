@@ -8,7 +8,27 @@ import { STATIC_SECURITY_HEADERS } from '../../src/lib/security-headers';
  * 而是「瀏覽器實際收到什麼」以及「CSP 是否真的擋得住攻擊」。
  */
 
-const PAGES = ['/', '/cards', '/cards/ogn-001-298'];
+/*
+ * 每一個公開頁面都要列在這裡。
+ *
+ * 這份清單同時餵給「安全標頭」與「CSP 違規」兩組測試 —— 漏掉一頁，
+ * 那一頁就沒有人在看它有沒有安全標頭、有沒有踩到 CSP。
+ *
+ * 這不是假設性的擔心：2026-09-01 使用者在瀏覽器主控台看到紅字回報時，
+ * 才發現 /replay、/deck、/odds、/rules 從來沒被這組測試涵蓋過
+ * （那次的紅字最後查出是開發模式的雜訊，正式版乾淨 —— 但缺口是真的）。
+ *
+ * 新增頁面時記得補進來。
+ */
+const PAGES = [
+  '/',
+  '/cards',
+  '/cards/ogn-001-298',
+  '/rules',
+  '/deck',
+  '/odds',
+  '/replay',
+];
 
 test.describe('安全標頭', () => {
   for (const path of PAGES) {
