@@ -16,13 +16,19 @@ import type { TextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
 
 /**
- * 讓盤面「可操作」的控制列。
+ * 規則流程的模擬控制列。
  *
- * 復盤板原本只能手動擺卡。這裡加上遊戲實際會發生的固定流程 ——
- * 開局、調度、抽牌、下一回合 —— 所以一個人（或同機兩人）可以把一局打完。
+ * ── 這是什麼 ────────────────────────────────────────────────────
+ * 復盤板原本只能手動擺卡。這裡把**規則明文寫死的固定流程**做成按鈕，
+ * 讓你不必自己一張一張擺：開局抽幾張、每回合召幾張符文、什麼時候喚醒。
+ * 每個按鈕都標著它依據的官方條號 —— 它在**示範規則**，不是在執行遊戲。
  *
- * **只執行規則明文寫的固定動作**（抽幾張、召幾張、何時喚醒）。
- * 不判斷你打的牌合不合法，也不判斷勝負 —— 那需要規則引擎。
+ * ── 這不是什麼 ──────────────────────────────────────────────────
+ * 這**不是對戰系統**：沒有配對、沒有對手連線、沒有勝負判定，
+ * 也不檢查你打的牌合不合法。那些需要規則引擎，而本站明確不做。
+ *
+ * 用詞刻意避開「開始遊戲」「對戰」這類說法 —— 這是研究工具，
+ * 讓使用者一眼就知道自己在用什麼，不該以為能在這裡跟別人打牌。
  */
 export function GameControls({
   board,
@@ -55,7 +61,13 @@ export function GameControls({
       data-testid="game-controls"
     >
       <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h2 className="text-sm font-semibold text-ink">開始打牌</h2>
+        <h2 className="text-sm font-semibold text-ink">模擬規則流程</h2>
+        <span
+          className="rounded bg-surface-2 px-1 font-mono text-[0.65rem] text-ink-faint"
+          title="每個動作都依官方核心規則的固定流程"
+        >
+          115–117、315
+        </span>
 
         <div className="flex rounded-lg border border-line p-0.5">
           {(
@@ -82,26 +94,26 @@ export function GameControls({
         </div>
 
         <span className="text-xs text-ink-faint">
-          目前操作：{label}
-          {board.activePlayer === side && '（輪到這一方）'}
+          目前編輯：{label}
+          {board.activePlayer === side && '（回合方）'}
         </span>
       </div>
 
       {!ready ? (
-        <p className="text-xs text-ink-faint">先匯入 {label} 的牌組才能開始</p>
+        <p className="text-xs text-ink-faint">先匯入 {label} 的牌組才能模擬</p>
       ) : (
         <>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               className={btn}
-              title="清空場面，把選定英雄放進英雄區域，抽四張開局手牌（116、133.4）"
+              title="清空場面，把選定英雄放進英雄區域，抽四張開局手牌（116、133.4）。這是重設盤面，不是開始一場對戰。"
               onClick={() => {
                 apply(startGame(player));
                 setSwapping([]);
               }}
             >
-              開新的一局
+              重設成開局狀態
             </button>
 
             <button
@@ -131,7 +143,7 @@ export function GameControls({
                 setSwapping([]);
               }}
             >
-              {label}的下一回合
+              推進 {label} 一個回合
             </button>
           </div>
 
@@ -205,6 +217,10 @@ export function GameControls({
           )}
 
           <p className="mt-2 text-[0.7rem] leading-relaxed text-ink-faint">
+            <strong className="text-ink-dim">這不是對戰系統</strong>
+            —— 沒有配對、沒有對手連線、沒有勝負判定，也不檢查你打的牌合不合法。
+            這幾個按鈕只是把規則寫死的固定流程自動化，省得你一張一張擺。
+            <br />
             抽牌與召符文是<strong className="text-ink-dim">依剩餘張數加權隨機</strong>的。
             這跟從洗好的牌堆抽在機率上完全等價 —— 規則 114 說牌堆要洗牌、
             108.4.d 說遊戲中牌堆順序是隱密資訊，對玩家而言就是均勻隨機且未知。

@@ -98,9 +98,13 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
     >
       <header className="mb-5">
         <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">對局復盤</h1>
+        <p className="mt-1 text-xs text-ink-faint" data-testid="not-a-game">
+          這是<strong className="text-ink-dim">研究工具，不是對戰系統</strong>
+          —— 沒有配對、沒有對手連線、沒有勝負判定。
+        </p>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-dim">
           擺出當下的盤面 —— 手牌、場上、廢牌堆 —— 然後看從這個局面算出來的精確數字。
-          也可以直接開一局打下去：抽牌、調度、下一回合都照官方流程。
+          規則寫死的固定流程（開局抽幾張、每回合召幾張符文）可以一鍵模擬，省得一張張擺。
           盤面編在網址裡，複製網址就能把這個局面分享給別人一起研究。
         </p>
       </header>
@@ -223,6 +227,12 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
         <h2 className="mb-2 text-sm font-semibold text-ink">這個工具會做什麼、不會做什麼</h2>
         <div className="space-y-2 text-xs leading-relaxed text-ink-dim">
           <p>
+            <strong className="text-ink">先講最重要的：這不是對戰系統。</strong>
+            沒有配對、沒有對手連線、沒有勝負判定，也不會有。
+            這裡的「對手」那一欄是給你自己擺對手盤面用的 ——
+            為了算出「以你知道的資訊，接下來會怎樣」，不是連到另一個人。
+          </p>
+          <p>
             <strong className="text-ink">會做：從當下盤面算出精確的數字。</strong>
             牌堆裡還剩什麼、再抽幾張抽到某張卡的機率、手上哪些牌現在的符文付得起。
             這些全部是精確計算，你可以自己驗算。
@@ -234,7 +244,7 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
             沒有引擎卻跳出「建議」，那個建議是編的。
           </p>
           <p>
-            <strong className="text-ink">會做：執行規則明文寫的固定流程。</strong>
+            <strong className="text-ink">會做：模擬規則明文寫死的固定流程。</strong>
             開局抽四張（116）、手牌調度（117）、每回合喚醒＋召符文＋抽牌
             （315.1、315.3.b、315.4.b、485.7）。抽牌是依剩餘張數加權隨機 ——
             這跟從洗好的牌堆抽在機率上等價（114、108.4.d）。

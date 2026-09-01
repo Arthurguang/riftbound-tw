@@ -173,6 +173,36 @@ test.describe('對局復盤', () => {
     await expect(page.getByText(/沒有引擎卻跳出「建議」，那個建議是編的/)).toBeVisible();
   });
 
+  /*
+   * 這條守的是「定位」而不是功能。
+   *
+   * 這個頁面很容易被誤會成對戰系統 —— 它有雙方盤面、會抽牌、會跑回合。
+   * 頁面上必須明白寫出「不是對戰系統」，讓使用者一眼知道自己在用什麼。
+   * 這個宣告哪天被刪掉或改掉，這條測試要紅。
+   */
+  test('頁面明說這不是對戰系統', async ({ page }) => {
+    await gotoReplay(page);
+
+    // 標題底下就要看得到
+    await expect(page.getByTestId('not-a-game')).toContainText('研究工具，不是對戰系統');
+    await expect(page.getByTestId('not-a-game')).toContainText('沒有配對');
+
+    // 底部的界線說明也要有，而且擺在第一段
+    await expect(page.getByText(/先講最重要的：這不是對戰系統/)).toBeVisible();
+    await expect(page.getByText(/不是連到另一個人/)).toBeVisible();
+  });
+
+  test('控制列的用詞不會讓人以為在對戰', async ({ page }) => {
+    await gotoReplay(page);
+
+    const controls = page.getByTestId('game-controls');
+    await expect(controls.getByRole('heading', { name: '模擬規則流程' })).toBeVisible();
+
+    // 不該出現「開始遊戲」「對戰」這類說法
+    await expect(controls).not.toContainText('對戰');
+    await expect(controls).not.toContainText('開始遊戲');
+  });
+
   test('惡意網址被安全丟棄，頁面照常運作', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
@@ -616,7 +646,7 @@ test.describe('活躍與休眠（規則 414、415）', () => {
   });
 });
 
-test.describe('把一局打下去', () => {
+test.describe('模擬規則流程', () => {
   const PLAYABLE = [
     '【傳奇】',
     '1 Daughter of the Void',
@@ -632,7 +662,7 @@ test.describe('把一局打下去', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', PLAYABLE);
 
-    await page.getByTestId('game-controls').getByRole('button', { name: '開新的一局' }).click();
+    await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
 
     // 主牌組 9 張 − 英雄區域 1 張 − 手牌 4 張 = 牌堆 4 張
     const summary = sideOf(page, 'you').getByTestId('side-summary');
@@ -643,7 +673,7 @@ test.describe('把一局打下去', () => {
   test('抽一張會從牌堆移到手牌（315.4.b）', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', PLAYABLE);
-    await page.getByTestId('game-controls').getByRole('button', { name: '開新的一局' }).click();
+    await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
 
     await page.getByTestId('game-controls').getByRole('button', { name: '抽一張' }).click();
 
@@ -655,9 +685,9 @@ test.describe('把一局打下去', () => {
   test('下一回合會喚醒、召符文、抽牌', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', PLAYABLE);
-    await page.getByTestId('game-controls').getByRole('button', { name: '開新的一局' }).click();
+    await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
 
-    await page.getByTestId('game-controls').getByRole('button', { name: /^你的下一回合$/ }).click();
+    await page.getByTestId('game-controls').getByRole('button', { name: /^推進 你 一個回合$/ }).click();
 
     const summary = sideOf(page, 'you').getByTestId('side-summary');
     // 315.3.b 召兩張符文（先手）、315.4.b 抽一張
@@ -670,7 +700,7 @@ test.describe('把一局打下去', () => {
     await importDeck(page, 'you', PLAYABLE);
 
     const controls = page.getByTestId('game-controls');
-    await controls.getByRole('button', { name: '開新的一局' }).click();
+    await controls.getByRole('button', { name: '重設成開局狀態' }).click();
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 4');
 
     // 選一張換掉
@@ -695,7 +725,7 @@ test.describe('把一局打下去', () => {
     await expect(controls).toContainText('先匯入 你 的牌組');
 
     await controls.getByRole('button', { name: '對手', exact: true }).click();
-    await controls.getByRole('button', { name: '開新的一局' }).click();
+    await controls.getByRole('button', { name: '重設成開局狀態' }).click();
 
     await expect(sideOf(page, 'opponent').getByTestId('side-summary')).toContainText('手牌 4');
     // 你這方沒被動到
@@ -707,7 +737,7 @@ test.describe('把一局打下去', () => {
     await importDeck(page, 'you', PLAYABLE);
 
     const shared = await shareUrl(page, 'data-board-code', 'b', async () => {
-      await page.getByTestId('game-controls').getByRole('button', { name: '開新的一局' }).click();
+      await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
       await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 4');
     });
 
