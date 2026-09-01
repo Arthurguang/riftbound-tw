@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { BoardSide } from './BoardSide';
 import { BattlefieldPicker } from './BattlefieldPicker';
 import { TurnStateControl } from './TurnStateControl';
+import { GameControls } from './GameControls';
 import { EMPTY_BOARD, type BoardState, type PlayerBoard } from '@/lib/board-state';
 import { decodeBoard, emptyBoardCode, encodeBoard } from '@/lib/board-url';
 import { buildCodeIndex } from '@/lib/deck-url';
@@ -45,12 +46,21 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
 
+  /**
+   * 目前盤面對應的編碼。
+   *
+   * 除了寫進網址，也公布在 DOM 上（data-board-code）——
+   * 這樣端對端測試可以等「網址真的帶到這個值」，
+   * 而不是靠「網址變了沒」或「網址穩定了沒」之類的啟發式猜測。
+   * 那些猜法前後錯過四次，每次都是在兩次非同步寫入之間誤判。
+   */
+  const boardCode = useMemo(() => encodeBoard(board, cards), [board, cards]);
+
   // 把盤面寫回網址，讓使用者可以複製連結分享復盤
   useEffect(() => {
     if (!ready) return;
     const next = new URLSearchParams();
-    const encoded = encodeBoard(board, cards);
-    if (encoded !== emptyCode) next.set('b', encoded);
+    if (boardCode !== emptyCode) next.set('b', boardCode);
     if (lang !== DEFAULT_TEXT_LANG) next.set('lang', lang);
     if (art !== DEFAULT_ART_LANG) next.set('art', art);
 
@@ -59,7 +69,7 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
     if (`${window.location.pathname}${window.location.search}` !== url) {
       router.replace(url, { scroll: false });
     }
-  }, [board, cards, emptyCode, lang, art, ready, router]);
+  }, [boardCode, emptyCode, lang, art, ready, router]);
 
   const setSide = useCallback(
     (side: 'you' | 'opponent') => (next: PlayerBoard) =>
@@ -81,11 +91,20 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
   const expectedRunes = runesSummonedByTurn(board.turn, board.onThePlay);
 
   return (
-    <div className="mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-6" data-replay-ready={ready}>
+    <div
+      className="mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-6"
+      data-replay-ready={ready}
+      data-board-code={boardCode}
+    >
       <header className="mb-5">
         <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">對局復盤</h1>
+        <p className="mt-1 text-xs text-ink-faint" data-testid="not-a-game">
+          這是<strong className="text-ink-dim">研究工具，不是對戰系統</strong>
+          —— 沒有配對、沒有對手連線、沒有勝負判定。
+        </p>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-dim">
           擺出當下的盤面 —— 手牌、場上、廢牌堆 —— 然後看從這個局面算出來的精確數字。
+          規則寫死的固定流程（開局抽幾張、每回合召幾張符文）可以一鍵模擬，省得一張張擺。
           盤面編在網址裡，複製網址就能把這個局面分享給別人一起研究。
         </p>
       </header>
@@ -155,6 +174,8 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
         </button>
       </div>
 
+      <GameControls board={board} byId={byId} lang={lang} onChange={setBoard} />
+
       <TurnStateControl
         board={board}
         onChange={(next) => setBoard((prev) => ({ ...prev, ...next }))}
@@ -206,6 +227,12 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
         <h2 className="mb-2 text-sm font-semibold text-ink">這個工具會做什麼、不會做什麼</h2>
         <div className="space-y-2 text-xs leading-relaxed text-ink-dim">
           <p>
+            <strong className="text-ink">先講最重要的：這不是對戰系統。</strong>
+            沒有配對、沒有對手連線、沒有勝負判定，也不會有。
+            這裡的「對手」那一欄是給你自己擺對手盤面用的 ——
+            為了算出「以你知道的資訊，接下來會怎樣」，不是連到另一個人。
+          </p>
+          <p>
             <strong className="text-ink">會做：從當下盤面算出精確的數字。</strong>
             牌堆裡還剩什麼、再抽幾張抽到某張卡的機率、手上哪些牌現在的符文付得起。
             這些全部是精確計算，你可以自己驗算。
@@ -215,6 +242,12 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
             要判斷「這個局面怎麼打最好」，程式必須看得懂 376 張卡各自的能力文字，
             還要能執行戰鬥、據守、對決那整套流程 —— 那是一個完整的規則引擎。
             沒有引擎卻跳出「建議」，那個建議是編的。
+          </p>
+          <p>
+            <strong className="text-ink">會做：模擬規則明文寫死的固定流程。</strong>
+            開局抽四張（116）、手牌調度（117）、每回合喚醒＋召符文＋抽牌
+            （315.1、315.3.b、315.4.b、485.7）。抽牌是依剩餘張數加權隨機 ——
+            這跟從洗好的牌堆抽在機率上等價（114、108.4.d）。
           </p>
           <p>
             <strong className="text-ink">會做：依回合狀態判斷打不打得出來。</strong>

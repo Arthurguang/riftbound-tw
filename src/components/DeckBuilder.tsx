@@ -84,11 +84,14 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
     setReady(true);
   }, [validIds]);
 
+  /** 目前牌組對應的編碼。也公布在 DOM 上供端對端測試等待（見 ReplayBoard 的說明）。 */
+  const deckCode = useMemo(() => encodeDeck(deck, cards), [deck, cards]);
+
   // 把牌組寫回網址，讓使用者可以直接複製連結分享
   useEffect(() => {
     if (!ready) return;
     const next = new URLSearchParams();
-    const encoded = encodeDeck(deck, cards);
+    const encoded = deckCode;
     // 空牌組不必污染網址
     if (encoded !== EMPTY_ENCODED) next.set('d', encoded);
     if (lang !== DEFAULT_TEXT_LANG) next.set('lang', lang);
@@ -99,7 +102,7 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
     if (`${window.location.pathname}${window.location.search}` !== url) {
       router.replace(url, { scroll: false });
     }
-  }, [deck, cards, lang, art, ready, router]);
+  }, [deckCode, lang, art, ready, router]);
 
   const legend = deck.legendId ? byId.get(deck.legendId) : undefined;
   const legality = useMemo(() => checkLegality(deck, byId), [deck, byId]);
@@ -214,7 +217,11 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
   const maxCurve = Math.max(1, ...curve.values());
 
   return (
-    <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6" data-deck-ready={ready}>
+    <div
+      className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6"
+      data-deck-ready={ready}
+      data-deck-code={deckCode}
+    >
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">牌組編輯器</h1>
         <p className="mt-1 max-w-3xl text-sm text-ink-dim">

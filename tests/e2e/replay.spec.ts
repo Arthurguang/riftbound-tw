@@ -142,7 +142,7 @@ test.describe('對局復盤', () => {
   test('盤面會編進網址，可以分享', async ({ page, context }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    const shared = await shareUrl(page, async () => {
+    const shared = await shareUrl(page, 'data-board-code', 'b', async () => {
       await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
       await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
     });
@@ -171,6 +171,36 @@ test.describe('對局復盤', () => {
     await gotoReplay(page);
     await expect(page.getByText(/不會做：告訴你最佳解/)).toBeVisible();
     await expect(page.getByText(/沒有引擎卻跳出「建議」，那個建議是編的/)).toBeVisible();
+  });
+
+  /*
+   * 這條守的是「定位」而不是功能。
+   *
+   * 這個頁面很容易被誤會成對戰系統 —— 它有雙方盤面、會抽牌、會跑回合。
+   * 頁面上必須明白寫出「不是對戰系統」，讓使用者一眼知道自己在用什麼。
+   * 這個宣告哪天被刪掉或改掉，這條測試要紅。
+   */
+  test('頁面明說這不是對戰系統', async ({ page }) => {
+    await gotoReplay(page);
+
+    // 標題底下就要看得到
+    await expect(page.getByTestId('not-a-game')).toContainText('研究工具，不是對戰系統');
+    await expect(page.getByTestId('not-a-game')).toContainText('沒有配對');
+
+    // 底部的界線說明也要有，而且擺在第一段
+    await expect(page.getByText(/先講最重要的：這不是對戰系統/)).toBeVisible();
+    await expect(page.getByText(/不是連到另一個人/)).toBeVisible();
+  });
+
+  test('控制列的用詞不會讓人以為在對戰', async ({ page }) => {
+    await gotoReplay(page);
+
+    const controls = page.getByTestId('game-controls');
+    await expect(controls.getByRole('heading', { name: '模擬規則流程' })).toBeVisible();
+
+    // 不該出現「開始遊戲」「對戰」這類說法
+    await expect(controls).not.toContainText('對戰');
+    await expect(controls).not.toContainText('開始遊戲');
   });
 
   test('惡意網址被安全丟棄，頁面照常運作', async ({ page }) => {
@@ -270,7 +300,7 @@ test.describe('戰場區域', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', WITH_BATTLEFIELDS);
 
-    const shared = await shareUrl(page, async () => {
+    const shared = await shareUrl(page, 'data-board-code', 'b', async () => {
       await page.locator('#battlefield-0').selectOption({ label: '團結祭壇' });
       // 下拉的選項本來就含這個名字，所以要驗「值」而不是「有沒有這段文字」
       await expect(page.locator('#battlefield-0')).toHaveValue(/ogn/);
@@ -517,7 +547,7 @@ test.describe('回合狀態（規則 307–310）', () => {
   test('回合狀態會編進網址', async ({ page }) => {
     await gotoReplay(page);
 
-    const shared = await shareUrl(page, async () => {
+    const shared = await shareUrl(page, 'data-board-code', 'b', async () => {
       await page.getByLabel(/正在法術對決或戰鬥中/).check();
       await expect(page.getByTestId('turn-state-label')).toHaveText('法術對決開環');
     });
@@ -605,7 +635,7 @@ test.describe('活躍與休眠（規則 414、415）', () => {
     // 先確認前置狀態到位，再做下一步 —— 否則可能點在還沒更新的畫面上
     await expect(you.getByTestId('rune-total')).toHaveText('2');
 
-    const shared = await shareUrl(page, async () => {
+    const shared = await shareUrl(page, 'data-board-code', 'b', async () => {
       await you.getByRole('button', { name: /^切換 狂怒符文 的休眠張數/ }).click();
       await expect(you.getByTestId('rune-total')).toHaveText('1');
     });
@@ -613,5 +643,110 @@ test.describe('活躍與休眠（規則 414、415）', () => {
     await page.goto(shared, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('[data-replay-ready="true"]')).toBeAttached();
     await expect(sideOf(page, 'you').getByTestId('rune-total')).toHaveText('1');
+  });
+});
+
+test.describe('模擬規則流程', () => {
+  const PLAYABLE = [
+    '【傳奇】',
+    '1 Daughter of the Void',
+    '【主牌組】',
+    "3 Kai'Sa, Survivor",
+    '3 Blazing Scorcher',
+    '3 Cleave',
+    '【符文牌組】',
+    '12 Fury Rune',
+  ];
+
+  test('開新的一局會抽四張手牌（規則 116）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', PLAYABLE);
+
+    await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
+
+    // 主牌組 9 張 − 英雄區域 1 張 − 手牌 4 張 = 牌堆 4 張
+    const summary = sideOf(page, 'you').getByTestId('side-summary');
+    await expect(summary).toContainText('手牌 4');
+    await expect(summary).toContainText('牌堆 4');
+  });
+
+  test('抽一張會從牌堆移到手牌（315.4.b）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', PLAYABLE);
+    await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
+
+    await page.getByTestId('game-controls').getByRole('button', { name: '抽一張' }).click();
+
+    const summary = sideOf(page, 'you').getByTestId('side-summary');
+    await expect(summary).toContainText('手牌 5');
+    await expect(summary).toContainText('牌堆 3');
+  });
+
+  test('下一回合會喚醒、召符文、抽牌', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', PLAYABLE);
+    await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
+
+    await page.getByTestId('game-controls').getByRole('button', { name: /^推進 你 一個回合$/ }).click();
+
+    const summary = sideOf(page, 'you').getByTestId('side-summary');
+    // 315.3.b 召兩張符文（先手）、315.4.b 抽一張
+    await expect(summary).toContainText('活躍符文 2');
+    await expect(summary).toContainText('手牌 5');
+  });
+
+  test('手牌調度換掉的張數等於補回的張數（117）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', PLAYABLE);
+
+    const controls = page.getByTestId('game-controls');
+    await controls.getByRole('button', { name: '重設成開局狀態' }).click();
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 4');
+
+    // 選一張換掉
+    await controls.getByRole('button', { name: /^(凱莎|烈焰灼魂者|劈砍)/ }).first().click();
+    await controls.getByRole('button', { name: /^換掉這 1 張$/ }).click();
+
+    // 手牌張數不變 —— 換一張補一張
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 4');
+  });
+
+  test('沒有牌組時提示要先匯入', async ({ page }) => {
+    await gotoReplay(page);
+    await expect(page.getByTestId('game-controls')).toContainText('先匯入 你 的牌組');
+  });
+
+  test('可以分別操作雙方', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'opponent', PLAYABLE);
+
+    const controls = page.getByTestId('game-controls');
+    // 預設操作「你」，還沒匯入牌組
+    await expect(controls).toContainText('先匯入 你 的牌組');
+
+    await controls.getByRole('button', { name: '對手', exact: true }).click();
+    await controls.getByRole('button', { name: '重設成開局狀態' }).click();
+
+    await expect(sideOf(page, 'opponent').getByTestId('side-summary')).toContainText('手牌 4');
+    // 你這方沒被動到
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 0');
+  });
+
+  test('打完的盤面照樣能分享', async ({ page, context }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', PLAYABLE);
+
+    const shared = await shareUrl(page, 'data-board-code', 'b', async () => {
+      await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
+      await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 4');
+    });
+
+    const other = await context.newPage();
+    await other.goto(shared, { waitUntil: 'domcontentloaded' });
+    await expect(other.locator('[data-replay-ready="true"]')).toBeAttached();
+    await expect(other.locator('[data-side="you"]').getByTestId('side-summary')).toContainText(
+      '手牌 4',
+    );
+    await other.close();
   });
 });

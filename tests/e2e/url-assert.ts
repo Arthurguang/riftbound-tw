@@ -44,56 +44,45 @@ export async function expectOfficialUrl(
 }
 
 /**
- * 執行一個動作，等網址寫完之後回傳可分享的網址。
+ * 執行一個動作，等網址真的反映出目前狀態之後，回傳可分享的網址。
  *
- * ── 這個問題我解錯過三次，把過程寫下來 ────────────────────────
+ * ── 這個問題我解錯過四次，把過程留在這裡 ──────────────────────
  * 本站把牌組與盤面編在網址裡，用 router.replace 寫回去 —— 那是非同步的，
  * 動作做完不代表網址已經寫好。太早複製會拿到少一步的舊網址。
  *
- * 第一次：「等網址跟動作前不一樣」。
- *   錯在**上一個動作還沒落地的寫入也算一次改變** —— 先匯入牌組再選戰場時，
- *   匯入那次的寫入可能較晚落地，被誤認成本次的改變。
+ * 1. 「等網址跟動作前不一樣」
+ *    錯在**上一個動作還沒落地的寫入也算一次改變**。
+ * 2. 「先等網址穩定，再等它變」
+ *    錯在我用當下的網址當比較基準，第一次比較必然成立 —— 等於沒等。
+ * 3. 「等網址出現某張卡的短代碼」
+ *    錯在同一個代碼會在編碼的多個段落出現，樣式在動作前就成立。
+ * 4. 「動作後等網址連續三次讀到相同值」
+ *    錯在**寫入還沒發生時，舊網址本來就是穩定的** —— 一樣會提早回傳。
  *
- * 第二次：在前面加「等網址穩定」。
- *   錯在我把「當下的網址」當成比較基準，第一次比較必然成立 ——
- *   那個等待其實一次都沒等過，只是看起來有。
+ * 前四次的共同毛病：都在**猜**網址應該長什麼樣、或什麼時候算好了。
  *
- * 第三次：「等網址出現某張卡的短代碼」。
- *   錯在同一個代碼會在編碼的**多個段落**出現（牌組、場上、休眠…），
- *   所以樣式在動作之前就已經成立。
+ * 現在的做法是讓程式自己說：元件把「目前狀態對應的編碼」放在
+ * data-board-code / data-deck-code 屬性上，測試就等網址的查詢參數
+ * **剛好等於那個值**。沒有猜測、沒有時序假設。
  *
- * 現在的做法：
- *   1. 先跑動作，動作內部要斷言**畫面狀態已經定案**
- *   2. 再等網址連續數次讀到相同值（真的穩定）
- *
- * 狀態定案代表寫入已經排隊，接著等它落地即可 —— 不需要猜網址長什麼樣。
+ * @param attribute 元件公布編碼的屬性名，例如 data-board-code
+ * @param param 網址上對應的查詢參數名，例如 b
  */
-export async function shareUrl(page: Page, action: () => Promise<void>): Promise<string> {
+export async function shareUrl(
+  page: Page,
+  attribute: string,
+  param: string,
+  action: () => Promise<void>,
+): Promise<string> {
   await action();
-  return settledUrl(page);
-}
-
-/**
- * 等網址連續三次讀到相同值。
- *
- * previous 一開始必須是 null：用「當下的網址」當初始值的話，
- * 第一次比較必然成立，等於沒等。
- */
-async function settledUrl(page: Page): Promise<string> {
-  let previous: string | null = null;
-  let stableReads = 0;
 
   await expect
-    .poll(
-      () => {
-        const now = page.url();
-        stableReads = previous === now ? stableReads + 1 : 0;
-        previous = now;
-        return stableReads;
-      },
-      { intervals: [100, 100, 150, 150, 200, 200, 300, 300] },
-    )
-    .toBeGreaterThanOrEqual(3);
+    .poll(async () => {
+      const expected = await page.locator(`[${attribute}]`).getAttribute(attribute);
+      const actual = new URL(page.url()).searchParams.get(param);
+      return expected !== null && actual === expected;
+    })
+    .toBe(true);
 
-  return previous ?? page.url();
+  return page.url();
 }
