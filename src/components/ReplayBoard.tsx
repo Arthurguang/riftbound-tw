@@ -8,6 +8,7 @@ import { BoardTable } from './BoardTable';
 import { BattlefieldPicker } from './BattlefieldPicker';
 import { TurnStateControl } from './TurnStateControl';
 import { GameControls } from './GameControls';
+import { adjustRunesOnBase } from '@/lib/board-actions';
 import { EMPTY_BOARD, type BoardState, type PlayerBoard } from '@/lib/board-state';
 import { decodeBoard, emptyBoardCode, encodeBoard } from '@/lib/board-url';
 import { buildCodeIndex } from '@/lib/deck-url';
@@ -131,6 +132,28 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
   /** 依回合推算應該召出過幾張符文，方便使用者對照有沒有擺漏。 */
   const expectedRunes = runesSummonedByTurn(board.turn, board.onThePlay);
 
+  /**
+   * 改回合數時，雙方基地的符文跟著加減。
+   *
+   * 每前進一回合各召出兩張（315.3.b），到符文牌組張數就不再增加。
+   * 加減的是**差額**而不是覆蓋成公式值 —— 理由寫在 adjustRunesOnBase 裡：
+   * 回收符文取得符能後那張會永久離場（164.2.b），所以實際張數幾乎一定
+   * 比公式少，直接覆蓋會把使用者重建好的盤面洗掉。
+   */
+  const setTurn = useCallback((next: number) => {
+    setBoard((prev) => {
+      const delta = next - prev.turn;
+      if (delta === 0) return prev;
+      const runes = delta * TURN_RULES.runesPerTurn;
+      return {
+        ...prev,
+        turn: next,
+        you: adjustRunesOnBase(prev.you, runes, TURN_RULES.runeDeckSize),
+        opponent: adjustRunesOnBase(prev.opponent, runes, TURN_RULES.runeDeckSize),
+      };
+    });
+  }, []);
+
   return (
     <div
       className="mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-6"
@@ -156,8 +179,54 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
         </p>
       )}
 
-      {/* 回合與先後手 */}
-      <div className="mb-5 flex flex-wrap items-center gap-4 rounded-lg border border-line bg-surface-1 p-3">
+      {/*
+       * 先後手：開局決定一次就不會再動，所以跟每次都在調的回合數分開放。
+       * 混在同一列會讓人以為它也是常常要改的東西。
+       */}
+      <div
+        className="mb-2 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface/40 px-3 py-2"
+        data-testid="match-setup"
+      >
+        <span className="text-xs text-ink-faint">開局設定（決定後就不會再變）</span>
+        <span className="text-sm text-ink-dim">你是</span>
+        <div className="flex rounded-lg border border-line p-0.5">
+          {[
+            { on: true, label: '先手' },
+            { on: false, label: '後手' },
+          ].map((option) => (
+            <button
+              key={option.label}
+              type="button"
+              aria-pressed={board.onThePlay === option.on}
+              onClick={() => setBoard((prev) => ({ ...prev, onThePlay: option.on }))}
+              className={`rounded px-3 py-1 text-xs transition-colors ${
+                board.onThePlay === option.on
+                  ? 'bg-accent/15 text-accent-soft'
+                  : 'text-ink-dim hover:text-ink'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <span className="text-[0.7rem] text-ink-faint">
+          後手在自己第一個召出階段多召一張（485.7）
+        </span>
+
+        <button
+          type="button"
+          onClick={() => setBoard(EMPTY_BOARD)}
+          className="ml-auto rounded-lg border border-line px-3 py-1.5 text-xs text-ink-dim hover:border-surface-3 hover:text-ink"
+        >
+          清空盤面
+        </button>
+      </div>
+
+      {/* 回合數 —— 復盤時真正會一直調的東西 */}
+      <div
+        className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-line bg-surface-1 p-3"
+        data-testid="turn-control"
+      >
         <label htmlFor="replay-turn" className="flex items-center gap-2 text-sm text-ink-dim">
           第
           <input
@@ -167,52 +236,41 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
             max={99}
             value={board.turn}
             onChange={(e) => {
-              const next = Number(e.target.value);
-              if (!Number.isFinite(next)) return;
-              setBoard((prev) => ({ ...prev, turn: Math.max(1, Math.min(99, Math.round(next))) }));
+              const raw = Number(e.target.value);
+              if (!Number.isFinite(raw)) return;
+              setTurn(Math.max(1, Math.min(99, Math.round(raw))));
             }}
             className="w-16 rounded border border-line bg-surface px-2 py-1 text-sm text-ink focus:border-accent focus:outline-none"
           />
           回合
         </label>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-ink-dim">你是</span>
-          <div className="flex rounded-lg border border-line p-0.5">
-            {[
-              { on: true, label: '先手' },
-              { on: false, label: '後手' },
-            ].map((option) => (
-              <button
-                key={option.label}
-                type="button"
-                aria-pressed={board.onThePlay === option.on}
-                onClick={() => setBoard((prev) => ({ ...prev, onThePlay: option.on }))}
-                className={`rounded px-3 py-1 text-xs transition-colors ${
-                  board.onThePlay === option.on
-                    ? 'bg-accent/15 text-accent-soft'
-                    : 'text-ink-dim hover:text-ink'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+        <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={() => setTurn(Math.max(1, board.turn - 1))}
+            disabled={board.turn <= 1}
+            className="rounded border border-line px-2 py-1 text-xs text-ink-dim disabled:opacity-30 hover:border-accent hover:text-accent-soft"
+          >
+            上一回合
+          </button>
+          <button
+            type="button"
+            onClick={() => setTurn(Math.min(99, board.turn + 1))}
+            className="rounded border border-line px-2 py-1 text-xs text-ink-dim hover:border-accent hover:text-accent-soft"
+          >
+            下一回合
+          </button>
         </div>
 
         <p className="text-xs text-ink-faint">
-          照規則，你到第 {board.turn} 回合應該召出過{' '}
-          <strong className="text-ink-dim">{expectedRunes}</strong> 張符文
-          （315.3.b、485.7，上限 {TURN_RULES.runeDeckSize} 張）
+          改回合數會<strong className="text-ink-dim">同時把雙方基地的符文加減 {TURN_RULES.runesPerTurn} 張</strong>
+          （315.3.b），到 {TURN_RULES.runeDeckSize} 張就不再增加。
+          <br />
+          加減的是<strong className="text-ink-dim">差額</strong>，不是覆蓋成公式算出來的張數 ——
+          回收符文取得符能後那張會永久離場（164.2.b），所以你手動調過的張數會被保留。
+          目前你照公式應召出過 <strong className="text-ink-dim">{expectedRunes}</strong> 張。
         </p>
-
-        <button
-          type="button"
-          onClick={() => setBoard(EMPTY_BOARD)}
-          className="ml-auto rounded-lg border border-line px-3 py-1.5 text-xs text-ink-dim hover:border-surface-3 hover:text-ink"
-        >
-          清空盤面
-        </button>
       </div>
 
       {/*

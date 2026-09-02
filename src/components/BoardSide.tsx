@@ -222,6 +222,7 @@ export function BoardSide({
             player={player}
             byId={byId}
             lang={lang}
+            art={art}
             turn={turn}
             onThePlay={onThePlay}
             onChange={onChange}

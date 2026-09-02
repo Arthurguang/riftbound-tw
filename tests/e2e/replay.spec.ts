@@ -126,6 +126,100 @@ test.describe('牌桌版面', () => {
   });
 });
 
+test.describe('回合數與先後手', () => {
+  test('先後手跟回合數是分開的兩塊', async ({ page }) => {
+    await gotoReplay(page);
+
+    // 先後手決定一次就不會再動，所以獨立出來
+    const setup = page.getByTestId('match-setup');
+    await expect(setup.getByRole('button', { name: '先手' })).toBeVisible();
+    await expect(setup).toContainText('決定後就不會再變');
+
+    // 回合數是復盤時一直在調的
+    const turn = page.getByTestId('turn-control');
+    await expect(turn.getByLabel(/回合/).or(turn.locator('#replay-turn'))).toBeVisible();
+    // 先後手不該混在回合那一塊裡
+    await expect(turn.getByRole('button', { name: '先手' })).toHaveCount(0);
+  });
+
+  test('推進回合會同時把雙方的符文各加 2 張（315.3.b）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await importDeck(page, 'opponent', SMALL_DECK);
+
+    const yourRunes = sideOf(page, 'you').getByTestId('rune-total');
+    const oppRunes = sideOf(page, 'opponent').getByTestId('rune-total');
+    await expect(yourRunes).toHaveText('0');
+
+    await page.getByTestId('turn-control').getByRole('button', { name: '下一回合' }).click();
+    await expect(yourRunes).toHaveText('2');
+    await expect(oppRunes).toHaveText('2');
+
+    await page.getByTestId('turn-control').getByRole('button', { name: '下一回合' }).click();
+    await expect(yourRunes).toHaveText('4');
+  });
+
+  test('退回上一回合會把符文減回去', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const turnBox = page.getByTestId('turn-control');
+    const runes = sideOf(page, 'you').getByTestId('rune-total');
+
+    await turnBox.getByRole('button', { name: '下一回合' }).click();
+    await turnBox.getByRole('button', { name: '下一回合' }).click();
+    await expect(runes).toHaveText('4');
+
+    await turnBox.getByRole('button', { name: '上一回合' }).click();
+    await expect(runes).toHaveText('2');
+  });
+
+  test('到符文牌組張數就不再增加', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    // 直接輸入很後面的回合
+    await page.locator('#replay-turn').fill('20');
+    await expect(sideOf(page, 'you').getByTestId('rune-total')).toHaveText('12');
+
+    // 再推一回合也不會超過
+    await page.getByTestId('turn-control').getByRole('button', { name: '下一回合' }).click();
+    await expect(sideOf(page, 'you').getByTestId('rune-total')).toHaveText('12');
+  });
+});
+
+test.describe('卡名的卡圖預覽', () => {
+  test('滑鼠移到卡名上會出現卡圖', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+
+    const hand = zoneOf(page, 'you', 'hand');
+    const preview = hand.getByTestId('card-hover-image').first();
+
+    // 平常收著
+    await expect(preview).toBeHidden();
+
+    await hand.getByText('烈焰灼魂者').first().hover();
+    await expect(preview).toBeVisible();
+    // 圖是官方卡圖 CDN 來的
+    await expect(preview.locator('img')).toHaveAttribute('src', /rgpub\.io|playloltcg/);
+  });
+
+  test('鍵盤聚焦也看得到 —— 不是只有滑鼠能用', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+
+    const hand = zoneOf(page, 'you', 'hand');
+    const preview = hand.getByTestId('card-hover-image').first();
+    await expect(preview).toBeHidden();
+
+    await hand.getByText('烈焰灼魂者').first().focus();
+    await expect(preview).toBeVisible();
+  });
+});
+
 test.describe('對局復盤', () => {
   test('沒有牌組時提示要先匯入', async ({ page }) => {
     await gotoReplay(page);
@@ -244,15 +338,16 @@ test.describe('對局復盤', () => {
     await other.close();
   });
 
-  test('回合數會影響應召出的符文提示', async ({ page }) => {
+  test('先後手會改變公式算出的應召符文張數', async ({ page }) => {
     await gotoReplay(page);
+    const turnBox = page.getByTestId('turn-control');
 
     // 先手第 1 回合 2 張（315.3.b）
-    await expect(page.getByText(/應該召出過\s*2\s*張符文/)).toBeVisible();
+    await expect(turnBox).toContainText(/應召出過\s*2\s*張/);
 
-    await page.getByRole('button', { name: '後手' }).click();
+    await page.getByTestId('match-setup').getByRole('button', { name: '後手' }).click();
     // 後手第 1 回合 3 張（485.7）
-    await expect(page.getByText(/應該召出過\s*3\s*張符文/)).toBeVisible();
+    await expect(turnBox).toContainText(/應召出過\s*3\s*張/);
   });
 
   test('頁面明說不會給最佳解', async ({ page }) => {

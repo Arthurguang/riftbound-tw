@@ -1,6 +1,7 @@
 'use client';
 
 import { cardImageUrl, cardName } from '@/lib/cards';
+import { CardHover } from './CardHover';
 import { isInPlayZone, pileSize, ZONE_RULES, type BoardZone, type Pile } from '@/lib/board-state';
 import type { ArtLang, TextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
@@ -135,8 +136,10 @@ export function BoardZonePanel({
                 referrerPolicy="no-referrer"
                 className="h-7 w-5 shrink-0 rounded-sm object-cover"
               />
-              <span className="min-w-0 flex-1 truncate text-xs text-ink" title={cardName(card, lang)}>
-                {cardName(card, lang)}
+              <span className="min-w-0 flex-1 text-xs text-ink" title={cardName(card, lang)}>
+                <CardHover card={card} lang={lang} art={art}>
+                  {cardName(card, lang)}
+                </CardHover>
               </span>
               {qty > 1 && <span className="shrink-0 text-xs text-ink-dim">×{qty}</span>}
 

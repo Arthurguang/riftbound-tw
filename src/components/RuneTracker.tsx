@@ -2,6 +2,7 @@
 
 import { cardName } from '@/lib/cards';
 import { DomainDot } from './CardBadges';
+import { CardHover } from './CardHover';
 import {
   activeRunesOnBase,
   dormantCount,
@@ -10,7 +11,7 @@ import {
   type PlayerBoard,
 } from '@/lib/board-state';
 import { runesSummonedByTurn } from '@/lib/draw-model';
-import type { TextLang } from '@/lib/i18n';
+import type { ArtLang, TextLang } from '@/lib/i18n';
 import type { Card, Domain } from '@/lib/types';
 
 /**
@@ -26,6 +27,7 @@ export function RuneTracker({
   player,
   byId,
   lang,
+  art,
   turn,
   onThePlay,
   onChange,
@@ -33,6 +35,7 @@ export function RuneTracker({
   player: PlayerBoard;
   byId: Map<string, Card>;
   lang: TextLang;
+  art: ArtLang;
   turn: number;
   onThePlay: boolean;
   onChange: (next: PlayerBoard) => void;
@@ -116,8 +119,10 @@ export function RuneTracker({
           return (
             <li key={card.id} className="flex items-center gap-2">
               {domain && <DomainDot domain={domain as Domain} />}
-              <span className="min-w-0 flex-1 truncate text-xs text-ink">
-                {cardName(card, lang)}
+              <span className="min-w-0 flex-1 text-xs text-ink">
+                <CardHover card={card} lang={lang} art={art}>
+                  {cardName(card, lang)}
+                </CardHover>
               </span>
               <span className="shrink-0 text-[0.7rem] text-ink-faint">牌組 {inDeck}</span>
 
