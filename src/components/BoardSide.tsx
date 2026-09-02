@@ -3,24 +3,19 @@
 import { useMemo, useState } from 'react';
 import { cardName } from '@/lib/cards';
 import { DeckImport } from './DeckImport';
-import { BoardZonePanel } from './BoardZonePanel';
 import { RuneTracker } from './RuneTracker';
 import { SideboardSwap } from './SideboardSwap';
 import { ChampionZone } from './ChampionZone';
 import {
-  BOARD_ZONES,
   canPlayByTiming,
   foreignCards,
-  handSize,
   hasDeck,
-  moveCard,
   remainingDeck,
   activeRunesOnBase,
   entersDormant,
   isInPlayZone,
   setDormant,
   setInPile,
-  wakeAll,
   timingKeywords,
   turnStateId,
   TURN_STATE_INFO,
@@ -179,23 +174,10 @@ export function BoardSide({
   return (
     <div
       className="min-w-0 rounded-lg border border-line p-3"
-      data-side={isOpponent ? 'opponent' : 'you'}
+      data-edit-side={isOpponent ? 'opponent' : 'you'}
     >
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-base font-semibold text-ink">{title}</h3>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-ink-dim" data-testid="side-summary">
-            手牌 {handSize(player)}　牌堆 {remaining.mainSize}　活躍符文 {runes}
-          </span>
-          <button
-            type="button"
-            onClick={() => onChange(wakeAll(player))}
-            title="喚醒階段：把控制的所有非法術遊戲物體設為活躍（415.3.a）"
-            className="rounded border border-line px-2 py-0.5 text-[0.7rem] text-ink-dim hover:border-accent hover:text-accent-soft"
-          >
-            全部喚醒
-          </button>
-        </div>
+        <h3 className="text-base font-semibold text-ink">編輯：{title}</h3>
       </div>
 
       <DeckImport
@@ -293,56 +275,6 @@ export function BoardSide({
             </ul>
           </div>
 
-          {/* 四個區域 */}
-          <div className="space-y-2">
-            {BOARD_ZONES.map((zone) => (
-              <BoardZonePanel
-                key={zone}
-                zone={zone}
-                pile={player[zone]}
-                byId={byId}
-                lang={lang}
-                art={art}
-                dormant={isInPlayZone(zone) ? player.dormant[zone] : undefined}
-                onDormantChange={
-                  isInPlayZone(zone)
-                    ? (cardId, count) => onChange(setDormant(player, zone, cardId, count))
-                    : undefined
-                }
-                onMove={(cardId, to) => onChange(moveCard(player, zone, to, cardId))}
-                onRemove={(cardId) =>
-                  onChange({
-                    ...player,
-                    [zone]: setInPile(player[zone], cardId, (player[zone][cardId] ?? 0) - 1),
-                  })
-                }
-                extra={
-                  zone === 'hand' && isOpponent ? (
-                    <label className="ml-auto flex items-center gap-1 text-[0.7rem] text-ink-dim">
-                      不知道內容的
-                      <input
-                        type="number"
-                        min={0}
-                        max={99}
-                        value={player.unknownHand}
-                        onChange={(e) => {
-                          const next = Number(e.target.value);
-                          if (!Number.isFinite(next)) return;
-                          onChange({
-                            ...player,
-                            unknownHand: Math.max(0, Math.min(99, Math.round(next))),
-                          });
-                        }}
-                        className="w-12 rounded border border-line bg-surface px-1 py-0.5 text-xs text-ink focus:border-accent focus:outline-none"
-                        aria-label="對手手牌中你不知道內容的張數"
-                      />
-                      張
-                    </label>
-                  ) : undefined
-                }
-              />
-            ))}
-          </div>
 
           {/* 擺錯的提示 */}
           {remaining.overflow.length > 0 && (

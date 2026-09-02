@@ -15,9 +15,24 @@ async function gotoReplay(page: Page, query = '') {
   await expect(page.locator('[data-replay-ready="true"]')).toBeAttached();
 }
 
-/** 取得某一方的面板。用明確的 data-side 而不是靠 DOM 結構去猜。 */
+/**
+ * 取得某一方的東西。
+ *
+ * 版面分成兩塊：上面的牌桌（data-side，顯示與搬移）與下面的編輯面板
+ * （data-edit-side，匯入、加卡、備牌、符文）。這個選擇器同時涵蓋兩塊 ——
+ * 兩塊裡不會有同名的元素，所以往下找一定只命中一個。
+ */
 const sideOf = (page: Page, side: 'you' | 'opponent') =>
-  page.locator(`[data-side="${side}"]`);
+  page.locator(`[data-side="${side}"], [data-edit-side="${side}"]`);
+
+/**
+ * 取得某一方的某個區域。
+ *
+ * 戰場是雙方共用的（198.1），擺在牌桌中間而不在任一方的區塊裡，
+ * 所以要靠區域自己標的 data-owner 來指定是哪一方的。
+ */
+const zoneOf = (page: Page, side: 'you' | 'opponent', zone: string) =>
+  page.locator(`[data-owner="${side}"][data-zone="${zone}"]`);
 
 /** 在指定的一方匯入一副小牌組。 */
 async function importDeck(page: Page, side: 'you' | 'opponent', lines: string[]) {
@@ -37,6 +52,69 @@ const SMALL_DECK = ['【主牌組】', '3 Blazing Scorcher', '3 Cleave', '【符
  *   Cleave → 劈砍
  *   Fury Rune → 狂怒符文
  */
+
+/*
+ * 版面本身也要有測試守著。
+ *
+ * 這個排法不是美觀問題，是「看得懂」的問題：對手在上、你在下、
+ * 戰場擺中間讓雙方單位上下相鄰。哪天有人把它改回兩欄清單，
+ * 「這個戰場打不打得贏」就又要左右對照才拼得回來。
+ */
+test.describe('牌桌版面', () => {
+  test('對手在上、你在下', async ({ page }) => {
+    await gotoReplay(page);
+
+    const table = page.getByTestId('board-table');
+    await expect(table).toBeVisible();
+
+    const opp = await page.getByTestId('strip-opponent').boundingBox();
+    const you = await page.getByTestId('strip-you').boundingBox();
+    const bf = await page.getByTestId('battlefield-row').boundingBox();
+
+    expect(opp!.y).toBeLessThan(bf!.y);
+    expect(bf!.y).toBeLessThan(you!.y);
+  });
+
+  test('同一個戰場同時看得到雙方的單位', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await importDeck(page, 'opponent', SMALL_DECK);
+
+    // 雙方各放一張到戰場一
+    for (const side of ['you', 'opponent'] as const) {
+      const edit = page.locator(`[data-edit-side="${side}"]`);
+      await edit.getByRole('button', { name: '戰一', exact: true }).click();
+      await edit
+        .getByRole('button', { name: side === 'you' ? '烈焰灼魂者' : '劈砍', exact: true })
+        .click();
+    }
+
+    const bf = page.locator('[data-battlefield="0"]');
+    await expect(bf.locator('[data-owner="opponent"]')).toContainText('劈砍');
+    await expect(bf.locator('[data-owner="you"]')).toContainText('烈焰灼魂者');
+
+    // 對手的在上、你的在下 —— 跟實體對局的座位一致
+    const oppBox = await bf.locator('[data-owner="opponent"]').boundingBox();
+    const youBox = await bf.locator('[data-owner="you"]').boundingBox();
+    expect(oppBox!.y).toBeLessThan(youBox!.y);
+  });
+
+  test('看盤面與改盤面是分開的兩塊', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    // 牌桌只顯示與搬移，加卡的控制項不在裡面
+    const table = page.getByTestId('board-table');
+    await expect(table.getByRole('button', { name: /^匯入牌組/ })).toHaveCount(0);
+    await expect(table.getByPlaceholder('搜尋卡名或卡號…')).toHaveCount(0);
+
+    // 編輯面板裡沒有區域清單 —— 區域全部在牌桌上
+    await expect(page.locator('[data-edit-side="you"] [data-zone]')).toHaveCount(0);
+    await expect(
+      page.locator('[data-edit-side="you"]').getByPlaceholder('搜尋卡名或卡號…'),
+    ).toBeVisible();
+  });
+});
 
 test.describe('對局復盤', () => {
   test('沒有牌組時提示要先匯入', async ({ page }) => {
@@ -332,7 +410,7 @@ test.describe('單位的位置（規則 198.1）', () => {
       .first()
       .click();
 
-    const bf0 = sideOf(page, 'you').locator('[data-zone="bf0"]');
+    const bf0 = zoneOf(page, 'you', 'bf0');
     await expect(bf0).toContainText('烈焰灼魂者');
   });
 });
@@ -441,7 +519,7 @@ test.describe('直接選擇加到哪一區', () => {
     await scope.getByRole('button', { name: '戰二', exact: true }).click();
     await scope.getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
-    await expect(scope.locator('[data-zone="bf1"]')).toContainText('烈焰灼魂者');
+    await expect(zoneOf(page, 'you', 'bf1')).toContainText('烈焰灼魂者');
   });
 });
 

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BoardSide } from './BoardSide';
+import { BoardTable } from './BoardTable';
 import { BattlefieldPicker } from './BattlefieldPicker';
 import { TurnStateControl } from './TurnStateControl';
 import { GameControls } from './GameControls';
@@ -191,7 +192,15 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
         onChange={(next) => setBoard((prev) => ({ ...prev, battlefields: next }))}
       />
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      {/* ── 盤面本身：像一張牌桌，對手在上、你在下、戰場在中間 ── */}
+      <BoardTable board={board} byId={byId} lang={lang} art={art} onChange={setBoard} />
+
+      {/*
+       * ── 編輯面板 ──
+       * 跟上面的牌桌分開：**看盤面**在上、**改盤面**在下。
+       * 兩方各一欄，所以「這是在改誰的」不會弄錯。
+       */}
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
         <BoardSide
           title="你"
           player={board.you}

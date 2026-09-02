@@ -55,6 +55,8 @@ export function BoardZonePanel({
   dormant,
   onDormantChange,
   extra,
+  owner,
+  label,
 }: {
   zone: BoardZone;
   pile: Pile;
@@ -68,6 +70,21 @@ export function BoardZonePanel({
   onDormantChange?: (cardId: string, count: number) => void;
   /** 額外的控制項，例如手牌的「未知張數」。 */
   extra?: React.ReactNode;
+  /**
+   * 這一區是誰的。
+   *
+   * 戰場是雙方共用的（198.1），同一個 data-zone 會同時出現兩份 ——
+   * 一份對手的、一份你的。少了這個標記就沒辦法明確指定是哪一份。
+   */
+  owner?: 'you' | 'opponent';
+  /**
+   * 蓋掉預設的區域名稱。
+   *
+   * 戰場擺在牌桌中間、標題已經寫了是哪一個戰場，上下兩半再各寫一次
+   * 「戰場一（你帶來的）」只會混淆 —— 對手那一半也會寫成「你帶來的」。
+   * 那兩半要標的是**誰的**，不是**哪一個戰場**。
+   */
+  label?: string;
 }) {
   const entries = Object.entries(pile)
     .map(([id, qty]) => ({ card: byId.get(id), qty }))
@@ -78,9 +95,13 @@ export function BoardZonePanel({
   const { rule, hidden } = ZONE_RULES[zone];
 
   return (
-    <section className="rounded-lg border border-line bg-surface-1 p-2.5" data-zone={zone}>
+    <section
+      className="rounded-lg border border-line bg-surface-1 p-2.5"
+      data-zone={zone}
+      data-owner={owner}
+    >
       <div className="mb-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <h4 className="text-sm font-semibold text-ink">{ZONE_LABELS[zone]}</h4>
+        <h4 className="text-sm font-semibold text-ink">{label ?? ZONE_LABELS[zone]}</h4>
         <span className="text-sm text-ink-dim">{total}</span>
         <span
           className="rounded bg-surface-2 px-1 font-mono text-[0.65rem] text-ink-faint"
