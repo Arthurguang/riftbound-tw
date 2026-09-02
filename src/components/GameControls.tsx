@@ -29,19 +29,26 @@ import type { Card } from '@/lib/types';
  *
  * 用詞刻意避開「開始遊戲」「對戰」這類說法 —— 這是研究工具，
  * 讓使用者一眼就知道自己在用什麼，不該以為能在這裡跟別人打牌。
+ *
+ * ── 一個元件只管一方 ────────────────────────────────────────────
+ * 原本這裡有個「你／對手」切換鈕，一組按鈕輪流服務兩方。
+ * 但盤面已經排成上下兩側，控制項卻還要先切換再按，等於把剛剛分開的
+ * 兩側又合回來 —— 所以改成一方一組，各自放在自己那一側。
  */
 export function GameControls({
   board,
+  side,
   byId,
   lang,
   onChange,
 }: {
   board: BoardState;
+  /** 這一組控制項服務哪一方。 */
+  side: 'you' | 'opponent';
   byId: Map<string, Card>;
   lang: TextLang;
   onChange: (next: BoardState) => void;
 }) {
-  const [side, setSide] = useState<'you' | 'opponent'>('you');
   const [swapping, setSwapping] = useState<string[]>([]);
 
   const player = board[side];
@@ -59,43 +66,18 @@ export function GameControls({
     <section
       className="mb-4 rounded-lg border border-accent/30 bg-surface-1 p-3"
       data-testid="game-controls"
+      data-controls-side={side}
     >
       <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h2 className="text-sm font-semibold text-ink">模擬規則流程</h2>
+        <h2 className="text-sm font-semibold text-ink">
+          模擬規則流程：{label}
+          {board.activePlayer === side && '（回合方）'}
+        </h2>
         <span
           className="rounded bg-surface-2 px-1 font-mono text-[0.65rem] text-ink-faint"
           title="每個動作都依官方核心規則的固定流程"
         >
           115–117、315
-        </span>
-
-        <div className="flex rounded-lg border border-line p-0.5">
-          {(
-            [
-              { id: 'you', text: '你' },
-              { id: 'opponent', text: '對手' },
-            ] as const
-          ).map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              aria-pressed={side === option.id}
-              onClick={() => {
-                setSide(option.id);
-                setSwapping([]);
-              }}
-              className={`rounded px-3 py-1 text-xs transition-colors ${
-                side === option.id ? 'bg-accent/15 text-accent-soft' : 'text-ink-dim hover:text-ink'
-              }`}
-            >
-              {option.text}
-            </button>
-          ))}
-        </div>
-
-        <span className="text-xs text-ink-faint">
-          目前編輯：{label}
-          {board.activePlayer === side && '（回合方）'}
         </span>
       </div>
 

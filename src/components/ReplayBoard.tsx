@@ -16,12 +16,52 @@ import { readArtLang, readTextLang, DEFAULT_ART_LANG, DEFAULT_TEXT_LANG } from '
 import type { Card } from '@/lib/types';
 
 /**
+ * 一方的控制項區塊。
+ *
+ * 只是加一條色帶與標記，讓「這一整段都是同一方的」在畫面上有邊界 ——
+ * 中間隔著牌桌，沒有邊界的話很容易按到另一方的按鈕。
+ */
+function SideBlock({
+  side,
+  children,
+}: {
+  side: 'you' | 'opponent';
+  children: React.ReactNode;
+}) {
+  const label = side === 'you' ? '你' : '對手';
+
+  return (
+    <details
+      open
+      data-block-side={side}
+      className={`group mb-2 rounded-lg border-l-2 pl-2 ${
+        side === 'you' ? 'border-l-accent/50' : 'border-l-rose-500/40'
+      }`}
+    >
+      {/*
+       * 摺疊起來是為了讓牌桌不要被推得太遠 —— 兩側的控制項各約 800px 高，
+       * 都展開的話要捲很久才看得到盤面。預設展開，設定好之後可以收起來。
+       */}
+      <summary className="mb-1 cursor-pointer list-none text-[0.7rem] font-semibold text-ink-faint hover:text-ink-dim">
+        <span className="group-open:hidden">▸ 展開「{label}」的控制項</span>
+        <span className="hidden group-open:inline">▾ 以下都是「{label}」的（點這裡收起來）</span>
+      </summary>
+      {children}
+    </details>
+  );
+}
+
+/**
  * 對局復盤板。
  *
  * 擺出當下的盤面，然後從盤面算出精確的數字。
  * **不會告訴你最佳解** —— 理由寫在頁面底部，也寫在 board-state.ts 的註解裡。
  *
  * 盤面編在網址裡，分享復盤不需要伺服器 —— 與牌組相同的架構。
+ *
+ * ── 版面：一切按「誰的」上下分開 ────────────────────────────────
+ * 對手的東西一律在牌桌上方、你的一律在下方。中間是雙方共用的戰場。
+ * 只有真正屬於整個盤面的東西（回合數、先後手、回合狀態）留在最上面。
  */
 export function ReplayBoard({ cards }: { cards: Card[] }) {
   const router = useRouter();
@@ -175,45 +215,35 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
         </button>
       </div>
 
-      <GameControls board={board} byId={byId} lang={lang} onChange={setBoard} />
-
+      {/*
+       * 回合狀態是**整個盤面**的狀態（307–310 的四種開閉環），
+       * 不屬於任何一方，所以留在中央的共用區。
+       */}
       <TurnStateControl
         board={board}
         onChange={(next) => setBoard((prev) => ({ ...prev, ...next }))}
       />
 
-      <BattlefieldPicker
-        battlefields={board.battlefields}
-        yourOptions={battlefieldOptions('you')}
-        opponentOptions={battlefieldOptions('opponent')}
-        byId={byId}
-        lang={lang}
-        art={art}
-        onChange={(next) => setBoard((prev) => ({ ...prev, battlefields: next }))}
-      />
-
-      {/* ── 盤面本身：像一張牌桌，對手在上、你在下、戰場在中間 ── */}
-      <BoardTable board={board} byId={byId} lang={lang} art={art} onChange={setBoard} />
-
       {/*
-       * ── 編輯面板 ──
-       * 跟上面的牌桌分開：**看盤面**在上、**改盤面**在下。
-       * 兩方各一欄，所以「這是在改誰的」不會弄錯。
+       * ── 全部按「誰的」上下分開 ──
+       *
+       * 對手的東西一律在牌桌上方、你的一律在下方 ——
+       * 控制項、戰場選擇、牌組匯入、加卡，通通跟著自己那一側。
+       *
+       * 上半部的順序是刻意倒過來的（先控制項、再盤面），
+       * 這樣「對手的控制項」與「你的控制項」各自貼著桌子的外緣，
+       * 中間留給雙方共用的戰場 —— 跟實體對局坐下來的樣子一致。
        */}
-      <div className="mt-4 grid gap-4 xl:grid-cols-2">
-        <BoardSide
-          title="你"
-          player={board.you}
-          cards={cards}
+      <SideBlock side="opponent">
+        <GameControls board={board} side="opponent" byId={byId} lang={lang} onChange={setBoard} />
+        <BattlefieldPicker
+          battlefields={board.battlefields}
+          side="opponent"
+          options={battlefieldOptions('opponent')}
           byId={byId}
           lang={lang}
           art={art}
-          isOpponent={false}
-          turn={board.turn}
-          onThePlay={board.onThePlay}
-          phase={board.phase}
-          isTurnPlayer={board.activePlayer === 'you'}
-          onChange={setSide('you')}
+          onChange={(next) => setBoard((prev) => ({ ...prev, battlefields: next }))}
         />
         <BoardSide
           title="對手"
@@ -229,7 +259,37 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
           isTurnPlayer={board.activePlayer === 'opponent'}
           onChange={setSide('opponent')}
         />
-      </div>
+      </SideBlock>
+
+      {/* ── 盤面本身：對手在上、你在下、戰場在中間 ── */}
+      <BoardTable board={board} byId={byId} lang={lang} art={art} onChange={setBoard} />
+
+      <SideBlock side="you">
+        <BoardSide
+          title="你"
+          player={board.you}
+          cards={cards}
+          byId={byId}
+          lang={lang}
+          art={art}
+          isOpponent={false}
+          turn={board.turn}
+          onThePlay={board.onThePlay}
+          phase={board.phase}
+          isTurnPlayer={board.activePlayer === 'you'}
+          onChange={setSide('you')}
+        />
+        <BattlefieldPicker
+          battlefields={board.battlefields}
+          side="you"
+          options={battlefieldOptions('you')}
+          byId={byId}
+          lang={lang}
+          art={art}
+          onChange={(next) => setBoard((prev) => ({ ...prev, battlefields: next }))}
+        />
+        <GameControls board={board} side="you" byId={byId} lang={lang} onChange={setBoard} />
+      </SideBlock>
 
       {/* 這個工具的界線 */}
       <section className="mt-6 rounded-lg border border-line bg-surface-1 p-4">

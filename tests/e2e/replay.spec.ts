@@ -34,6 +34,16 @@ const sideOf = (page: Page, side: 'you' | 'opponent') =>
 const zoneOf = (page: Page, side: 'you' | 'opponent', zone: string) =>
   page.locator(`[data-owner="${side}"][data-zone="${zone}"]`);
 
+/**
+ * 模擬控制列與戰場選擇現在都是一方一組（各自貼著自己那側的桌緣），
+ * 所以取用時一定要指名是哪一方的。
+ */
+const controlsOf = (page: Page, side: 'you' | 'opponent') =>
+  page.locator(`[data-testid="game-controls"][data-controls-side="${side}"]`);
+
+const battlefieldOf = (page: Page, side: 'you' | 'opponent') =>
+  page.locator(`[data-testid="battlefield-zone"][data-controls-side="${side}"]`);
+
 /** 在指定的一方匯入一副小牌組。 */
 async function importDeck(page: Page, side: 'you' | 'opponent', lines: string[]) {
   const scope = sideOf(page, side);
@@ -273,7 +283,7 @@ test.describe('對局復盤', () => {
   test('控制列的用詞不會讓人以為在對戰', async ({ page }) => {
     await gotoReplay(page);
 
-    const controls = page.getByTestId('game-controls');
+    const controls = controlsOf(page, 'you');
     await expect(controls.getByRole('heading', { name: '模擬規則流程' })).toBeVisible();
 
     // 不該出現「開始遊戲」「對戰」這類說法
@@ -362,7 +372,7 @@ test.describe('戰場區域', () => {
   test('可以選定雙方各帶來的戰場（485.4、485.5）', async ({ page }) => {
     await gotoReplay(page);
 
-    const zone = page.getByTestId('battlefield-zone');
+    const zone = battlefieldOf(page, 'you');
     await expect(zone).toBeVisible();
     await expect(zone).toContainText('107.2');
 
@@ -740,7 +750,7 @@ test.describe('模擬規則流程', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', PLAYABLE);
 
-    await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
+    await controlsOf(page, 'you').getByRole('button', { name: '重設成開局狀態' }).click();
 
     // 主牌組 9 張 − 英雄區域 1 張 − 手牌 4 張 = 牌堆 4 張
     const summary = sideOf(page, 'you').getByTestId('side-summary');
@@ -751,9 +761,9 @@ test.describe('模擬規則流程', () => {
   test('抽一張會從牌堆移到手牌（315.4.b）', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', PLAYABLE);
-    await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
+    await controlsOf(page, 'you').getByRole('button', { name: '重設成開局狀態' }).click();
 
-    await page.getByTestId('game-controls').getByRole('button', { name: '抽一張' }).click();
+    await controlsOf(page, 'you').getByRole('button', { name: '抽一張' }).click();
 
     const summary = sideOf(page, 'you').getByTestId('side-summary');
     await expect(summary).toContainText('手牌 5');
@@ -763,9 +773,9 @@ test.describe('模擬規則流程', () => {
   test('下一回合會喚醒、召符文、抽牌', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', PLAYABLE);
-    await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
+    await controlsOf(page, 'you').getByRole('button', { name: '重設成開局狀態' }).click();
 
-    await page.getByTestId('game-controls').getByRole('button', { name: /^推進 你 一個回合$/ }).click();
+    await controlsOf(page, 'you').getByRole('button', { name: /^推進 你 一個回合$/ }).click();
 
     const summary = sideOf(page, 'you').getByTestId('side-summary');
     // 315.3.b 召兩張符文（先手）、315.4.b 抽一張
@@ -777,7 +787,7 @@ test.describe('模擬規則流程', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', PLAYABLE);
 
-    const controls = page.getByTestId('game-controls');
+    const controls = controlsOf(page, 'you');
     await controls.getByRole('button', { name: '重設成開局狀態' }).click();
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 4');
 
@@ -791,23 +801,48 @@ test.describe('模擬規則流程', () => {
 
   test('沒有牌組時提示要先匯入', async ({ page }) => {
     await gotoReplay(page);
-    await expect(page.getByTestId('game-controls')).toContainText('先匯入 你 的牌組');
+    await expect(controlsOf(page, 'you')).toContainText('先匯入 你 的牌組');
   });
 
-  test('可以分別操作雙方', async ({ page }) => {
+  /*
+   * 雙方各有自己的一組控制項，不必先切換再按。
+   *
+   * 原本這裡是一組按鈕加一個「你／對手」切換鈕，這條測試會先點「對手」
+   * 再按。改成一方一組之後，切換鈕沒了 —— 直接按對手那一組就好，
+   * 這正是這次調整要的效果。
+   */
+  test('雙方各有自己的一組控制項，互不影響', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'opponent', PLAYABLE);
 
-    const controls = page.getByTestId('game-controls');
-    // 預設操作「你」，還沒匯入牌組
-    await expect(controls).toContainText('先匯入 你 的牌組');
+    // 你這方還沒匯入牌組，你的那一組會這樣說
+    await expect(controlsOf(page, 'you')).toContainText('先匯入 你 的牌組');
 
-    await controls.getByRole('button', { name: '對手', exact: true }).click();
-    await controls.getByRole('button', { name: '重設成開局狀態' }).click();
+    // 不必切換，直接按對手那一組
+    await controlsOf(page, 'opponent').getByRole('button', { name: '重設成開局狀態' }).click();
 
     await expect(sideOf(page, 'opponent').getByTestId('side-summary')).toContainText('手牌 4');
     // 你這方沒被動到
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 0');
+  });
+
+  test('每一方的控制項都在自己那一側', async ({ page }) => {
+    await gotoReplay(page);
+
+    const oppBlock = await page.locator('[data-block-side="opponent"]').boundingBox();
+    const table = await page.getByTestId('board-table').boundingBox();
+    const youBlock = await page.locator('[data-block-side="you"]').boundingBox();
+
+    // 對手的控制項在牌桌上方，你的在下方
+    expect(oppBlock!.y).toBeLessThan(table!.y);
+    expect(table!.y).toBeLessThan(youBlock!.y);
+
+    // 戰場選擇與匯入也各自跟著自己那一側
+    await expect(battlefieldOf(page, 'opponent')).toHaveCount(1);
+    await expect(battlefieldOf(page, 'you')).toHaveCount(1);
+    await expect(
+      page.locator('[data-block-side="opponent"]').getByRole('button', { name: /^匯入牌組/ }),
+    ).toHaveCount(1);
   });
 
   test('打完的盤面照樣能分享', async ({ page, context }) => {
@@ -815,7 +850,7 @@ test.describe('模擬規則流程', () => {
     await importDeck(page, 'you', PLAYABLE);
 
     const shared = await shareUrl(page, 'data-board-code', 'b', async () => {
-      await page.getByTestId('game-controls').getByRole('button', { name: '重設成開局狀態' }).click();
+      await controlsOf(page, 'you').getByRole('button', { name: '重設成開局狀態' }).click();
       await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 4');
     });
 
