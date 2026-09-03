@@ -302,6 +302,29 @@ export function foreignCards(player: PlayerBoard): string[] {
 }
 
 /** 基地上有幾張符文 —— 這是目前實際可用的資源上限。 */
+/**
+ * 把基地那一疊拆成「符文」與「其他常駐物」。
+ *
+ * 資料上它們同住基地（107.1.c「受玩家控制的常駐牌和符文位於該玩家的基地」），
+ * 但操作方式完全不同：符文是資源，每一張各自有活躍／休眠（414、415），
+ * 使用者要能一張一張指定。所以**顯示時**拆成兩塊，資料本身不動。
+ */
+export function splitBaseByRunes(
+  player: PlayerBoard,
+  byId: Map<string, Card>,
+): { runes: Pile; others: Pile } {
+  const runes: Pile = {};
+  const others: Pile = {};
+  for (const [cardId, qty] of Object.entries(player.base)) {
+    if (qty <= 0) continue;
+    const card = byId.get(cardId);
+    // 認不出來的卡當成一般常駐物 —— 不要因為資料缺漏就讓它從畫面消失
+    if (card?.types.includes('rune')) runes[cardId] = qty;
+    else others[cardId] = qty;
+  }
+  return { runes, others };
+}
+
 export function runesOnBase(player: PlayerBoard, byId: Map<string, Card>): number {
   let count = 0;
   for (const [cardId, qty] of Object.entries(player.base)) {

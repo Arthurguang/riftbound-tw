@@ -105,7 +105,7 @@ export function BoardZonePanel({
           空
         </p>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-wrap content-start gap-1.5 overflow-auto">
+        <div className="flex flex-wrap content-start gap-1.5">
           {entries.map(({ card, qty }) => (
             <BoardCard
               key={card.id}

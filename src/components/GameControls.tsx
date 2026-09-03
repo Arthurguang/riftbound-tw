@@ -2,15 +2,9 @@
 
 import { useState } from 'react';
 import { cardName } from '@/lib/cards';
-import {
-  drawCards,
-  handEntries,
-  mulligan,
-  startGame,
-  summonRunes,
-} from '@/lib/board-actions';
+import { drawCards, handEntries, mulligan, summonRunes } from '@/lib/board-actions';
 import { hasDeck, type BoardState } from '@/lib/board-state';
-import { ownTurns, runesSummonedByTurn, TURN_RULES } from '@/lib/draw-model';
+import { TURN_RULES } from '@/lib/draw-model';
 import type { TextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
 
@@ -25,6 +19,9 @@ import type { Card } from '@/lib/types';
  * ── 這不是什麼 ──────────────────────────────────────────────────
  * 這**不是對戰系統**：沒有配對、沒有對手連線、沒有勝負判定，
  * 也不檢查你打的牌合不合法。那些需要規則引擎，而本站明確不做。
+ *
+ * 「重設成開局狀態」也移走了：重設是**整局**的事，雙方都要回到開局狀態，
+ * 掛在單邊會讓人只重設一半。現在放在「回合」那一組，一次重設雙方。
  *
  * 「推進一回合」那顆按鈕拿掉了：回合是**雙方交替**的，一顆掛在某一方
  * 底下的按鈕會讓人以為推進之後還是同一個人的回合。推進回合改由上方
@@ -65,15 +62,6 @@ export function GameControls({
 
   const hand = handEntries(player, byId);
 
-  /**
-   * 重設之後這一方照規則該有幾張符文。
-   *
-   * 回合是雙方交替的，所以要先換算成「這一方自己打過幾個回合」，
-   * 再套 315.3.b（每回合兩張）與 485.7（後手首個召出階段多一張）。
-   */
-  const sideOnThePlay = side === 'you' ? board.onThePlay : !board.onThePlay;
-  const runeTarget = runesSummonedByTurn(ownTurns(board.turn, sideOnThePlay), sideOnThePlay);
-
   return (
     <section
       className="mb-4 rounded-lg border border-accent/30 bg-surface-1 p-3"
@@ -98,18 +86,6 @@ export function GameControls({
       ) : (
         <>
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={btn}
-              title={`清空場面、把選定英雄放進英雄區域、抽四張開局手牌（116、133.4），並把符文設成照規則該有的 ${runeTarget} 張（315.3.b、485.7）。這是重設盤面，不是開始一場對戰。`}
-              onClick={() => {
-                apply(startGame(player, runeTarget));
-                setSwapping([]);
-              }}
-            >
-              重設成開局狀態（符文 {runeTarget}）
-            </button>
-
             <button
               type="button"
               className={btn}

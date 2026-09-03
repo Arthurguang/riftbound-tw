@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BoardSide } from './BoardSide';
@@ -10,10 +10,16 @@ import { CardInspector, type Selection } from './CardInspector';
 import { BattlefieldPicker } from './BattlefieldPicker';
 import { TurnStateControl } from './TurnStateControl';
 import { GameControls } from './GameControls';
-import { adjustRunesOnBase } from '@/lib/board-actions';
+import {
+  adjustRunesOnBase,
+  drawCards,
+  startGame,
+  summonRunes,
+} from '@/lib/board-actions';
 import {
   EMPTY_BOARD,
   moveCard,
+  wakeAll,
   setDormant,
   setInPile,
   type BoardState,
@@ -104,6 +110,13 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
    * 而且很容易誤按到隔壁那張。
    */
   const [selection, setSelection] = useState<Selection | null>(null);
+
+  /**
+   * 推進回合前的盤面，供「上一回合」還原。
+   *
+   * 用 ref 而不是 state：它不影響畫面，放進 state 只會多觸發重繪。
+   */
+  const historyRef = useRef<BoardState[]>([]);
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
 
@@ -171,54 +184,112 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
    * 回收符文取得符能後那張會永久離場（164.2.b），所以實際張數幾乎一定
    * 比公式少，直接覆蓋會把使用者重建好的盤面洗掉。
    */
-  const setTurn = useCallback((next: number) => {
-    setBoard((prev) => {
-      if (next === prev.turn) return prev;
+  /**
+   * 推進或退回回合。
+   *
+   * ── 回合開始要做的事（315） ────────────────────────────────────
+   *   315.1　　喚醒：控制的所有非法術遊戲物體變回活躍（415.3.a）
+   *   315.3.b　召出階段：召出兩張符文
+   *   315.4.b　抽牌階段：抽一張
+   *
+   * ── 為什麼符文從「自己的第二個回合」才加 ───────────────────────
+   * 「重設成開局狀態」已經把**首次召出**算進去了（先手 2 張、後手 3 張，
+   * 315.3.b＋485.7）。所以推進到某一方**自己的第一個回合**時不再加符文，
+   * 否則會重複計算 —— 這正是使用者說的「第二回合輪到對手，他有 3 個符文，
+   * 但那一回合不會增加」。
+   *
+   * 抽牌則每個回合都有（315.4.b），沒有這個例外。
+   *
+   * ── 退回上一回合 ──────────────────────────────────────────────
+   * 用一個歷史堆疊還原，因為「抽了哪一張」是隨機的，沒有辦法反推。
+   * 堆疊只活在這次瀏覽階段（盤面本身編在網址裡，重新整理後就沒有歷史了），
+   * 那時退回只會改回合數與符文，不會把抽到的牌放回去 —— 按鈕提示有寫。
+   */
+  const setTurn = useCallback(
+    (nextTurn: number) => {
+      setBoard((prev) => {
+        if (nextTurn === prev.turn) return prev;
 
-      /*
-       * 回合是交替的，所以符文只加給**該回合的玩家**，不是雙方一起加。
-       * 這也是雙方符文張數會不一樣的原因（先手在奇數回合累積、後手在偶數回合）。
-       *
-       * 一次可能跨好幾個回合（直接輸入數字），所以逐回合結算，
-       * 每個回合把兩張算到那個回合的主人頭上。
-       */
-      const owner = (turn: number): 'you' | 'opponent' =>
-        turn % 2 === 1 ? (prev.onThePlay ? 'you' : 'opponent') : prev.onThePlay ? 'opponent' : 'you';
+        const ownerOf = (turn: number): 'you' | 'opponent' =>
+          turn % 2 === 1
+            ? prev.onThePlay
+              ? 'you'
+              : 'opponent'
+            : prev.onThePlay
+              ? 'opponent'
+              : 'you';
 
-      /**
-       * 這個回合的主人在這一回合會召出幾張。
-       *
-       * 平常兩張（315.3.b）。但**後手在自己的第一個召出階段多召一張**
-       * （485.7），所以後手的第一個回合是三張 —— 這就是為什麼
-       * 先手第 1 回合 2 張、後手第 2 回合 3 張、先手第 3 回合 4 張、
-       * 後手第 4 回合 5 張。
-       */
-      const summonedOn = (turn: number) => {
-        const side = owner(turn);
-        const isOnThePlay = side === 'you' ? prev.onThePlay : !prev.onThePlay;
-        const firstOwnTurn = ownTurns(turn, isOnThePlay) === 1;
-        return TURN_RULES.runesPerTurn + (firstOwnTurn && !isOnThePlay ? TURN_RULES.secondPlayerBonusRune : 0);
-      };
+        // 往回走：先試著用歷史還原
+        if (nextTurn < prev.turn) {
+          const restored = historyRef.current.pop();
+          if (restored && restored.turn === nextTurn) return restored;
 
-      const delta = { you: 0, opponent: 0 };
-      if (next > prev.turn) {
-        for (let turn = prev.turn + 1; turn <= next; turn += 1) {
-          delta[owner(turn)] += summonedOn(turn);
+          // 沒有歷史可用：只退回合數與符文，抽到的牌留著
+          let board = prev;
+          for (let turn = prev.turn; turn > nextTurn; turn -= 1) {
+            const side = ownerOf(turn);
+            const sideOnThePlay = side === 'you' ? prev.onThePlay : !prev.onThePlay;
+            if (ownTurns(turn, sideOnThePlay) < 2) continue;
+            board = {
+              ...board,
+              [side]: adjustRunesOnBase(
+                board[side],
+                -TURN_RULES.runesPerTurn,
+                TURN_RULES.runeDeckSize,
+              ),
+            };
+          }
+          return { ...board, turn: nextTurn, activePlayer: ownerOf(nextTurn) };
         }
-      } else {
-        for (let turn = prev.turn; turn > next; turn -= 1) {
-          delta[owner(turn)] -= summonedOn(turn);
-        }
-      }
 
-      return {
-        ...prev,
-        turn: next,
-        activePlayer: owner(next),
-        you: adjustRunesOnBase(prev.you, delta.you, TURN_RULES.runeDeckSize),
-        opponent: adjustRunesOnBase(prev.opponent, delta.opponent, TURN_RULES.runeDeckSize),
-      };
-    });
+        // 往前走：每個回合照 315 跑一次
+        historyRef.current.push(prev);
+        let board = prev;
+        for (let turn = prev.turn + 1; turn <= nextTurn; turn += 1) {
+          const side = ownerOf(turn);
+          const sideOnThePlay = side === 'you' ? prev.onThePlay : !prev.onThePlay;
+
+          let player = wakeAll(board[side]); // 315.1、415.3.a
+          // 首次召出已含在開局狀態裡，所以第二個自己的回合起才加
+          if (ownTurns(turn, sideOnThePlay) >= 2) {
+            player = summonRunes(player, TURN_RULES.runesPerTurn); // 315.3.b
+          }
+          player = drawCards(player, TURN_RULES.cardsPerTurn); // 315.4.b
+
+          board = { ...board, [side]: player };
+        }
+
+        return {
+          ...board,
+          turn: nextTurn,
+          activePlayer: ownerOf(nextTurn),
+          // 換人之後回到普通開環（結算鏈與對決都結束了）
+          phase: { duel: false, chain: false },
+        };
+      });
+    },
+    [],
+  );
+
+  /**
+   * 重設成開局狀態 —— **雙方一起**。
+   *
+   * 重設是整局的事，只重設一邊沒有意義。
+   * 116　　每人抽四張開局手牌
+   * 133.4　選定英雄置於英雄區域
+   * 315.3.b＋485.7　先手 2 張符文、後手 3 張
+   */
+  const resetToOpening = useCallback(() => {
+    historyRef.current = [];
+    setBoard((prev) => ({
+      ...prev,
+      turn: 1,
+      activePlayer: prev.onThePlay ? 'you' : 'opponent',
+      phase: { duel: false, chain: false },
+      you: startGame(prev.you, runesSummonedByTurn(1, prev.onThePlay)),
+      opponent: startGame(prev.opponent, runesSummonedByTurn(1, !prev.onThePlay)),
+    }));
+    setSelection(null);
   }, []);
 
   /** 選中的那張卡目前的資料（可能已經被搬走，所以每次重算）。 */
@@ -375,9 +446,20 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
           回合
         </label>
 
+        <button
+          type="button"
+          onClick={resetToOpening}
+          title={`雙方一起回到開局：各抽四張（116）、選定英雄進英雄區域（133.4）、先手 ${runesSummonedByTurn(1, true)} 張符文、後手 ${runesSummonedByTurn(1, false)} 張（315.3.b、485.7）`}
+          className="rounded border border-accent/50 px-2 py-1 text-xs text-accent-soft hover:bg-accent/10"
+          data-testid="reset-opening"
+        >
+          重設成開局狀態（雙方）
+        </button>
+
         <div className="flex gap-1">
           <button
             type="button"
+            title="退回上一回合。抽到的牌會一起還原；重新整理過後沒有歷史，就只會退回合數與符文。"
             onClick={() => setTurn(Math.max(1, board.turn - 1))}
             disabled={board.turn <= 1}
             className="rounded border border-line px-2 py-1 text-xs text-ink-dim disabled:opacity-30 hover:border-accent hover:text-accent-soft"
@@ -386,6 +468,7 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
           </button>
           <button
             type="button"
+            title="推進一回合：喚醒（415.3.a）→ 召符文（315.3.b，各自第一個回合已含在開局裡）→ 抽一張（315.4.b）"
             onClick={() => setTurn(Math.min(99, board.turn + 1))}
             className="rounded border border-line px-2 py-1 text-xs text-ink-dim hover:border-accent hover:text-accent-soft"
           >
@@ -399,10 +482,12 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
           目前是<strong className="text-ink-dim">{turnOwner(board.turn) === 'you' ? '你' : '對手'}</strong>
           的回合（你自己打過 {yourOwnTurns} 個回合）。
           <br />
-          推進一回合會給<strong className="text-ink-dim">該回合的玩家</strong>召出{' '}
-          {TURN_RULES.runesPerTurn} 張符文（315.3.b），
-          <strong className="text-ink-dim">後手在自己第一個回合多召一張</strong>（485.7）——
-          所以是 先手 2 → 後手 3 → 先手 4 → 後手 5。到 {TURN_RULES.runeDeckSize} 張就不再增加。
+          推進一回合會對<strong className="text-ink-dim">該回合的玩家</strong>跑一次回合開始流程：
+          喚醒（415.3.a）→ 召 {TURN_RULES.runesPerTurn} 張符文（315.3.b）→ 抽一張（315.4.b）。
+          <br />
+          <strong className="text-ink-dim">各自第一個回合的符文已經算在開局狀態裡</strong>
+          （先手 2 張、後手 3 張 —— 485.7），所以那一回合只抽牌不再加符文。
+          之後是 先手 4 → 後手 5 → 先手 6⋯⋯，到 {TURN_RULES.runeDeckSize} 張就不再增加。
           <br />
           加減的是<strong className="text-ink-dim">差額</strong>，不是覆蓋成公式值 ——
           回收符文取得符能後那張會永久離場（164.2.b），你手動調過的張數會被保留。

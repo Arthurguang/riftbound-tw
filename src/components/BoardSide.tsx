@@ -99,7 +99,7 @@ export function BoardSide({
    * 全部保持掛載、只切換顯示：切走再切回來時，搜尋字串與「加到哪一區」
    * 這些選擇不會被重置。
    */
-  const [section, setSection] = useState<'deck' | 'add' | 'runes' | 'analysis'>('add');
+  const [section, setSection] = useState<'deck' | 'add' | 'runes' | 'analysis'>('deck');
 
   const remaining = useMemo(() => remainingDeck(player), [player]);
   const foreign = useMemo(() => foreignCards(player), [player]);

@@ -3,12 +3,16 @@
 import { cardImageUrl, cardName } from '@/lib/cards';
 import { BoardZonePanel } from './BoardZonePanel';
 import { CardBackPile } from './BoardCard';
+import { RuneRow } from './RuneRow';
 import type { Selection } from './CardInspector';
 import {
   activeRunesOnBase,
   handSize,
   isInPlayZone,
   remainingDeck,
+  setDormant,
+  setInPile,
+  splitBaseByRunes,
   wakeAll,
   type BoardState,
   type BoardZone,
@@ -154,30 +158,89 @@ function PlayerBand({
     />
   );
 
-  const grow = 'min-h-0 flex-1 overflow-auto';
-  const stack = isOpponent
-    ? [
-        <div key="hand">{cell('hand', '手牌', grow)}</div>,
-        <div key="base">{cell('base', '場上', grow)}</div>,
-      ]
-    : [
-        <div key="base">{cell('base', '場上', grow)}</div>,
-        <div key="hand">{cell('hand', '手牌', grow)}</div>,
-      ];
+  const grow = '';
+
+  /*
+   * 符文與其他常駐物資料上同住基地（107.1.c），但操作方式完全不同 ——
+   * 符文是資源，每一張各自有活躍／休眠，要能一張一張指定。
+   * 所以顯示時拆成兩塊，資料仍然是同一疊。
+   */
+  const { runes: runePile, others: basePile } = splitBaseByRunes(player, byId);
+
+  const runeBlock = (
+    <RuneRow
+      key="runes"
+      runes={runePile}
+      dormant={player.dormant.base}
+      byId={byId}
+      lang={lang}
+      art={art}
+      onDormantChange={(cardId, count) => onChange(setDormant(player, 'base', cardId, count))}
+      onRemove={(cardId) =>
+        onChange({
+          ...player,
+          base: setInPile(player.base, cardId, (player.base[cardId] ?? 0) - 1),
+        })
+      }
+    />
+  );
+
+  const baseBlock = (
+    <div key="base" className="min-w-0">
+      <BoardZonePanel
+        zone="base"
+        owner={isOpponent ? 'opponent' : 'you'}
+        label="場上（非符文）"
+        pile={basePile}
+        byId={byId}
+        lang={lang}
+        art={art}
+        className={grow}
+        dormant={player.dormant.base}
+        selectedCardId={
+          selection && selection.side === (isOpponent ? 'opponent' : 'you') &&
+          selection.zone === 'base'
+            ? selection.cardId
+            : undefined
+        }
+        onSelect={(cardId) =>
+          onSelect({ side: isOpponent ? 'opponent' : 'you', zone: 'base', cardId })
+        }
+      />
+    </div>
+  );
+
+  const handBlock = <div key="hand">{cell('hand', '手牌', grow)}</div>;
+  const runeWrap = (
+    <div key="runewrap" className="min-w-0">
+      {runeBlock}
+    </div>
+  );
+
+  /*
+   * 符文與「場上（非符文）」**並排**，手牌自己一列。
+   *
+   * 一開始是三塊直向堆疊，但一條帶狀區大約只有 250px 高，
+   * 分成三塊每塊剩不到 90px —— 一張卡就 68px 加上標題列，塞不下就互相重疊，
+   * 連點擊都會被隔壁的標題攔截。並排之後每一列有一半的高度，寬鬆很多。
+   */
+  const fieldRow = (
+    <div key="field" className="grid gap-2 sm:grid-cols-2">
+      {runeWrap}
+      {baseBlock}
+    </div>
+  );
+
+  // 對手在上方，順序要鏡像 —— 場上靠近中間的戰場
+  const stack = isOpponent ? [handBlock, fieldRow] : [fieldRow, handBlock];
 
   return (
     <div
-      className="flex h-full min-h-0 gap-2"
+      className="flex w-full gap-2"
       data-side={isOpponent ? 'opponent' : 'you'}
       data-testid={isOpponent ? 'strip-opponent' : 'strip-you'}
     >
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        {stack.map((node) => (
-          <div key={node.key} className="min-h-0 flex-1">
-            {node}
-          </div>
-        ))}
-      </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-2">{stack}</div>
 
       {/* 側欄：傳奇、英雄區域、牌堆、廢牌堆、放逐、摘要 */}
       <div className="flex shrink-0 gap-2 overflow-x-auto">
@@ -291,7 +354,7 @@ export function BoardTable({
   return (
     <div className="grid min-h-0 grid-rows-[1fr_1.1fr_1fr] gap-2" data-testid="board-table">
       {/* ── 對手（上） ── */}
-      <div className={`min-h-0 rounded-lg border p-2 ${ring('opponent')}`}>
+      <div className={`min-h-0 overflow-auto rounded-lg border p-2 ${ring('opponent')}`}>
         <PlayerBand
           player={board.opponent}
           label={`對手${board.activePlayer === 'opponent' ? '（回合方）' : ''}`}
@@ -397,7 +460,7 @@ export function BoardTable({
       </div>
 
       {/* ── 你（下） ── */}
-      <div className={`min-h-0 rounded-lg border p-2 ${ring('you')}`}>
+      <div className={`min-h-0 overflow-auto rounded-lg border p-2 ${ring('you')}`}>
         <PlayerBand
           player={board.you}
           label={`你${board.activePlayer === 'you' ? '（回合方）' : ''}`}
