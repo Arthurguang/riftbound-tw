@@ -1,32 +1,14 @@
 'use client';
 
 import { cardImageUrl, cardName, cardText, cardTextToPlain } from '@/lib/cards';
-import { ZONE_RULES, type BoardZone } from '@/lib/board-state';
+import {
+  MOVE_TARGETS,
+  ZONE_LABELS as BOARD_ZONE_LABELS,
+  ZONE_RULES,
+  type BoardZone,
+} from '@/lib/board-state';
 import type { ArtLang, TextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
-
-/** 這個區域的卡可以搬去哪裡。與 BoardZonePanel 的定義一致。 */
-const MOVE_TARGETS: Record<BoardZone, BoardZone[]> = {
-  champion: ['base', 'bf0', 'bf1', 'discard'],
-  hand: ['base', 'bf0', 'bf1', 'discard'],
-  base: ['bf0', 'bf1', 'discard', 'hand'],
-  bf0: ['base', 'bf1', 'discard'],
-  bf1: ['base', 'bf0', 'discard'],
-  discard: ['hand', 'base', 'exile'],
-  exile: ['hand', 'base', 'discard'],
-};
-
-const ZONE_LABELS: Record<BoardZone | FixedZone, string> = {
-  legend: '傳奇區域',
-  battlefield: '戰場',
-  champion: '英雄區域',
-  hand: '手牌',
-  base: '基地',
-  bf0: '戰場一',
-  bf1: '戰場二',
-  discard: '廢牌堆',
-  exile: '放逐區',
-};
 
 /**
  * 有些卡在盤面上是**固定的**，不會在區域之間移動：
@@ -37,6 +19,13 @@ const ZONE_LABELS: Record<BoardZone | FixedZone, string> = {
  * 只是檢視面板不會給搬移按鈕。
  */
 export type FixedZone = 'legend' | 'battlefield';
+
+/** 固定位置的兩種也要有名字，其餘沿用盤面共用的那組。 */
+const ZONE_LABELS: Record<BoardZone | FixedZone, string> = {
+  ...BOARD_ZONE_LABELS,
+  legend: '傳奇區域',
+  battlefield: '戰場',
+};
 
 export type Selection = {
   side: 'you' | 'opponent';

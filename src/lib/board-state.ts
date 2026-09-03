@@ -64,6 +64,39 @@ export const ZONE_RULES: Record<BoardZone, { rule: string; hidden: boolean }> = 
  * 1v1 場上有兩處戰場（485.4），各由一名玩家提供（485.5）——
  * bf0 是你帶來的那處，bf1 是對手帶來的那處。雙方的單位都可能在任一處。
  */
+/**
+ * 區域在介面上的名稱。
+ *
+ * 收在這裡是因為盤面、檢視面板、搬移按鈕都要用到同一組字 ——
+ * 分散在各元件裡就會出現「同一個區域在兩個地方叫不同名字」。
+ */
+export const ZONE_LABELS: Record<BoardZone, string> = {
+  champion: '英雄區域',
+  hand: '手牌',
+  base: '基地',
+  bf0: '戰場一',
+  bf1: '戰場二',
+  discard: '廢牌堆',
+  exile: '放逐區',
+};
+
+/**
+ * 每個區域的卡可以搬去哪裡。順序照實際使用頻率排。
+ *
+ * 198.1：位置包括基地與各個戰場，所以單位可以在這三處之間移動。
+ * 108.3.d：選定英雄可以從英雄區域照正常規則打出。
+ */
+export const MOVE_TARGETS: Record<BoardZone, BoardZone[]> = {
+  champion: ['base', 'bf0', 'bf1', 'discard'],
+  // 有些效果會直接把手牌放逐，所以手牌也要能直接送到放逐區
+  hand: ['base', 'bf0', 'bf1', 'discard', 'exile'],
+  base: ['bf0', 'bf1', 'discard', 'hand'],
+  bf0: ['base', 'bf1', 'discard'],
+  bf1: ['base', 'bf0', 'discard'],
+  discard: ['hand', 'base', 'exile'],
+  exile: ['hand', 'base', 'discard'],
+};
+
 export const LOCATIONS = ['base', 'bf0', 'bf1'] as const;
 export type LocationId = (typeof LOCATIONS)[number];
 

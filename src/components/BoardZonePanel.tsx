@@ -1,19 +1,16 @@
 'use client';
 
 import { BoardCard } from './BoardCard';
-import { pileSize, ZONE_RULES, type BoardZone, type Pile } from '@/lib/board-state';
+import {
+  MOVE_TARGETS,
+  pileSize,
+  ZONE_LABELS,
+  ZONE_RULES,
+  type BoardZone,
+  type Pile,
+} from '@/lib/board-state';
 import type { ArtLang, TextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
-
-const ZONE_LABELS: Record<BoardZone, string> = {
-  champion: '英雄區域',
-  hand: '手牌',
-  base: '基地',
-  bf0: '戰場一',
-  bf1: '戰場二',
-  discard: '廢牌堆',
-  exile: '放逐區',
-};
 
 /**
  * 盤面上的一個區域，內容以**卡圖**排列。
@@ -21,10 +18,14 @@ const ZONE_LABELS: Record<BoardZone, string> = {
  * 每個區域標明官方條號，理由跟牌組合法性檢查一樣：
  * 使用者要能自己去規則書查證我們沒有亂編。
  *
- * ── 這裡不再放搬移按鈕 ──────────────────────────────────────────
- * 每張卡旁邊掛四五顆小按鈕，在文字清單時代還能看，換成卡圖之後
- * 會把版面塞爆。改成**點卡片選取**，操作集中在下方的檢視面板。
- * 一次只操作一張，畫面乾淨很多，也不會誤按到隔壁那張的按鈕。
+ * ── 搬移按鈕只在「選中的那張」旁邊出現 ──────────────────────────
+ * 每張卡都掛四五顆小按鈕會把版面塞爆（卡圖只有 48px 寬）。
+ * 但把操作全部放到右側欄，又變成「點了卡還要把滑鼠移到另一邊」——
+ * 使用者反映這樣很麻煩。
+ *
+ * 折衷：點一張卡之後，**這一區的底部**才長出那一列搬移按鈕。
+ * 一次只有一列、就在卡片旁邊，兩個問題都避開了。
+ * 右側欄的檢視面板仍然保留大圖與能力文字。
  */
 export function BoardZonePanel({
   zone,
@@ -38,6 +39,8 @@ export function BoardZonePanel({
   label,
   selectedCardId,
   onSelect,
+  onMove,
+  onRemove,
   className,
 }: {
   zone: BoardZone;
@@ -66,6 +69,10 @@ export function BoardZonePanel({
   /** 目前選中的卡（只有在同一區時才會標示）。 */
   selectedCardId?: string;
   onSelect: (cardId: string) => void;
+  /** 把選中的那張搬到別的區域。沒傳就不顯示搬移列（例如唯讀的展示）。 */
+  onMove?: (cardId: string, to: BoardZone) => void;
+  /** 把選中的那張放回牌堆。 */
+  onRemove?: (cardId: string) => void;
   /** 由版面決定這一格多高多寬 —— 桌子是固定高度的格線。 */
   className?: string;
 }) {
@@ -119,6 +126,35 @@ export function BoardZonePanel({
               onSelect={() => onSelect(card.id)}
             />
           ))}
+        </div>
+      )}
+
+      {/* 選中的那張才長出搬移列 —— 就在卡片旁邊，不用跑去右側欄 */}
+      {selectedCardId && onMove && entries.some((e) => e.card.id === selectedCardId) && (
+        <div
+          className="mt-1.5 flex shrink-0 flex-wrap items-center gap-1 rounded border border-accent/40 bg-surface-2/60 p-1"
+          data-testid="zone-move-bar"
+        >
+          <span className="text-[0.6rem] text-ink-faint">搬到</span>
+          {MOVE_TARGETS[zone].map((target) => (
+            <button
+              key={target}
+              type="button"
+              onClick={() => onMove(selectedCardId, target)}
+              className="rounded border border-line px-1.5 py-0.5 text-[0.65rem] text-ink-dim hover:border-accent hover:text-accent-soft"
+            >
+              {ZONE_LABELS[target]}
+            </button>
+          ))}
+          {zone !== 'champion' && onRemove && (
+            <button
+              type="button"
+              onClick={() => onRemove(selectedCardId)}
+              className="rounded border border-line px-1.5 py-0.5 text-[0.65rem] text-ink-dim hover:border-rose-500/60 hover:text-rose-300"
+            >
+              放回牌堆
+            </button>
+          )}
         </div>
       )}
     </section>

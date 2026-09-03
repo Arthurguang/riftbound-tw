@@ -60,6 +60,7 @@ export function BoardSide({
   isOpponent,
   turn,
   onThePlay,
+  onRestart,
   phase,
   isTurnPlayer,
   onChange,
@@ -81,6 +82,8 @@ export function BoardSide({
    */
   turn: number;
   onThePlay: boolean;
+  /** 局間換牌之後用新牌組重新開局（雙方一起）。 */
+  onRestart: () => void;
   /** 回合狀態（308、309），決定手牌哪幾張現在打得出來。 */
   phase: { duel: boolean; chain: boolean };
   /** 現在是不是這一方的回合（310.1.a）。 */
@@ -99,7 +102,17 @@ export function BoardSide({
    * 全部保持掛載、只切換顯示：切走再切回來時，搜尋字串與「加到哪一區」
    * 這些選擇不會被重置。
    */
-  const [section, setSection] = useState<'deck' | 'add' | 'runes' | 'analysis'>('deck');
+  const [section, setSection] = useState<
+    'deck' | 'sideboard' | 'add' | 'runes' | 'analysis'
+  >('deck');
+
+  /**
+   * 剛匯入完牌組時提示可以局間換牌。
+   *
+   * 賽制上換牌就發生在匯入牌表之後、下一局開始之前（601.1.c），
+   * 所以那個時機主動問一次，使用者不必自己去找按鈕在哪。
+   */
+  const [justImported, setJustImported] = useState(false);
 
   const remaining = useMemo(() => remainingDeck(player), [player]);
   const foreign = useMemo(() => foreignCards(player), [player]);
@@ -201,6 +214,7 @@ export function BoardSide({
         {(
           [
             { id: 'deck', label: '牌組' },
+            { id: 'sideboard', label: '備牌' },
             { id: 'add', label: '加卡' },
             { id: 'runes', label: '符文' },
             { id: 'analysis', label: '分析' },
@@ -227,7 +241,7 @@ export function BoardSide({
       <DeckImport
         cards={cards}
         byId={byId}
-        onImport={(deck) =>
+        onImport={(deck) => {
           onChange({
             ...player,
             deck,
@@ -237,9 +251,40 @@ export function BoardSide({
              * 不自動擺出來的話牌堆張數會多算一張。
              */
             champion: deck.championId ? setInPile({}, deck.championId, 1) : {},
-          })
-        }
+          });
+          setJustImported(true);
+        }}
       />
+
+      {justImported && (
+        <div
+          className="mt-2 rounded-lg border border-accent/40 bg-accent/5 p-2 text-xs text-ink-dim"
+          data-testid="sideboard-prompt"
+        >
+          牌組匯入好了。
+          <strong className="text-ink">要局間換牌嗎？</strong>
+          <span className="text-ink-faint">（601.1.c —— 換完會用新的牌組重新開局）</span>
+          <div className="mt-1.5 flex gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                setSection('sideboard');
+                setJustImported(false);
+              }}
+              className="rounded border border-accent px-2 py-1 text-[0.7rem] text-accent-soft hover:bg-accent/10"
+            >
+              去換牌
+            </button>
+            <button
+              type="button"
+              onClick={() => setJustImported(false)}
+              className="rounded border border-line px-2 py-1 text-[0.7rem] text-ink-dim hover:text-ink"
+            >
+              不換，直接開始
+            </button>
+          </div>
+        </div>
+      )}
       </div>
 
       {!hasDeck(player) ? (
@@ -257,12 +302,28 @@ export function BoardSide({
             onChange={onChange}
           />
 
+          </div>
+
+          <div hidden={section !== 'sideboard'} data-side-section="sideboard">
           <SideboardSwap
             deck={player.deck}
             byId={byId}
             lang={lang}
             onChange={(deck) => onChange({ ...player, deck })}
           />
+
+          {/*
+           * 局間換牌換完，這一局就要用新的牌組重來（601.1.c）——
+           * 不重開的話場上還留著舊牌組抽出來的牌，那個盤面是不存在的。
+           */}
+          <button
+            type="button"
+            onClick={onRestart}
+            className="mt-2 w-full rounded border border-accent px-2 py-1.5 text-xs text-accent-soft hover:bg-accent/10"
+            data-testid="restart-after-sideboard"
+          >
+            換好了，用新牌組重新開局（雙方）
+          </button>
 
           </div>
 

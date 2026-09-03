@@ -562,6 +562,7 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
               onThePlay={!board.onThePlay}
               phase={board.phase}
               isTurnPlayer={board.activePlayer === 'opponent'}
+              onRestart={resetToOpening}
               onChange={setSide('opponent')}
             />
           </SideBlock>
@@ -590,6 +591,7 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
               onThePlay={board.onThePlay}
               phase={board.phase}
               isTurnPlayer={board.activePlayer === 'you'}
+              onRestart={resetToOpening}
               onChange={setSide('you')}
             />
           </SideBlock>

@@ -9,6 +9,7 @@ import {
   activeRunesOnBase,
   handSize,
   isInPlayZone,
+  moveCard,
   remainingDeck,
   setDormant,
   setInPile,
@@ -89,6 +90,17 @@ function ZoneCell({
       dormant={isInPlayZone(zone) ? player.dormant[zone] : undefined}
       selectedCardId={selectedHere}
       onSelect={(cardId) => onSelect({ side, zone, cardId })}
+      onMove={(cardId, to) => {
+        onChange(moveCard(player, zone, to, cardId));
+        // 選取跟著卡片走，不然搬完之後右側的檢視面板會指到空的
+        onSelect({ side, zone: to, cardId });
+      }}
+      onRemove={(cardId) => {
+        onChange({
+          ...player,
+          [zone]: setInPile(player[zone], cardId, (player[zone][cardId] ?? 0) - 1),
+        });
+      }}
       extra={
         zone === 'hand' && isOpponent ? (
           <label className="ml-auto flex items-center gap-1 text-[0.65rem] text-ink-dim">
@@ -190,7 +202,7 @@ function PlayerBand({
       <BoardZonePanel
         zone="base"
         owner={isOpponent ? 'opponent' : 'you'}
-        label="場上（非符文）"
+        label="基地"
         pile={basePile}
         byId={byId}
         lang={lang}
@@ -205,6 +217,16 @@ function PlayerBand({
         }
         onSelect={(cardId) =>
           onSelect({ side: isOpponent ? 'opponent' : 'you', zone: 'base', cardId })
+        }
+        onMove={(cardId, to) => {
+          onChange(moveCard(player, 'base', to, cardId));
+          onSelect({ side: isOpponent ? 'opponent' : 'you', zone: to, cardId });
+        }}
+        onRemove={(cardId) =>
+          onChange({
+            ...player,
+            base: setInPile(player.base, cardId, (player.base[cardId] ?? 0) - 1),
+          })
         }
       />
     </div>

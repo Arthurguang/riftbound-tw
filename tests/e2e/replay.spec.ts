@@ -92,7 +92,7 @@ async function turnBox(page: Page) {
 async function editOf(
   page: Page,
   side: 'you' | 'opponent',
-  section: 'deck' | 'add' | 'runes' | 'analysis' = 'add',
+  section: 'deck' | 'sideboard' | 'add' | 'runes' | 'analysis' = 'add',
 ) {
   await openRail(page, side);
   const panel = page.locator(`[data-edit-side="${side}"]`);
@@ -209,13 +209,110 @@ test.describe('牌桌版面', () => {
  * **獨立的一塊、而且一張一張攤開** —— 疊成一張加數量角標就沒辦法指定
  * 「這三張橫著、那兩張直著」。
  */
+/*
+ * 搬移按鈕就長在卡片旁邊。
+ *
+ * 使用者反映「點了卡還要把滑鼠移到右側才能選搬到哪」很麻煩。
+ * 每張卡都掛按鈕會把版面塞爆（卡圖只有 48px 寬），所以折衷成
+ * 「選中的那張才在這一區底部長出一列」。
+ */
+test.describe('在盤面上直接搬卡', () => {
+  test('選中一張卡，這一區底部會長出搬移列', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await (await editOf(page, 'you', 'add'))
+      .getByRole('button', { name: '烈焰灼魂者', exact: true })
+      .click();
+
+    const hand = zoneOf(page, 'you', 'hand');
+    // 還沒選就沒有搬移列
+    await expect(hand.getByTestId('zone-move-bar')).toHaveCount(0);
+
+    await hand.locator('[data-card]').first().click();
+    await expect(hand.getByTestId('zone-move-bar')).toBeVisible();
+  });
+
+  test('手牌可以直接送到放逐區', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await (await editOf(page, 'you', 'add'))
+      .getByRole('button', { name: '烈焰灼魂者', exact: true })
+      .click();
+
+    const hand = zoneOf(page, 'you', 'hand');
+    await hand.locator('[data-card]').first().click();
+    await hand.getByTestId('zone-move-bar').getByRole('button', { name: '放逐區', exact: true }).click();
+
+    await expect(cardIn(page, 'you', 'exile', '烈焰灼魂者')).toHaveCount(1);
+    await expect(cardIn(page, 'you', 'hand', '烈焰灼魂者')).toHaveCount(0);
+  });
+
+  test('搬完之後選取跟著卡片走', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await (await editOf(page, 'you', 'add'))
+      .getByRole('button', { name: '烈焰灼魂者', exact: true })
+      .click();
+
+    const hand = zoneOf(page, 'you', 'hand');
+    await hand.locator('[data-card]').first().click();
+    await hand.getByTestId('zone-move-bar').getByRole('button', { name: '廢牌堆', exact: true }).click();
+
+    // 搬到廢牌堆之後，搬移列出現在廢牌堆那一區
+    await expect(zoneOf(page, 'you', 'discard').getByTestId('zone-move-bar')).toBeVisible();
+    await expect(hand.getByTestId('zone-move-bar')).toHaveCount(0);
+  });
+});
+
+/*
+ * 局間換牌在賽制上發生於匯入牌表之後、下一局開始之前（601.1.c），
+ * 所以匯入完就主動問一次，換完再用新牌組重開。
+ */
+test.describe('局間換牌的流程', () => {
+  test('匯入牌組後會問要不要換牌', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const prompt = page.getByTestId('sideboard-prompt');
+    await expect(prompt).toBeVisible();
+    await expect(prompt).toContainText('要局間換牌嗎');
+
+    await prompt.getByRole('button', { name: '去換牌' }).click();
+    await expect(
+      page.locator('[data-edit-side="you"] [data-side-section="sideboard"]'),
+    ).toBeVisible();
+  });
+
+  test('選「不換」就把提示收起來', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    await page.getByTestId('sideboard-prompt').getByRole('button', { name: '不換，直接開始' }).click();
+    await expect(page.getByTestId('sideboard-prompt')).toHaveCount(0);
+  });
+
+  test('備牌那一塊有「換好了就重新開局」', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await importDeck(page, 'opponent', SMALL_DECK);
+
+    // 兩方各有一顆，要指名是你那一組的
+    const panel = await editOf(page, 'you', 'sideboard');
+    await panel.getByTestId('restart-after-sideboard').click();
+
+    // 重開之後雙方都回到開局：各四張手牌
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 4');
+    await expect(sideOf(page, 'opponent').getByTestId('side-summary')).toContainText('手牌 4');
+  });
+});
+
 test.describe('場上符文的區塊', () => {
   test('符文自成一塊，跟其他常駐物分開', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
 
     await expect(page.locator('[data-side="you"] [data-testid="rune-row"]')).toBeVisible();
-    await expect(zoneOf(page, 'you', 'base')).toContainText('場上（非符文）');
+    await expect(zoneOf(page, 'you', 'base')).toContainText('基地');
   });
 
   test('符文一張一張攤開，不是疊成一張', async ({ page }) => {
@@ -820,8 +917,12 @@ test.describe('局間換牌（403.4）', () => {
 
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 3');
 
-    await (await editOf(page, 'you', 'deck')).getByRole('button', { name: /^調整主牌組與備牌/ }).click();
-    await (await editOf(page, 'you', 'deck')).getByRole('button', { name: /把 劈砍 換進主牌組/ }).click();
+    await (await editOf(page, 'you', 'sideboard'))
+      .getByRole('button', { name: /^調整主牌組與備牌/ })
+      .click();
+    await (await editOf(page, 'you', 'sideboard'))
+      .getByRole('button', { name: /把 劈砍 換進主牌組/ })
+      .click();
 
     // 主牌組多一張 → 牌堆 4
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 4');
