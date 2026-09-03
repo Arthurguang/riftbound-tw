@@ -141,7 +141,7 @@ describe('召出符文（315.3.b、430.2.a）', () => {
 
 describe('開局（116、133.4）', () => {
   it('抽四張開局手牌', () => {
-    const after = startGame(player(), sequence([0, 0.9, 0.3, 0.6]));
+    const after = startGame(player(), 0, sequence([0, 0.9, 0.3, 0.6]));
     expect(pileSize(after.hand)).toBe(TURN_RULES.openingHand);
   });
 
@@ -156,7 +156,7 @@ describe('開局（116、133.4）', () => {
         sideboard: {},
       },
     });
-    const after = startGame(p, fixed(0));
+    const after = startGame(p, 0, fixed(0));
 
     expect(after.champion[champion.id]).toBe(1);
     // 6 張主牌組 − 1 張英雄 − 4 張手牌 = 1
@@ -169,7 +169,7 @@ describe('開局（116、133.4）', () => {
       discard: { [unit.id]: 2 },
       bf0: { [other.id]: 1 },
     });
-    const after = startGame(dirty, fixed(0));
+    const after = startGame(dirty, 0, fixed(0));
 
     expect(after.base).toEqual({});
     expect(after.discard).toEqual({});
@@ -179,7 +179,7 @@ describe('開局（116、133.4）', () => {
 
 describe('手牌調度（117.1–117.3）', () => {
   it('換掉的牌數等於補抽的牌數', () => {
-    const started = startGame(player(), sequence([0, 0.9, 0.3, 0.6]));
+    const started = startGame(player(), 0, sequence([0, 0.9, 0.3, 0.6]));
     const inHand = Object.keys(started.hand);
 
     const after = mulligan(started, [inHand[0]!], fixed(0));
@@ -187,7 +187,7 @@ describe('手牌調度（117.1–117.3）', () => {
   });
 
   it('最多只能換兩張（117.1）', () => {
-    const started = startGame(player(), sequence([0, 0.9, 0.3, 0.6]));
+    const started = startGame(player(), 0, sequence([0, 0.9, 0.3, 0.6]));
     const all = Object.entries(started.hand).flatMap(([id, qty]) =>
       Array.from({ length: qty }, () => id),
     );
@@ -202,7 +202,7 @@ describe('手牌調度（117.1–117.3）', () => {
      * 牌組只有兩種卡，開局四張。把手上的某張擱置後，
      * 補抽時牌堆裡不該還有那一張 —— 但補抽完之後它要回到牌堆。
      */
-    const started = startGame(player(), sequence([0, 0, 0, 0.9]));
+    const started = startGame(player(), 0, sequence([0, 0, 0, 0.9]));
     const before = remainingDeck(started).mainSize;
 
     const after = mulligan(started, [Object.keys(started.hand)[0]!], fixed(0.9));
@@ -214,12 +214,12 @@ describe('手牌調度（117.1–117.3）', () => {
   });
 
   it('沒指定要換的牌就什麼都不做', () => {
-    const started = startGame(player(), fixed(0));
+    const started = startGame(player(), 0, fixed(0));
     expect(mulligan(started, [], fixed(0))).toBe(started);
   });
 
   it('指定手上沒有的牌時不會憑空生出卡', () => {
-    const started = startGame(player(), fixed(0));
+    const started = startGame(player(), 0, fixed(0));
     const after = mulligan(started, ['not-a-card'], fixed(0));
     expect(pileSize(after.hand)).toBe(pileSize(started.hand));
   });

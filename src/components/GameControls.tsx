@@ -2,14 +2,7 @@
 
 import { useState } from 'react';
 import { cardName } from '@/lib/cards';
-import {
-  beginTurn,
-  drawCards,
-  handEntries,
-  mulligan,
-  startGame,
-  summonRunes,
-} from '@/lib/board-actions';
+import { drawCards, handEntries, mulligan, summonRunes } from '@/lib/board-actions';
 import { hasDeck, type BoardState } from '@/lib/board-state';
 import { TURN_RULES } from '@/lib/draw-model';
 import type { TextLang } from '@/lib/i18n';
@@ -27,21 +20,35 @@ import type { Card } from '@/lib/types';
  * 這**不是對戰系統**：沒有配對、沒有對手連線、沒有勝負判定，
  * 也不檢查你打的牌合不合法。那些需要規則引擎，而本站明確不做。
  *
+ * 「重設成開局狀態」也移走了：重設是**整局**的事，雙方都要回到開局狀態，
+ * 掛在單邊會讓人只重設一半。現在放在「回合」那一組，一次重設雙方。
+ *
+ * 「推進一回合」那顆按鈕拿掉了：回合是**雙方交替**的，一顆掛在某一方
+ * 底下的按鈕會讓人以為推進之後還是同一個人的回合。推進回合改由上方
+ * 回合數的「上一回合／下一回合」負責，那裡才看得到輪到誰。
+ *
  * 用詞刻意避開「開始遊戲」「對戰」這類說法 —— 這是研究工具，
  * 讓使用者一眼就知道自己在用什麼，不該以為能在這裡跟別人打牌。
+ *
+ * ── 一個元件只管一方 ────────────────────────────────────────────
+ * 原本這裡有個「你／對手」切換鈕，一組按鈕輪流服務兩方。
+ * 但盤面已經排成上下兩側，控制項卻還要先切換再按，等於把剛剛分開的
+ * 兩側又合回來 —— 所以改成一方一組，各自放在自己那一側。
  */
 export function GameControls({
   board,
+  side,
   byId,
   lang,
   onChange,
 }: {
   board: BoardState;
+  /** 這一組控制項服務哪一方。 */
+  side: 'you' | 'opponent';
   byId: Map<string, Card>;
   lang: TextLang;
   onChange: (next: BoardState) => void;
 }) {
-  const [side, setSide] = useState<'you' | 'opponent'>('you');
   const [swapping, setSwapping] = useState<string[]>([]);
 
   const player = board[side];
@@ -59,43 +66,18 @@ export function GameControls({
     <section
       className="mb-4 rounded-lg border border-accent/30 bg-surface-1 p-3"
       data-testid="game-controls"
+      data-controls-side={side}
     >
       <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h2 className="text-sm font-semibold text-ink">模擬規則流程</h2>
+        <h2 className="text-sm font-semibold text-ink">
+          模擬規則流程：{label}
+          {board.activePlayer === side && '（回合方）'}
+        </h2>
         <span
           className="rounded bg-surface-2 px-1 font-mono text-[0.65rem] text-ink-faint"
           title="每個動作都依官方核心規則的固定流程"
         >
           115–117、315
-        </span>
-
-        <div className="flex rounded-lg border border-line p-0.5">
-          {(
-            [
-              { id: 'you', text: '你' },
-              { id: 'opponent', text: '對手' },
-            ] as const
-          ).map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              aria-pressed={side === option.id}
-              onClick={() => {
-                setSide(option.id);
-                setSwapping([]);
-              }}
-              className={`rounded px-3 py-1 text-xs transition-colors ${
-                side === option.id ? 'bg-accent/15 text-accent-soft' : 'text-ink-dim hover:text-ink'
-              }`}
-            >
-              {option.text}
-            </button>
-          ))}
-        </div>
-
-        <span className="text-xs text-ink-faint">
-          目前編輯：{label}
-          {board.activePlayer === side && '（回合方）'}
         </span>
       </div>
 
@@ -104,18 +86,6 @@ export function GameControls({
       ) : (
         <>
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={btn}
-              title="清空場面，把選定英雄放進英雄區域，抽四張開局手牌（116、133.4）。這是重設盤面，不是開始一場對戰。"
-              onClick={() => {
-                apply(startGame(player));
-                setSwapping([]);
-              }}
-            >
-              重設成開局狀態
-            </button>
-
             <button
               type="button"
               className={btn}
@@ -134,17 +104,6 @@ export function GameControls({
               召出 {TURN_RULES.runesPerTurn} 張符文
             </button>
 
-            <button
-              type="button"
-              className={btn}
-              title="喚醒（415.3.a）＋召出符文（315.3.b、485.7）＋抽一張（315.4.b）"
-              onClick={() => {
-                onChange(beginTurn(board, side));
-                setSwapping([]);
-              }}
-            >
-              推進 {label} 一個回合
-            </button>
           </div>
 
           {/* 手牌調度 */}

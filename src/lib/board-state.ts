@@ -64,6 +64,39 @@ export const ZONE_RULES: Record<BoardZone, { rule: string; hidden: boolean }> = 
  * 1v1 場上有兩處戰場（485.4），各由一名玩家提供（485.5）——
  * bf0 是你帶來的那處，bf1 是對手帶來的那處。雙方的單位都可能在任一處。
  */
+/**
+ * 區域在介面上的名稱。
+ *
+ * 收在這裡是因為盤面、檢視面板、搬移按鈕都要用到同一組字 ——
+ * 分散在各元件裡就會出現「同一個區域在兩個地方叫不同名字」。
+ */
+export const ZONE_LABELS: Record<BoardZone, string> = {
+  champion: '英雄區域',
+  hand: '手牌',
+  base: '基地',
+  bf0: '戰場一',
+  bf1: '戰場二',
+  discard: '廢牌堆',
+  exile: '放逐區',
+};
+
+/**
+ * 每個區域的卡可以搬去哪裡。順序照實際使用頻率排。
+ *
+ * 198.1：位置包括基地與各個戰場，所以單位可以在這三處之間移動。
+ * 108.3.d：選定英雄可以從英雄區域照正常規則打出。
+ */
+export const MOVE_TARGETS: Record<BoardZone, BoardZone[]> = {
+  champion: ['base', 'bf0', 'bf1', 'discard'],
+  // 有些效果會直接把手牌放逐，所以手牌也要能直接送到放逐區
+  hand: ['base', 'bf0', 'bf1', 'discard', 'exile'],
+  base: ['bf0', 'bf1', 'discard', 'hand'],
+  bf0: ['base', 'bf1', 'discard'],
+  bf1: ['base', 'bf0', 'discard'],
+  discard: ['hand', 'base', 'exile'],
+  exile: ['hand', 'base', 'discard'],
+};
+
 export const LOCATIONS = ['base', 'bf0', 'bf1'] as const;
 export type LocationId = (typeof LOCATIONS)[number];
 
@@ -279,7 +312,7 @@ export function remainingDeck(player: PlayerBoard): RemainingDeck {
  * 遊戲中確實可能出現牌組以外的卡（指示物、被效果加入的卡），
  * 所以這不是錯誤，只是提醒使用者確認 —— 因為它會讓剩餘牌堆的計算失準。
  */
-export function foreignCards(player: PlayerBoard): string[] {
+export function foreignCards(player: PlayerBoard, byId?: Map<string, Card>): string[] {
   /*
    * 備牌**不算**在內：對局進行中備牌不在場上，
    * 它只在局間 1 換 1 地換進主牌組（賽事規則 403.4、403.5）。
@@ -295,13 +328,45 @@ export function foreignCards(player: PlayerBoard): string[] {
   const seen = new Set<string>();
   for (const zone of BOARD_ZONES) {
     for (const [cardId, qty] of Object.entries(player[zone])) {
-      if (qty > 0 && !inDeck.has(cardId)) seen.add(cardId);
+      if (qty <= 0 || inDeck.has(cardId)) continue;
+      /*
+       * 衍生物不算「不在牌組裡」。
+       *
+       * 它本來就不會被放進任何牌組 —— 是靠卡牌效果生成的（例如
+       * OGN-117 維克特：在對手回合打出卡時，額外打出一名「隨從」）。
+       * 場上出現衍生物完全正常，跳警告只會變成雜訊。
+       */
+      if (byId?.get(cardId)?.subtype === 'token') continue;
+      seen.add(cardId);
     }
   }
   return [...seen];
 }
 
 /** 基地上有幾張符文 —— 這是目前實際可用的資源上限。 */
+/**
+ * 把基地那一疊拆成「符文」與「其他常駐物」。
+ *
+ * 資料上它們同住基地（107.1.c「受玩家控制的常駐牌和符文位於該玩家的基地」），
+ * 但操作方式完全不同：符文是資源，每一張各自有活躍／休眠（414、415），
+ * 使用者要能一張一張指定。所以**顯示時**拆成兩塊，資料本身不動。
+ */
+export function splitBaseByRunes(
+  player: PlayerBoard,
+  byId: Map<string, Card>,
+): { runes: Pile; others: Pile } {
+  const runes: Pile = {};
+  const others: Pile = {};
+  for (const [cardId, qty] of Object.entries(player.base)) {
+    if (qty <= 0) continue;
+    const card = byId.get(cardId);
+    // 認不出來的卡當成一般常駐物 —— 不要因為資料缺漏就讓它從畫面消失
+    if (card?.types.includes('rune')) runes[cardId] = qty;
+    else others[cardId] = qty;
+  }
+  return { runes, others };
+}
+
 export function runesOnBase(player: PlayerBoard, byId: Map<string, Card>): number {
   let count = 0;
   for (const [cardId, qty] of Object.entries(player.base)) {

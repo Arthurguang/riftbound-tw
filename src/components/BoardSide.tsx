@@ -3,24 +3,19 @@
 import { useMemo, useState } from 'react';
 import { cardName } from '@/lib/cards';
 import { DeckImport } from './DeckImport';
-import { BoardZonePanel } from './BoardZonePanel';
 import { RuneTracker } from './RuneTracker';
 import { SideboardSwap } from './SideboardSwap';
 import { ChampionZone } from './ChampionZone';
 import {
-  BOARD_ZONES,
   canPlayByTiming,
   foreignCards,
-  handSize,
   hasDeck,
-  moveCard,
   remainingDeck,
   activeRunesOnBase,
   entersDormant,
   isInPlayZone,
   setDormant,
   setInPile,
-  wakeAll,
   timingKeywords,
   turnStateId,
   TURN_STATE_INFO,
@@ -65,6 +60,7 @@ export function BoardSide({
   isOpponent,
   turn,
   onThePlay,
+  onRestart,
   phase,
   isTurnPlayer,
   onChange,
@@ -78,8 +74,16 @@ export function BoardSide({
   art: ArtLang;
   isOpponent: boolean;
   /** 目前回合，用來提示照規則應該召出幾張符文。 */
+  /**
+   * 這一方**自己**打過幾個回合。
+   *
+   * 不是全域回合數 —— 回合雙方交替，抽牌與召符文都是「每人在自己的回合
+   * 各做一次」，所以符文追蹤要用這一方自己的回合數才算得對。
+   */
   turn: number;
   onThePlay: boolean;
+  /** 局間換牌之後用新牌組重新開局（雙方一起）。 */
+  onRestart: () => void;
   /** 回合狀態（308、309），決定手牌哪幾張現在打得出來。 */
   phase: { duel: boolean; chain: boolean };
   /** 現在是不是這一方的回合（310.1.a）。 */
@@ -89,27 +93,60 @@ export function BoardSide({
   const [adding, setAdding] = useState<BoardZone>('hand');
   const [query, setQuery] = useState('');
 
+  /**
+   * 這一方的控制項再拆成幾塊，一次只顯示一塊。
+   *
+   * 使用者要求「加卡、機率、可打性各自獨立成一個區塊，按按鈕才跳出細節」——
+   * 攤開的話光是一方就有六七個區塊，側欄又會變回要一直捲。
+   *
+   * 全部保持掛載、只切換顯示：切走再切回來時，搜尋字串與「加到哪一區」
+   * 這些選擇不會被重置。
+   */
+  const [section, setSection] = useState<
+    'deck' | 'sideboard' | 'add' | 'runes' | 'analysis'
+  >('deck');
+
+  /**
+   * 剛匯入完牌組時提示可以局間換牌。
+   *
+   * 賽制上換牌就發生在匯入牌表之後、下一局開始之前（601.1.c），
+   * 所以那個時機主動問一次，使用者不必自己去找按鈕在哪。
+   */
+  const [justImported, setJustImported] = useState(false);
+
   const remaining = useMemo(() => remainingDeck(player), [player]);
-  const foreign = useMemo(() => foreignCards(player), [player]);
+  const foreign = useMemo(() => foreignCards(player, byId), [player, byId]);
   /**
    * 只有**活躍**的符文算資源：消耗符文取得法力（164.2.a）要它是活躍的，
    * 休眠代表「耗盡了能量」（414.1）。
    */
   const runes = activeRunesOnBase(player, byId);
 
-  /** 可以加進盤面的候選卡：以這副牌組為主，找不到時退回全部卡片。 */
+  /** 這個卡池裡的所有衍生物。 */
+  const tokens = useMemo(() => cards.filter((c) => c.subtype === 'token'), [cards]);
+
+  /**
+   * 可以加進盤面的候選卡：以這副牌組為主，找不到時退回全部卡片。
+   *
+   * **衍生物一律列入**，即使牌組裡沒有 —— 它本來就不會被放進牌組，
+   * 而是靠卡牌效果生成的（例如 OGN-117 維克特會打出「隨從」）。
+   * 復盤時場上出現衍生物很正常，找不到就擺不出那個局面。
+   */
   const candidates = useMemo(() => {
     const q = query.trim().toLowerCase();
     const pool = hasDeck(player)
       ? [
-          ...Object.keys(player.deck.main),
-          ...Object.keys(player.deck.runes),
-          ...Object.keys(player.deck.battlefields),
-          // 備牌不列入：對局中它不在場上（403.4、403.5）
-          ...(player.deck.legendId ? [player.deck.legendId] : []),
+          ...[
+            ...Object.keys(player.deck.main),
+            ...Object.keys(player.deck.runes),
+            ...Object.keys(player.deck.battlefields),
+            // 備牌不列入：對局中它不在場上（403.4、403.5）
+            ...(player.deck.legendId ? [player.deck.legendId] : []),
+          ]
+            .map((id) => byId.get(id))
+            .filter((c): c is Card => Boolean(c)),
+          ...tokens,
         ]
-          .map((id) => byId.get(id))
-          .filter((c): c is Card => Boolean(c))
       : cards;
 
     const filtered =
@@ -124,7 +161,7 @@ export function BoardSide({
           );
 
     return filtered.sort((a, b) => a.number - b.number).slice(0, 40);
-  }, [player, byId, cards, query]);
+  }, [player, byId, cards, tokens, query]);
 
   const addCard = (zone: BoardZone, cardId: string) => {
     const card = byId.get(cardId);
@@ -179,29 +216,44 @@ export function BoardSide({
   return (
     <div
       className="min-w-0 rounded-lg border border-line p-3"
-      data-side={isOpponent ? 'opponent' : 'you'}
+      data-edit-side={isOpponent ? 'opponent' : 'you'}
     >
-      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-base font-semibold text-ink">{title}</h3>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-ink-dim" data-testid="side-summary">
-            手牌 {handSize(player)}　牌堆 {remaining.mainSize}　活躍符文 {runes}
-          </span>
-          <button
-            type="button"
-            onClick={() => onChange(wakeAll(player))}
-            title="喚醒階段：把控制的所有非法術遊戲物體設為活躍（415.3.a）"
-            className="rounded border border-line px-2 py-0.5 text-[0.7rem] text-ink-dim hover:border-accent hover:text-accent-soft"
-          >
-            全部喚醒
-          </button>
-        </div>
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-sm font-semibold text-ink">編輯：{title}</h3>
       </div>
 
+      <div className="mb-2 flex flex-wrap gap-1">
+        {(
+          [
+            { id: 'deck', label: '牌組' },
+            { id: 'sideboard', label: '備牌' },
+            { id: 'add', label: '加卡' },
+            { id: 'runes', label: '符文' },
+            { id: 'analysis', label: '分析' },
+          ] as const
+        ).map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            aria-pressed={section === s.id}
+            onClick={() => setSection(s.id)}
+            data-side-tab={s.id}
+            className={`rounded border px-2 py-1 text-[0.7rem] transition-colors ${
+              section === s.id
+                ? 'border-accent bg-accent/10 text-accent-soft'
+                : 'border-line text-ink-dim hover:text-ink'
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      <div hidden={section !== 'deck'} data-side-section="deck">
       <DeckImport
         cards={cards}
         byId={byId}
-        onImport={(deck) =>
+        onImport={(deck) => {
           onChange({
             ...player,
             deck,
@@ -211,9 +263,41 @@ export function BoardSide({
              * 不自動擺出來的話牌堆張數會多算一張。
              */
             champion: deck.championId ? setInPile({}, deck.championId, 1) : {},
-          })
-        }
+          });
+          setJustImported(true);
+        }}
       />
+
+      {justImported && (
+        <div
+          className="mt-2 rounded-lg border border-accent/40 bg-accent/5 p-2 text-xs text-ink-dim"
+          data-testid="sideboard-prompt"
+        >
+          牌組匯入好了。
+          <strong className="text-ink">要局間換牌嗎？</strong>
+          <span className="text-ink-faint">（601.1.c —— 換完會用新的牌組重新開局）</span>
+          <div className="mt-1.5 flex gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                setSection('sideboard');
+                setJustImported(false);
+              }}
+              className="rounded border border-accent px-2 py-1 text-[0.7rem] text-accent-soft hover:bg-accent/10"
+            >
+              去換牌
+            </button>
+            <button
+              type="button"
+              onClick={() => setJustImported(false)}
+              className="rounded border border-line px-2 py-1 text-[0.7rem] text-ink-dim hover:text-ink"
+            >
+              不換，直接開始
+            </button>
+          </div>
+        </div>
+      )}
+      </div>
 
       {!hasDeck(player) ? (
         <p className="rounded-lg border border-dashed border-line px-3 py-4 text-center text-xs text-ink-faint">
@@ -221,6 +305,7 @@ export function BoardSide({
         </p>
       ) : (
         <>
+          <div hidden={section !== 'deck'} data-side-section="deck-more">
           <ChampionZone
             player={player}
             byId={byId}
@@ -229,6 +314,9 @@ export function BoardSide({
             onChange={onChange}
           />
 
+          </div>
+
+          <div hidden={section !== 'sideboard'} data-side-section="sideboard">
           <SideboardSwap
             deck={player.deck}
             byId={byId}
@@ -236,14 +324,34 @@ export function BoardSide({
             onChange={(deck) => onChange({ ...player, deck })}
           />
 
+          {/*
+           * 局間換牌換完，這一局就要用新的牌組重來（601.1.c）——
+           * 不重開的話場上還留著舊牌組抽出來的牌，那個盤面是不存在的。
+           */}
+          <button
+            type="button"
+            onClick={onRestart}
+            className="mt-2 w-full rounded border border-accent px-2 py-1.5 text-xs text-accent-soft hover:bg-accent/10"
+            data-testid="restart-after-sideboard"
+          >
+            換好了，用新牌組重新開局（雙方）
+          </button>
+
+          </div>
+
+          <div hidden={section !== 'runes'} data-side-section="runes">
           <RuneTracker
             player={player}
             byId={byId}
             lang={lang}
+            art={art}
             turn={turn}
             onThePlay={onThePlay}
             onChange={onChange}
           />
+          </div>
+
+          <div hidden={section !== 'add'} data-side-section="add">
 
           {/* 加卡到盤面 */}
           <div className="mb-3 space-y-2 rounded-lg border border-line bg-surface-1 p-2.5">
@@ -279,70 +387,32 @@ export function BoardSide({
             />
 
             <ul className="flex max-h-40 flex-wrap gap-1 overflow-y-auto">
-              {candidates.map((card) => (
-                <li key={card.id}>
-                  <button
-                    type="button"
-                    onClick={() => addCard(adding, card.id)}
-                    className="rounded border border-line px-1.5 py-0.5 text-[0.7rem] text-ink-dim hover:border-accent hover:text-accent-soft"
-                  >
-                    {cardName(card, lang)}
-                  </button>
-                </li>
-              ))}
+              {candidates.map((card) => {
+                const isToken = card.subtype === 'token';
+                return (
+                  <li key={card.id}>
+                    <button
+                      type="button"
+                      onClick={() => addCard(adding, card.id)}
+                      data-token={isToken ? 'true' : undefined}
+                      title={
+                        isToken ? '衍生物：不在任何牌組裡，由卡牌效果生成' : undefined
+                      }
+                      className={`rounded border px-1.5 py-0.5 text-[0.7rem] transition-colors ${
+                        isToken
+                          ? 'border-violet-500/50 text-violet-300 hover:border-violet-400'
+                          : 'border-line text-ink-dim hover:border-accent hover:text-accent-soft'
+                      }`}
+                    >
+                      {cardName(card, lang)}
+                      {isToken && <span className="ml-0.5 text-[0.6rem] opacity-70">衍</span>}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
-          {/* 四個區域 */}
-          <div className="space-y-2">
-            {BOARD_ZONES.map((zone) => (
-              <BoardZonePanel
-                key={zone}
-                zone={zone}
-                pile={player[zone]}
-                byId={byId}
-                lang={lang}
-                art={art}
-                dormant={isInPlayZone(zone) ? player.dormant[zone] : undefined}
-                onDormantChange={
-                  isInPlayZone(zone)
-                    ? (cardId, count) => onChange(setDormant(player, zone, cardId, count))
-                    : undefined
-                }
-                onMove={(cardId, to) => onChange(moveCard(player, zone, to, cardId))}
-                onRemove={(cardId) =>
-                  onChange({
-                    ...player,
-                    [zone]: setInPile(player[zone], cardId, (player[zone][cardId] ?? 0) - 1),
-                  })
-                }
-                extra={
-                  zone === 'hand' && isOpponent ? (
-                    <label className="ml-auto flex items-center gap-1 text-[0.7rem] text-ink-dim">
-                      不知道內容的
-                      <input
-                        type="number"
-                        min={0}
-                        max={99}
-                        value={player.unknownHand}
-                        onChange={(e) => {
-                          const next = Number(e.target.value);
-                          if (!Number.isFinite(next)) return;
-                          onChange({
-                            ...player,
-                            unknownHand: Math.max(0, Math.min(99, Math.round(next))),
-                          });
-                        }}
-                        className="w-12 rounded border border-line bg-surface px-1 py-0.5 text-xs text-ink focus:border-accent focus:outline-none"
-                        aria-label="對手手牌中你不知道內容的張數"
-                      />
-                      張
-                    </label>
-                  ) : undefined
-                }
-              />
-            ))}
-          </div>
 
           {/* 擺錯的提示 */}
           {remaining.overflow.length > 0 && (
@@ -369,6 +439,9 @@ export function BoardSide({
             </p>
           )}
 
+          </div>
+
+          <div hidden={section !== 'analysis'} data-side-section="analysis">
           {/* 手牌現在打不打得出來 */}
           {playable.length > 0 && (
             <section
@@ -429,6 +502,7 @@ export function BoardSide({
 
           {/* 從當下盤面算機率 */}
           <NextDrawOdds remaining={remaining} byId={byId} lang={lang} />
+          </div>
         </>
       )}
     </div>

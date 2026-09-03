@@ -98,8 +98,16 @@ export function summonRunes(
  * 133.4　　選定英雄開局就在英雄區域，不在牌堆裡
  *
  * 會先清掉場上所有東西 —— 這是「重新開一局」，不是「繼續」。
+ *
+ * runeTarget 是「照規則這一方現在該有幾張符文」，由呼叫端依回合數算好
+ * （先手第 1 回合 2 張、後手第 1 個自己的回合 3 張 —— 315.3.b、485.7）。
+ * 重設之後符文也要回到該有的狀態，否則場面清空了符文卻還留著舊的張數。
  */
-export function startGame(player: PlayerBoard, random: () => number = Math.random): PlayerBoard {
+export function startGame(
+  player: PlayerBoard,
+  runeTarget = 0,
+  random: () => number = Math.random,
+): PlayerBoard {
   const fresh: PlayerBoard = {
     ...player,
     hand: {},
@@ -114,7 +122,9 @@ export function startGame(player: PlayerBoard, random: () => number = Math.rando
     champion: player.deck.championId ? setInPile({}, player.deck.championId, 1) : {},
   };
 
-  return drawCards(fresh, TURN_RULES.openingHand, random);
+  const withHand = drawCards(fresh, TURN_RULES.openingHand, random);
+  // 場面已經清空，所以這裡的「加」等同於直接設成該有的張數
+  return adjustRunesOnBase(withHand, runeTarget, TURN_RULES.runeDeckSize);
 }
 
 /**
@@ -210,6 +220,71 @@ export function beginTurn(
     // 換人之後回到普通開環（結算鏈與對決都結束了）
     phase: { duel: false, chain: false },
   };
+}
+
+/**
+ * 依回合變化增減基地上的符文。
+ *
+ * ── 為什麼是「增量」而不是「設成應有的張數」 ────────────────────
+ * 照規則算，第 N 回合應該召出過 min(12, N×2 + 後手加成) 張。
+ * 直覺做法是每次改回合就把基地設成那個數字 —— **但那會毀掉復盤**。
+ *
+ * 實際對局中場上的符文幾乎一定比公式少：回收符文取得符能之後，
+ * 那張符文**永久離場**（164.2.b）。所以使用者在第 5 回合手動設成 7 張
+ * 是完全正確的盤面。若他把回合推到 6，我們卻把 7 覆蓋成 12，
+ * 等於把他辛苦重建的局面洗掉。
+ *
+ * 所以這裡只做**相對變化**：一回合加兩張（315.3.b），推回去就減兩張。
+ * 從 7 推到第 6 回合會得到 9，而不是 12 —— 他的調整被保留下來。
+ *
+ * 後手第一回合多的那一張（485.7）已經含在起始張數裡，不會重複加。
+ *
+ * ── 分配方式是決定性的 ──────────────────────────────────────────
+ * 不用亂數：使用者把回合推來推去時，同一個回合數要得到同一個結果。
+ * 加的時候補進「牌組裡還沒上場最多」的那一種，減的時候從
+ * 「場上最多」的那一種拿掉 —— 已經擺好的比例會被保留。
+ *
+ * @param cap 基地上的符文上限，由呼叫端傳入（符文牌組共 12 張，103.3.a）
+ */
+export function adjustRunesOnBase(
+  player: PlayerBoard,
+  delta: number,
+  cap: number,
+): PlayerBoard {
+  const runeIds = Object.keys(player.deck.runes);
+  if (runeIds.length === 0 || delta === 0) return player;
+
+  const onBase = (id: string) => player.base[id] ?? 0;
+  const current = runeIds.reduce((sum, id) => sum + onBase(id), 0);
+  const target = Math.max(0, Math.min(cap, current + delta));
+  if (target === current) return player;
+
+  let base = player.base;
+  let left = target - current;
+
+  while (left > 0) {
+    // 補進「牌組裡剩最多沒上場」的那一種
+    const pick = runeIds
+      .map((id) => ({ id, spare: (player.deck.runes[id] ?? 0) - (base[id] ?? 0) }))
+      .filter((r) => r.spare > 0)
+      .sort((a, b) => b.spare - a.spare || a.id.localeCompare(b.id))[0];
+    if (!pick) break; // 符文牌組已經全部上場
+    base = setInPile(base, pick.id, (base[pick.id] ?? 0) + 1);
+    left -= 1;
+  }
+
+  while (left < 0) {
+    // 從「場上最多」的那一種拿掉
+    const pick = runeIds
+      .map((id) => ({ id, qty: base[id] ?? 0 }))
+      .filter((r) => r.qty > 0)
+      .sort((a, b) => b.qty - a.qty || a.id.localeCompare(b.id))[0];
+    if (!pick) break;
+    base = setInPile(base, pick.id, pick.qty - 1);
+    left += 1;
+  }
+
+  return { ...player, base };
 }
 
 /** 把手上或場上的某張卡送進廢牌堆。方便打完法術之後收拾。 */
