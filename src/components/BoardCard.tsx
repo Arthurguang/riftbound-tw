@@ -58,7 +58,7 @@ export function BoardCard({
       data-dormant={dormant > 0 ? dormant : undefined}
       className={`relative shrink-0 rounded transition-transform hover:z-20 hover:scale-110 focus-visible:z-20 focus-visible:scale-110 focus-visible:outline-none ${
         selected ? 'z-20 ring-2 ring-accent' : ''
-      } ${landscape ? 'h-[56px] w-[80px]' : 'h-[80px] w-[57px]'}`}
+      } ${landscape ? 'h-[48px] w-[68px]' : 'h-[68px] w-[48px]'}`}
     >
       <img
         src={cardImageUrl(card, 160, art)}
@@ -104,7 +104,7 @@ export function CardBackPile({
   return (
     <div className="flex flex-col items-center gap-1" title={`${label} ${count} 張`}>
       <div
-        className={`relative h-[60px] w-[43px] rounded border ${
+        className={`relative h-[52px] w-[38px] rounded border ${
           count > 0
             ? 'border-accent/40 bg-gradient-to-br from-surface-2 to-surface-3'
             : 'border-dashed border-line bg-transparent'

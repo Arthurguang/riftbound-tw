@@ -961,23 +961,48 @@ test.describe('模擬規則流程', () => {
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 0');
   });
 
-  test('每一方的控制項都在自己那一側', async ({ page }) => {
+  /*
+   * 控制項現在全部在右側欄，桌子固定不動（使用者反映「要一直捲滾輪太麻煩」）。
+   * 分組的意圖沒變，只是從「桌子上下」改成「側欄裡上下」——
+   * 這條測試守的是**每一方的控制項各自成組、對手在前**，不是它們的絕對位置。
+   */
+  test('每一方的控制項各自成組，且都在右側欄裡', async ({ page }) => {
     await gotoReplay(page);
 
+    const rail = page.getByTestId('board-rail');
+    await expect(rail.locator('[data-block-side="opponent"]')).toHaveCount(1);
+    await expect(rail.locator('[data-block-side="you"]')).toHaveCount(1);
+
+    // 對手的那組排在你的前面，跟桌上的座位一致
     const oppBlock = await page.locator('[data-block-side="opponent"]').boundingBox();
-    const table = await page.getByTestId('board-table').boundingBox();
     const youBlock = await page.locator('[data-block-side="you"]').boundingBox();
+    expect(oppBlock!.y).toBeLessThan(youBlock!.y);
 
-    // 對手的控制項在牌桌上方，你的在下方
-    expect(oppBlock!.y).toBeLessThan(table!.y);
-    expect(table!.y).toBeLessThan(youBlock!.y);
-
-    // 戰場選擇與匯入也各自跟著自己那一側
+    // 戰場選擇與匯入各自跟著自己那一組
     await expect(battlefieldOf(page, 'opponent')).toHaveCount(1);
     await expect(battlefieldOf(page, 'you')).toHaveCount(1);
-    await expect(
-      page.locator('[data-block-side="opponent"]').getByRole('button', { name: /^匯入牌組/ }),
-    ).toHaveCount(1);
+    for (const side of ['opponent', 'you'] as const) {
+      await expect(
+        page.locator(`[data-block-side="${side}"]`).getByRole('button', { name: /^匯入牌組/ }),
+      ).toHaveCount(1);
+    }
+  });
+
+  /*
+   * 使用者的原話：「要一直用滑鼠滾輪滾動來檢視，這樣太麻煩」。
+   * 桌子必須在一個畫面裡看完 —— 這條測試就是釘住這件事。
+   */
+  test('整張桌子在一個畫面裡看得完，不用捲', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 800 });
+    await gotoReplay(page);
+
+    const table = await page.getByTestId('board-table').boundingBox();
+    expect(table!.y + table!.height).toBeLessThanOrEqual(800);
+
+    // 三段都在：對手、戰場、你
+    await expect(page.getByTestId('strip-opponent')).toBeVisible();
+    await expect(page.getByTestId('battlefield-row')).toBeVisible();
+    await expect(page.getByTestId('strip-you')).toBeVisible();
   });
 
   test('打完的盤面照樣能分享', async ({ page, context }) => {

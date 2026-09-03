@@ -18,45 +18,102 @@ import type { ArtLang, TextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
 
 /**
- * 盤面的空間版面 —— 像一張真的牌桌。
+ * 盤面 —— 一張固定的牌桌。
  *
- * ── 為什麼要這樣排 ──────────────────────────────────────────────
- * 原本是左右兩欄，各自一份「手牌／基地／戰一／戰二／廢牌堆／放逐」清單。
- * 資料是對的，但看起來是兩份表格，不是一張桌子 —— 復盤時最想看的
- * 「這個戰場上雙方各有什麼」被拆到兩欄裡，要左右對照才拼得回來。
+ * ── 為什麼要「固定」 ────────────────────────────────────────────
+ * 先前的版本是把各個區域一塊塊往下疊。資訊都在，但要一直捲滾輪才看得完，
+ * 使用者的原話是「太麻煩」。實體對局時整張桌子是**同時**在眼前的，
+ * 復盤要的就是這個：一眼看完雙方場面，不必來回捲。
  *
- * 改成實體對局的座位方式：
+ * 所以改成填滿視窗高度的三段式格線：
  *
- *     對手（上）　摘要在最上緣
- *     ─────────────────────────────
- *     戰場一        │      戰場二        ← 中間，雙方共用
- *       對手的      │        對手的
- *       你的        │        你的
- *     ─────────────────────────────
- *     你（下）　摘要在最下緣
+ *   ┌────────────────────────────────────────────────┐
+ *   │ 對手：手牌 / 場上         英雄 牌堆 廢 逐 摘要   │  ← 上（順序鏡像）
+ *   ├────────────────────────────────────────────────┤
+ *   │  戰場一（對手的／你的） │ 戰場二（同左）         │  ← 中，雙方共用
+ *   ├────────────────────────────────────────────────┤
+ *   │ 你：場上 / 手牌           英雄 牌堆 廢 逐 摘要   │  ← 下
+ *   └────────────────────────────────────────────────┘
  *
- * 兩方的區域用**相同的左右順序**，這樣同一種區域在畫面上會上下對齊，
- * 「雙方廢牌堆各有什麼」一眼就能對照。只有摘要列的位置是鏡像的 ——
- * 各自貼著自己那側的桌邊，跟實體對局一樣。
+ * 每一段內部塞不下時自己捲，但**頁面本身不捲** —— 桌子永遠在原地。
+ * 編輯用的控制項全部移到右側欄，不佔桌面。
  *
- * 戰場擺中間是關鍵：規則 198.1 說「位置」包含基地與各個戰場，
- * 而戰鬥就是發生在戰場上。把同一個戰場的雙方單位上下相鄰擺，
- * 「這裡打得贏嗎」一眼就看得出來，不必左右對照。
- *
- * ── 這裡只顯示與搬移，不做編輯 ─────────────────────────────────
- * 加卡、匯入牌組、備牌調度、符文追蹤、手牌可打性分析都留在下面的
- * 編輯面板（BoardSide）。**看盤面**與**改盤面**分開，是這次調整的重點。
+ * 對手的手牌貼著畫面上緣、場上靠近中間的戰場；你這邊相反。
+ * 這樣雙方的「場上」都緊鄰戰場，跟實體對局坐下來的樣子一致。
+ * 側欄（英雄／牌堆／廢牌堆／放逐）兩方順序相同，上下對齊方便對照。
  */
 
-/**
- * 一方的非戰場區域，由左至右固定這個順序。
- *
- * 兩方用同一個順序，對照才方便 —— 想比「雙方廢牌堆各有什麼」時，
- * 兩邊的廢牌堆在畫面上是上下對齊的。
- */
-const STRIP_ZONES = ['champion', 'base', 'hand', 'discard', 'exile'] as const;
+function ZoneCell({
+  zone,
+  player,
+  isOpponent,
+  byId,
+  lang,
+  art,
+  onChange,
+  label,
+  selection,
+  onSelect,
+  className,
+}: {
+  zone: BoardZone;
+  player: PlayerBoard;
+  isOpponent: boolean;
+  byId: Map<string, Card>;
+  lang: TextLang;
+  art: ArtLang;
+  onChange: (next: PlayerBoard) => void;
+  label?: string;
+  selection: Selection | null;
+  onSelect: (sel: Selection) => void;
+  className?: string;
+}) {
+  const side = isOpponent ? 'opponent' : 'you';
+  const selectedHere =
+    selection && selection.side === side && selection.zone === zone ? selection.cardId : undefined;
 
-function PlayerStrip({
+  return (
+    <BoardZonePanel
+      zone={zone}
+      owner={side}
+      label={label}
+      pile={player[zone]}
+      byId={byId}
+      lang={lang}
+      art={art}
+      className={className}
+      dormant={isInPlayZone(zone) ? player.dormant[zone] : undefined}
+      selectedCardId={selectedHere}
+      onSelect={(cardId) => onSelect({ side, zone, cardId })}
+      extra={
+        zone === 'hand' && isOpponent ? (
+          <label className="ml-auto flex items-center gap-1 text-[0.65rem] text-ink-dim">
+            未知
+            <input
+              type="number"
+              min={0}
+              max={99}
+              value={player.unknownHand}
+              onChange={(e) => {
+                const next = Number(e.target.value);
+                if (!Number.isFinite(next)) return;
+                onChange({
+                  ...player,
+                  unknownHand: Math.max(0, Math.min(99, Math.round(next))),
+                });
+              }}
+              className="w-10 rounded border border-line bg-surface px-1 py-0.5 text-xs text-ink focus:border-accent focus:outline-none"
+              aria-label="對手手牌中你不知道內容的張數"
+            />
+          </label>
+        ) : undefined
+      }
+    />
+  );
+}
+
+/** 一方的一整條 —— 場上與手牌在左，英雄與各種牌堆在右。 */
+function PlayerBand({
   player,
   label,
   isOpponent,
@@ -80,137 +137,75 @@ function PlayerStrip({
   const remaining = remainingDeck(player);
   const runes = activeRunesOnBase(player, byId);
 
-  const summary = (
-    <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-      <h3 className="text-sm font-semibold text-ink">{label}</h3>
-      <span className="text-xs text-ink-dim" data-testid="side-summary">
-        手牌 {handSize(player)}　牌堆 {remaining.mainSize}　活躍符文 {runes}
-      </span>
-      <span className="flex items-end gap-2">
-        <CardBackPile count={remaining.mainSize} label="主牌堆" rule="108.4" />
-        <CardBackPile count={remaining.runeSize} label="符文牌堆" rule="108.5" />
-        {isOpponent && player.unknownHand > 0 && (
-          <CardBackPile count={player.unknownHand} label="未知手牌" rule="108.7" />
-        )}
-      </span>
-      <button
-        type="button"
-        onClick={() => onChange(wakeAll(player))}
-        title="喚醒階段：把控制的所有非法術遊戲物體設為活躍（415.3.a）"
-        className="rounded border border-line px-2 py-0.5 text-[0.7rem] text-ink-dim hover:border-accent hover:text-accent-soft"
-      >
-        全部喚醒
-      </button>
-    </div>
-  );
-
-  const panels = (
-    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-      {STRIP_ZONES.map((zone) => (
-        <ZoneCell
-          key={zone}
-          zone={zone}
-          player={player}
-          isOpponent={isOpponent}
-          byId={byId}
-          lang={lang}
-          art={art}
-          onChange={onChange}
-          selection={selection}
-          onSelect={onSelect}
-        />
-      ))}
-    </div>
-  );
-
-  return (
-    <div
-      className="rounded-lg border border-line bg-surface/40 p-3"
-      data-side={isOpponent ? 'opponent' : 'you'}
-      data-testid={isOpponent ? 'strip-opponent' : 'strip-you'}
-    >
-      {/* 對手的摘要放在最上面、你的放在最下面 —— 都在離桌邊近的那側 */}
-      {isOpponent ? (
-        <>
-          {summary}
-          {panels}
-        </>
-      ) : (
-        <>
-          {panels}
-          <div className="mt-2">{summary}</div>
-        </>
-      )}
-    </div>
-  );
-}
-
-/** 單一區域的格子。把重複的搬移／移除／休眠接線收在一處。 */
-function ZoneCell({
-  zone,
-  player,
-  isOpponent,
-  byId,
-  lang,
-  art,
-  onChange,
-  label,
-  selection,
-  onSelect,
-}: {
-  zone: BoardZone;
-  player: PlayerBoard;
-  isOpponent: boolean;
-  byId: Map<string, Card>;
-  lang: TextLang;
-  art: ArtLang;
-  onChange: (next: PlayerBoard) => void;
-  label?: string;
-  selection: Selection | null;
-  onSelect: (sel: Selection) => void;
-}) {
-  const side = isOpponent ? 'opponent' : 'you';
-  const selectedHere =
-    selection && selection.side === side && selection.zone === zone
-      ? selection.cardId
-      : undefined;
-  return (
-    <BoardZonePanel
+  const cell = (zone: BoardZone, cellLabel: string, className: string) => (
+    <ZoneCell
       zone={zone}
-      owner={isOpponent ? 'opponent' : 'you'}
-      label={label}
-      pile={player[zone]}
+      label={cellLabel}
+      className={className}
+      player={player}
+      isOpponent={isOpponent}
       byId={byId}
       lang={lang}
       art={art}
-      dormant={isInPlayZone(zone) ? player.dormant[zone] : undefined}
-      selectedCardId={selectedHere}
-      onSelect={(cardId) => onSelect({ side, zone, cardId })}
-      extra={
-        zone === 'hand' && isOpponent ? (
-          <label className="ml-auto flex items-center gap-1 text-[0.7rem] text-ink-dim">
-            不知道內容的
-            <input
-              type="number"
-              min={0}
-              max={99}
-              value={player.unknownHand}
-              onChange={(e) => {
-                const next = Number(e.target.value);
-                if (!Number.isFinite(next)) return;
-                onChange({
-                  ...player,
-                  unknownHand: Math.max(0, Math.min(99, Math.round(next))),
-                });
-              }}
-              className="w-12 rounded border border-line bg-surface px-1 py-0.5 text-xs text-ink focus:border-accent focus:outline-none"
-              aria-label="對手手牌中你不知道內容的張數"
-            />
-            張
-          </label>
-        ) : undefined
-      }
+      onChange={onChange}
+      selection={selection}
+      onSelect={onSelect}
     />
+  );
+
+  const grow = 'min-h-0 flex-1 overflow-auto';
+  const stack = isOpponent
+    ? [
+        <div key="hand">{cell('hand', '手牌', grow)}</div>,
+        <div key="base">{cell('base', '場上', grow)}</div>,
+      ]
+    : [
+        <div key="base">{cell('base', '場上', grow)}</div>,
+        <div key="hand">{cell('hand', '手牌', grow)}</div>,
+      ];
+
+  return (
+    <div
+      className="flex h-full min-h-0 gap-2"
+      data-side={isOpponent ? 'opponent' : 'you'}
+      data-testid={isOpponent ? 'strip-opponent' : 'strip-you'}
+    >
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        {stack.map((node) => (
+          <div key={node.key} className="min-h-0 flex-1">
+            {node}
+          </div>
+        ))}
+      </div>
+
+      {/* 側欄：英雄區域、牌堆、廢牌堆、放逐、摘要 */}
+      <div className="flex shrink-0 gap-2 overflow-x-auto">
+        {cell('champion', '英雄', 'w-[110px] shrink-0 overflow-auto')}
+
+        <div className="flex shrink-0 items-center gap-2 rounded-lg border border-line bg-surface-1 px-2">
+          <CardBackPile count={remaining.mainSize} label="牌堆" rule="108.4" />
+          <CardBackPile count={remaining.runeSize} label="符文堆" rule="108.5" />
+        </div>
+
+        {cell('discard', '廢牌堆', 'w-[110px] shrink-0 overflow-auto')}
+        {cell('exile', '放逐', 'w-[100px] shrink-0 overflow-auto')}
+
+        <div className="flex w-[120px] shrink-0 flex-col justify-center gap-1 rounded-lg border border-line bg-surface/40 px-2 py-1">
+          <span className="text-xs font-semibold text-ink">{label}</span>
+          <span className="text-[0.65rem] leading-tight text-ink-dim" data-testid="side-summary">
+            手牌 {handSize(player)}　牌堆 {remaining.mainSize}　活躍符文 {runes}
+          </span>
+          <button
+            type="button"
+            onClick={() => onChange(wakeAll(player))}
+            title="喚醒階段：把控制的所有非法術遊戲物體設為活躍（415.3.a）"
+            className="rounded border border-line px-1 py-0.5 text-[0.65rem] text-ink-dim hover:border-accent hover:text-accent-soft"
+          >
+            全部喚醒
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -234,14 +229,14 @@ export function BoardTable({
   const setSide = (side: 'you' | 'opponent') => (next: PlayerBoard) =>
     onChange({ ...board, [side]: next });
 
-  const active = (side: 'you' | 'opponent') =>
+  const ring = (side: 'you' | 'opponent') =>
     board.activePlayer === side ? 'border-accent/50' : 'border-line';
 
   return (
-    <div className="space-y-2" data-testid="board-table">
+    <div className="grid min-h-0 grid-rows-[1fr_1.1fr_1fr] gap-2" data-testid="board-table">
       {/* ── 對手（上） ── */}
-      <div className={`rounded-lg border ${active('opponent')}`}>
-        <PlayerStrip
+      <div className={`min-h-0 rounded-lg border p-2 ${ring('opponent')}`}>
+        <PlayerBand
           player={board.opponent}
           label={`對手${board.activePlayer === 'opponent' ? '（回合方）' : ''}`}
           isOpponent
@@ -255,7 +250,7 @@ export function BoardTable({
       </div>
 
       {/* ── 戰場（中間，雙方共用） ── */}
-      <div className="grid gap-2 lg:grid-cols-2" data-testid="battlefield-row">
+      <div className="grid min-h-0 gap-2 md:grid-cols-2" data-testid="battlefield-row">
         {([0, 1] as const).map((index) => {
           const zone = (index === 0 ? 'bf0' : 'bf1') as BoardZone;
           const cardId = board.battlefields[index];
@@ -265,25 +260,26 @@ export function BoardTable({
             <section
               key={zone}
               data-battlefield={index}
-              className="rounded-lg border border-accent/25 bg-accent/[0.04] p-2.5"
+              className="flex min-h-0 flex-col rounded-lg border border-accent/25 bg-accent/[0.04] p-2"
             >
-              <h3 className="mb-2 flex flex-wrap items-baseline gap-x-2 text-sm font-semibold text-ink">
+              <h3 className="mb-1 flex shrink-0 flex-wrap items-baseline gap-x-2 text-xs font-semibold text-ink">
                 {index === 0 ? '戰場一' : '戰場二'}
-                <span className="text-xs font-normal text-ink-dim">
+                <span className="font-normal text-ink-dim">
                   {card ? cardName(card, lang) : '尚未選擇'}
                 </span>
                 <span
-                  className="rounded bg-surface-2 px-1 font-mono text-[0.65rem] font-normal text-ink-faint"
+                  className="rounded bg-surface-2 px-1 font-mono text-[0.6rem] font-normal text-ink-faint"
                   title="位置包含基地與各個戰場"
                 >
                   198.1
                 </span>
               </h3>
 
-              <div className="space-y-1.5">
+              <div className="grid min-h-0 flex-1 grid-rows-2 gap-1.5">
                 <ZoneCell
                   zone={zone}
                   label="對手的"
+                  className="min-h-0 overflow-auto"
                   player={board.opponent}
                   isOpponent
                   byId={byId}
@@ -296,6 +292,7 @@ export function BoardTable({
                 <ZoneCell
                   zone={zone}
                   label="你的"
+                  className="min-h-0 overflow-auto"
                   player={board.you}
                   isOpponent={false}
                   byId={byId}
@@ -312,8 +309,8 @@ export function BoardTable({
       </div>
 
       {/* ── 你（下） ── */}
-      <div className={`rounded-lg border ${active('you')}`}>
-        <PlayerStrip
+      <div className={`min-h-0 rounded-lg border p-2 ${ring('you')}`}>
+        <PlayerBand
           player={board.you}
           label={`你${board.activePlayer === 'you' ? '（回合方）' : ''}`}
           isOpponent={false}

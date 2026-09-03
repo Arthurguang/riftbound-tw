@@ -38,6 +38,7 @@ export function BoardZonePanel({
   label,
   selectedCardId,
   onSelect,
+  className,
 }: {
   zone: BoardZone;
   pile: Pile;
@@ -65,6 +66,8 @@ export function BoardZonePanel({
   /** 目前選中的卡（只有在同一區時才會標示）。 */
   selectedCardId?: string;
   onSelect: (cardId: string) => void;
+  /** 由版面決定這一格多高多寬 —— 桌子是固定高度的格線。 */
+  className?: string;
 }) {
   const entries = Object.entries(pile)
     .map(([id, qty]) => ({ card: byId.get(id), qty }))
@@ -76,11 +79,11 @@ export function BoardZonePanel({
 
   return (
     <section
-      className="relative rounded-lg border border-line bg-surface-1 p-2"
+      className={`relative flex flex-col rounded-lg border border-line bg-surface-1 p-2 ${className ?? ''}`}
       data-zone={zone}
       data-owner={owner}
     >
-      <div className="mb-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
+      <div className="mb-1.5 flex shrink-0 flex-wrap items-baseline gap-x-1.5 gap-y-1">
         <h4 className="text-xs font-semibold text-ink">{label ?? ZONE_LABELS[zone]}</h4>
         <span className="text-xs text-ink-dim">{total}</span>
         <span
@@ -102,7 +105,7 @@ export function BoardZonePanel({
           空
         </p>
       ) : (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex min-h-0 flex-1 flex-wrap content-start gap-1.5 overflow-auto">
           {entries.map(({ card, qty }) => (
             <BoardCard
               key={card.id}

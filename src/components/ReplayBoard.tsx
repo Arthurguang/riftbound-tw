@@ -196,20 +196,19 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
 
   return (
     <div
-      className="mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-6"
+      className="mx-auto w-full max-w-[1700px] px-3 py-4 sm:px-4"
       data-replay-ready={ready}
       data-board-code={boardCode}
     >
-      <header className="mb-5">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">對局復盤</h1>
+      <header className="mb-3">
+        <h1 className="text-xl font-semibold tracking-tight text-ink">對局復盤</h1>
         <p className="mt-1 text-xs text-ink-faint" data-testid="not-a-game">
           這是<strong className="text-ink-dim">研究工具，不是對戰系統</strong>
           —— 沒有配對、沒有對手連線、沒有勝負判定。
         </p>
-        <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-dim">
-          擺出當下的盤面 —— 手牌、場上、廢牌堆 —— 然後看從這個局面算出來的精確數字。
-          規則寫死的固定流程（開局抽幾張、每回合召幾張符文）可以一鍵模擬，省得一張張擺。
-          盤面編在網址裡，複製網址就能把這個局面分享給別人一起研究。
+        <p className="mt-0.5 text-xs text-ink-dim">
+          擺出盤面看精確數字，網址即可分享。
+          <span className="text-ink-faint">操作都在右側欄，桌子固定不動。</span>
         </p>
       </header>
 
@@ -219,6 +218,31 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
         </p>
       )}
 
+      {/*
+       * ── 桌子 ＋ 右側控制欄 ──
+       *
+       * 桌子固定佔滿一個畫面高度，不會把頁面撐長 —— 使用者反映
+       * 「要一直用滾輪滾動來檢視，太麻煩」。實體對局時整張桌子是同時
+       * 在眼前的，復盤要的就是這個。
+       *
+       * 所以所有編輯用的控制項（匯入牌組、加卡、備牌、符文、模擬流程、
+       * 戰場選擇）全部移到右側欄，欄位自己捲，桌子永遠在原地。
+       * 側欄裡對手的在上、你的在下，跟桌上的座位一致。
+       */}
+      <div className="grid gap-3 lg:h-[calc(100vh-10.5rem)] lg:min-h-[560px] lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="flex min-h-0 flex-col gap-2">
+          <BoardTable
+            board={board}
+            byId={byId}
+            lang={lang}
+            art={art}
+            onChange={setBoard}
+            selection={selection}
+            onSelect={setSelection}
+          />
+        </div>
+
+        <div className="flex min-h-0 flex-col gap-2 overflow-y-auto lg:pr-1" data-testid="board-rail">
       {/*
        * 先後手：開局決定一次就不會再動，所以跟每次都在調的回合數分開放。
        * 混在同一列會讓人以為它也是常常要改的東西。
@@ -332,102 +356,93 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
        * 這樣「對手的控制項」與「你的控制項」各自貼著桌子的外緣，
        * 中間留給雙方共用的戰場 —— 跟實體對局坐下來的樣子一致。
        */}
-      <SideBlock side="opponent">
-        <GameControls board={board} side="opponent" byId={byId} lang={lang} onChange={setBoard} />
-        <BattlefieldPicker
-          battlefields={board.battlefields}
-          side="opponent"
-          options={battlefieldOptions('opponent')}
-          byId={byId}
-          lang={lang}
-          art={art}
-          onChange={(next) => setBoard((prev) => ({ ...prev, battlefields: next }))}
-        />
-        <BoardSide
-          title="對手"
-          player={board.opponent}
-          cards={cards}
-          byId={byId}
-          lang={lang}
-          art={art}
-          isOpponent
-          turn={board.turn}
-          onThePlay={board.onThePlay}
-          phase={board.phase}
-          isTurnPlayer={board.activePlayer === 'opponent'}
-          onChange={setSide('opponent')}
-        />
-      </SideBlock>
 
-      {/* ── 盤面本身：對手在上、你在下、戰場在中間 ── */}
-      <BoardTable
-        board={board}
-        byId={byId}
-        lang={lang}
-        art={art}
-        onChange={setBoard}
-        selection={selection}
-        onSelect={setSelection}
-      />
+          {/* 選中那張卡的大圖與操作 —— 固定位置，不會像浮動提示那樣跑掉 */}
+          <CardInspector
+            selection={selection}
+            card={selected.card}
+            qty={selected.qty}
+            dormant={selected.dormant}
+            lang={lang}
+            art={art}
+            onMove={(to) => actOnSelected((p, sel) => moveCard(p, sel.zone, to, sel.cardId), to)}
+            onRemove={() =>
+              actOnSelected((p, sel) => ({
+                ...p,
+                [sel.zone]: setInPile(p[sel.zone], sel.cardId, (p[sel.zone][sel.cardId] ?? 0) - 1),
+              }))
+            }
+            onDormant={(count) =>
+              actOnSelected((p, sel) =>
+                sel.zone === 'base' || sel.zone === 'bf0' || sel.zone === 'bf1'
+                  ? setDormant(p, sel.zone, sel.cardId, count)
+                  : p,
+              )
+            }
+            onClose={() => setSelection(null)}
+          />
 
-      {/* 選中那張卡的大圖與操作 —— 固定位置，不會像浮動提示那樣跑掉 */}
-      <div className="mt-2">
-        <CardInspector
-          selection={selection}
-          card={selected.card}
-          qty={selected.qty}
-          dormant={selected.dormant}
-          lang={lang}
-          art={art}
-          onMove={(to) =>
-            actOnSelected(
-              (p, sel) => moveCard(p, sel.zone, to, sel.cardId),
-              to,
-            )
-          }
-          onRemove={() =>
-            actOnSelected((p, sel) => ({
-              ...p,
-              [sel.zone]: setInPile(p[sel.zone], sel.cardId, (p[sel.zone][sel.cardId] ?? 0) - 1),
-            }))
-          }
-          onDormant={(count) =>
-            actOnSelected((p, sel) =>
-              sel.zone === 'base' || sel.zone === 'bf0' || sel.zone === 'bf1'
-                ? setDormant(p, sel.zone, sel.cardId, count)
-                : p,
-            )
-          }
-          onClose={() => setSelection(null)}
-        />
+          <SideBlock side="opponent">
+            <GameControls
+              board={board}
+              side="opponent"
+              byId={byId}
+              lang={lang}
+              onChange={setBoard}
+            />
+            <BattlefieldPicker
+              battlefields={board.battlefields}
+              side="opponent"
+              options={battlefieldOptions('opponent')}
+              byId={byId}
+              lang={lang}
+              art={art}
+              onChange={(next) => setBoard((prev) => ({ ...prev, battlefields: next }))}
+            />
+            <BoardSide
+              title="對手"
+              player={board.opponent}
+              cards={cards}
+              byId={byId}
+              lang={lang}
+              art={art}
+              isOpponent
+              turn={board.turn}
+              onThePlay={board.onThePlay}
+              phase={board.phase}
+              isTurnPlayer={board.activePlayer === 'opponent'}
+              onChange={setSide('opponent')}
+            />
+          </SideBlock>
+
+          <SideBlock side="you">
+            <GameControls board={board} side="you" byId={byId} lang={lang} onChange={setBoard} />
+            <BattlefieldPicker
+              battlefields={board.battlefields}
+              side="you"
+              options={battlefieldOptions('you')}
+              byId={byId}
+              lang={lang}
+              art={art}
+              onChange={(next) => setBoard((prev) => ({ ...prev, battlefields: next }))}
+            />
+            <BoardSide
+              title="你"
+              player={board.you}
+              cards={cards}
+              byId={byId}
+              lang={lang}
+              art={art}
+              isOpponent={false}
+              turn={board.turn}
+              onThePlay={board.onThePlay}
+              phase={board.phase}
+              isTurnPlayer={board.activePlayer === 'you'}
+              onChange={setSide('you')}
+            />
+          </SideBlock>
+        </div>
       </div>
-
-      <SideBlock side="you">
-        <BoardSide
-          title="你"
-          player={board.you}
-          cards={cards}
-          byId={byId}
-          lang={lang}
-          art={art}
-          isOpponent={false}
-          turn={board.turn}
-          onThePlay={board.onThePlay}
-          phase={board.phase}
-          isTurnPlayer={board.activePlayer === 'you'}
-          onChange={setSide('you')}
-        />
-        <BattlefieldPicker
-          battlefields={board.battlefields}
-          side="you"
-          options={battlefieldOptions('you')}
-          byId={byId}
-          lang={lang}
-          art={art}
-          onChange={(next) => setBoard((prev) => ({ ...prev, battlefields: next }))}
-        />
-        <GameControls board={board} side="you" byId={byId} lang={lang} onChange={setBoard} />
-      </SideBlock>
 
       {/* 這個工具的界線 */}
       <section className="mt-6 rounded-lg border border-line bg-surface-1 p-4">
