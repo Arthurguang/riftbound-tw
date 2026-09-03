@@ -100,9 +100,21 @@ async function editOf(
   return panel;
 }
 
-/** 盤面上某一區的某張卡（卡片磚）。 */
+/**
+ * 盤面上某一區的某張卡（卡片磚）。
+ *
+ * 卡片磚的可及名稱是「<區域>的 <卡名>」，數量大於一時後面還會接「 ×N」，
+ * 所以用「卡名之後是空白、字串結尾、全形空白或 ×」來比對。
+ *
+ * ⚠️ 這裡曾經因為反斜線被吃掉而寫成 `(s|$|　|×)` —— 少了跳脫，
+ * `\s` 變成字面的 s，比對到的是「卡名後面接一個英文字母 s」。
+ * 測試當時仍然過，因為其他幾個選項救了它；是 CodeQL 掃出來的。
+ * 所以這裡用 String.raw 寫，反斜線不會再被任何一層處理掉。
+ */
 const cardIn = (page: Page, side: 'you' | 'opponent', zone: string, name: string) =>
-  zoneOf(page, side, zone).getByRole('button', { name: new RegExp(`${name}(\s|$|　|×)`) });
+  zoneOf(page, side, zone).getByRole('button', {
+    name: new RegExp(`${name}(${String.raw`\s`}|$|　|×)`),
+  });
 
 /** 點盤面上的卡，把它選進檢視面板。 */
 async function inspect(page: Page, side: 'you' | 'opponent', zone: string, name: string) {
