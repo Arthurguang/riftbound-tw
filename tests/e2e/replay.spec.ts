@@ -216,6 +216,37 @@ test.describe('牌桌版面', () => {
  * 每張卡都掛按鈕會把版面塞爆（卡圖只有 48px 寬），所以折衷成
  * 「選中的那張才在這一區底部長出一列」。
  */
+/*
+ * 衍生物（token）不在任何牌組裡 —— 它是靠卡牌效果生成的，
+ * 例如 OGN-117 維克特：在對手回合打出卡時，額外打出一名「侍從」。
+ *
+ * 所以候選清單必須**永遠**列出衍生物，而且場上出現衍生物不該跳
+ * 「不在這副牌組裡」的警告 —— 那完全是正常的局面。
+ */
+test.describe('衍生物', () => {
+  test('候選清單一律列出衍生物，即使牌組裡沒有', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const add = await editOf(page, 'you', 'add');
+    const tokens = add.locator('[data-token="true"]');
+    // OGN 共四張衍生物：三種侍從加上精靈
+    await expect(tokens).toHaveCount(4);
+  });
+
+  test('可以把衍生物放到場上，而且不會跳「不在牌組裡」', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const add = await editOf(page, 'you', 'add');
+    await add.getByRole('button', { name: '基地', exact: true }).click();
+    await add.locator('[data-token="true"]').first().click();
+
+    await expect(zoneOf(page, 'you', 'base').locator('[data-card]')).toHaveCount(1);
+    await expect(page.getByText(/不在這副牌組裡/)).toHaveCount(0);
+  });
+});
+
 test.describe('在盤面上直接搬卡', () => {
   test('選中一張卡，這一區底部會長出搬移列', async ({ page }) => {
     await gotoReplay(page);

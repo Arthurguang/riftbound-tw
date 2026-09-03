@@ -312,7 +312,7 @@ export function remainingDeck(player: PlayerBoard): RemainingDeck {
  * 遊戲中確實可能出現牌組以外的卡（指示物、被效果加入的卡），
  * 所以這不是錯誤，只是提醒使用者確認 —— 因為它會讓剩餘牌堆的計算失準。
  */
-export function foreignCards(player: PlayerBoard): string[] {
+export function foreignCards(player: PlayerBoard, byId?: Map<string, Card>): string[] {
   /*
    * 備牌**不算**在內：對局進行中備牌不在場上，
    * 它只在局間 1 換 1 地換進主牌組（賽事規則 403.4、403.5）。
@@ -328,7 +328,16 @@ export function foreignCards(player: PlayerBoard): string[] {
   const seen = new Set<string>();
   for (const zone of BOARD_ZONES) {
     for (const [cardId, qty] of Object.entries(player[zone])) {
-      if (qty > 0 && !inDeck.has(cardId)) seen.add(cardId);
+      if (qty <= 0 || inDeck.has(cardId)) continue;
+      /*
+       * 衍生物不算「不在牌組裡」。
+       *
+       * 它本來就不會被放進任何牌組 —— 是靠卡牌效果生成的（例如
+       * OGN-117 維克特：在對手回合打出卡時，額外打出一名「隨從」）。
+       * 場上出現衍生物完全正常，跳警告只會變成雜訊。
+       */
+      if (byId?.get(cardId)?.subtype === 'token') continue;
+      seen.add(cardId);
     }
   }
   return [...seen];

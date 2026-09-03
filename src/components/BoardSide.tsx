@@ -115,26 +115,38 @@ export function BoardSide({
   const [justImported, setJustImported] = useState(false);
 
   const remaining = useMemo(() => remainingDeck(player), [player]);
-  const foreign = useMemo(() => foreignCards(player), [player]);
+  const foreign = useMemo(() => foreignCards(player, byId), [player, byId]);
   /**
    * 只有**活躍**的符文算資源：消耗符文取得法力（164.2.a）要它是活躍的，
    * 休眠代表「耗盡了能量」（414.1）。
    */
   const runes = activeRunesOnBase(player, byId);
 
-  /** 可以加進盤面的候選卡：以這副牌組為主，找不到時退回全部卡片。 */
+  /** 這個卡池裡的所有衍生物。 */
+  const tokens = useMemo(() => cards.filter((c) => c.subtype === 'token'), [cards]);
+
+  /**
+   * 可以加進盤面的候選卡：以這副牌組為主，找不到時退回全部卡片。
+   *
+   * **衍生物一律列入**，即使牌組裡沒有 —— 它本來就不會被放進牌組，
+   * 而是靠卡牌效果生成的（例如 OGN-117 維克特會打出「隨從」）。
+   * 復盤時場上出現衍生物很正常，找不到就擺不出那個局面。
+   */
   const candidates = useMemo(() => {
     const q = query.trim().toLowerCase();
     const pool = hasDeck(player)
       ? [
-          ...Object.keys(player.deck.main),
-          ...Object.keys(player.deck.runes),
-          ...Object.keys(player.deck.battlefields),
-          // 備牌不列入：對局中它不在場上（403.4、403.5）
-          ...(player.deck.legendId ? [player.deck.legendId] : []),
+          ...[
+            ...Object.keys(player.deck.main),
+            ...Object.keys(player.deck.runes),
+            ...Object.keys(player.deck.battlefields),
+            // 備牌不列入：對局中它不在場上（403.4、403.5）
+            ...(player.deck.legendId ? [player.deck.legendId] : []),
+          ]
+            .map((id) => byId.get(id))
+            .filter((c): c is Card => Boolean(c)),
+          ...tokens,
         ]
-          .map((id) => byId.get(id))
-          .filter((c): c is Card => Boolean(c))
       : cards;
 
     const filtered =
@@ -149,7 +161,7 @@ export function BoardSide({
           );
 
     return filtered.sort((a, b) => a.number - b.number).slice(0, 40);
-  }, [player, byId, cards, query]);
+  }, [player, byId, cards, tokens, query]);
 
   const addCard = (zone: BoardZone, cardId: string) => {
     const card = byId.get(cardId);
@@ -375,17 +387,29 @@ export function BoardSide({
             />
 
             <ul className="flex max-h-40 flex-wrap gap-1 overflow-y-auto">
-              {candidates.map((card) => (
-                <li key={card.id}>
-                  <button
-                    type="button"
-                    onClick={() => addCard(adding, card.id)}
-                    className="rounded border border-line px-1.5 py-0.5 text-[0.7rem] text-ink-dim hover:border-accent hover:text-accent-soft"
-                  >
-                    {cardName(card, lang)}
-                  </button>
-                </li>
-              ))}
+              {candidates.map((card) => {
+                const isToken = card.subtype === 'token';
+                return (
+                  <li key={card.id}>
+                    <button
+                      type="button"
+                      onClick={() => addCard(adding, card.id)}
+                      data-token={isToken ? 'true' : undefined}
+                      title={
+                        isToken ? '衍生物：不在任何牌組裡，由卡牌效果生成' : undefined
+                      }
+                      className={`rounded border px-1.5 py-0.5 text-[0.7rem] transition-colors ${
+                        isToken
+                          ? 'border-violet-500/50 text-violet-300 hover:border-violet-400'
+                          : 'border-line text-ink-dim hover:border-accent hover:text-accent-soft'
+                      }`}
+                    >
+                      {cardName(card, lang)}
+                      {isToken && <span className="ml-0.5 text-[0.6rem] opacity-70">衍</span>}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
