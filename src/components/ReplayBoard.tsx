@@ -5,11 +5,20 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BoardSide } from './BoardSide';
 import { BoardTable } from './BoardTable';
+import { CardInspector, type Selection } from './CardInspector';
 import { BattlefieldPicker } from './BattlefieldPicker';
 import { TurnStateControl } from './TurnStateControl';
 import { GameControls } from './GameControls';
 import { adjustRunesOnBase } from '@/lib/board-actions';
-import { EMPTY_BOARD, type BoardState, type PlayerBoard } from '@/lib/board-state';
+import {
+  EMPTY_BOARD,
+  moveCard,
+  setDormant,
+  setInPile,
+  type BoardState,
+  type BoardZone,
+  type PlayerBoard,
+} from '@/lib/board-state';
 import { decodeBoard, emptyBoardCode, encodeBoard } from '@/lib/board-url';
 import { buildCodeIndex } from '@/lib/deck-url';
 import { runesSummonedByTurn, TURN_RULES } from '@/lib/draw-model';
@@ -85,6 +94,15 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
   );
 
   const [board, setBoard] = useState<BoardState>(initial.board);
+
+  /**
+   * 目前選中的卡。
+   *
+   * 盤面上的卡點一下就選中，大圖與所有操作集中到下方的檢視面板 ——
+   * 取代原本每張卡旁邊掛一排小按鈕的做法。卡圖排列時那些按鈕會把版面塞爆，
+   * 而且很容易誤按到隔壁那張。
+   */
+  const [selection, setSelection] = useState<Selection | null>(null);
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
 
@@ -153,6 +171,28 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
       };
     });
   }, []);
+
+  /** 選中的那張卡目前的資料（可能已經被搬走，所以每次重算）。 */
+  const selected = selection
+    ? {
+        card: byId.get(selection.cardId),
+        qty: board[selection.side][selection.zone][selection.cardId] ?? 0,
+        dormant:
+          selection.zone === 'base' || selection.zone === 'bf0' || selection.zone === 'bf1'
+            ? (board[selection.side].dormant[selection.zone][selection.cardId] ?? 0)
+            : 0,
+      }
+    : { card: undefined, qty: 0, dormant: 0 };
+
+  /** 對選中的那張卡做事。搬完之後選取跟著移到新的區域。 */
+  const actOnSelected = useCallback(
+    (fn: (player: PlayerBoard, sel: Selection) => PlayerBoard, nextZone?: BoardZone) => {
+      if (!selection) return;
+      setBoard((prev) => ({ ...prev, [selection.side]: fn(prev[selection.side], selection) }));
+      if (nextZone) setSelection({ ...selection, zone: nextZone });
+    },
+    [selection],
+  );
 
   return (
     <div
@@ -320,7 +360,47 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
       </SideBlock>
 
       {/* ── 盤面本身：對手在上、你在下、戰場在中間 ── */}
-      <BoardTable board={board} byId={byId} lang={lang} art={art} onChange={setBoard} />
+      <BoardTable
+        board={board}
+        byId={byId}
+        lang={lang}
+        art={art}
+        onChange={setBoard}
+        selection={selection}
+        onSelect={setSelection}
+      />
+
+      {/* 選中那張卡的大圖與操作 —— 固定位置，不會像浮動提示那樣跑掉 */}
+      <div className="mt-2">
+        <CardInspector
+          selection={selection}
+          card={selected.card}
+          qty={selected.qty}
+          dormant={selected.dormant}
+          lang={lang}
+          art={art}
+          onMove={(to) =>
+            actOnSelected(
+              (p, sel) => moveCard(p, sel.zone, to, sel.cardId),
+              to,
+            )
+          }
+          onRemove={() =>
+            actOnSelected((p, sel) => ({
+              ...p,
+              [sel.zone]: setInPile(p[sel.zone], sel.cardId, (p[sel.zone][sel.cardId] ?? 0) - 1),
+            }))
+          }
+          onDormant={(count) =>
+            actOnSelected((p, sel) =>
+              sel.zone === 'base' || sel.zone === 'bf0' || sel.zone === 'bf1'
+                ? setDormant(p, sel.zone, sel.cardId, count)
+                : p,
+            )
+          }
+          onClose={() => setSelection(null)}
+        />
+      </div>
 
       <SideBlock side="you">
         <BoardSide

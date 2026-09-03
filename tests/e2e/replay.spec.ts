@@ -44,6 +44,25 @@ const controlsOf = (page: Page, side: 'you' | 'opponent') =>
 const battlefieldOf = (page: Page, side: 'you' | 'opponent') =>
   page.locator(`[data-testid="battlefield-zone"][data-controls-side="${side}"]`);
 
+/**
+ * 編輯面板 —— 匯入牌組、加卡、備牌、符文都在這裡。
+ *
+ * 盤面上的卡片磚也是 button 而且叫得出卡名，所以「加入某張卡」一定要
+ * 指名編輯面板，否則會同時命中盤面上那張。
+ */
+const editOf = (page: Page, side: 'you' | 'opponent') =>
+  page.locator(`[data-edit-side="${side}"]`);
+
+/** 盤面上某一區的某張卡（卡片磚）。 */
+const cardIn = (page: Page, side: 'you' | 'opponent', zone: string, name: string) =>
+  zoneOf(page, side, zone).getByRole('button', { name: new RegExp(`${name}(\s|$|　|×)`) });
+
+/** 點盤面上的卡，把它選進檢視面板。 */
+async function inspect(page: Page, side: 'you' | 'opponent', zone: string, name: string) {
+  await cardIn(page, side, zone, name).first().click();
+  return page.getByTestId('card-inspector');
+}
+
 /** 在指定的一方匯入一副小牌組。 */
 async function importDeck(page: Page, side: 'you' | 'opponent', lines: string[]) {
   const scope = sideOf(page, side);
@@ -100,8 +119,12 @@ test.describe('牌桌版面', () => {
     }
 
     const bf = page.locator('[data-battlefield="0"]');
-    await expect(bf.locator('[data-owner="opponent"]')).toContainText('劈砍');
-    await expect(bf.locator('[data-owner="you"]')).toContainText('烈焰灼魂者');
+    await expect(
+      bf.locator('[data-owner="opponent"]').getByRole('button', { name: /劈砍/ }),
+    ).toHaveCount(1);
+    await expect(
+      bf.locator('[data-owner="you"]').getByRole('button', { name: /烈焰灼魂者/ }),
+    ).toHaveCount(1);
 
     // 對手的在上、你的在下 —— 跟實體對局的座位一致
     const oppBox = await bf.locator('[data-owner="opponent"]').boundingBox();
@@ -188,35 +211,51 @@ test.describe('回合數與先後手', () => {
   });
 });
 
-test.describe('卡名的卡圖預覽', () => {
-  test('滑鼠移到卡名上會出現卡圖', async ({ page }) => {
+/*
+ * 檢視卡片的方式。
+ *
+ * 原本是 hover 卡名跳出浮層。使用者反映「有時會跳有時不會」——
+ * 浮層有兩個先天問題：卡片靠近視窗底部時浮層會跑到畫面外，
+ * 而且要贏過後面的兄弟元素才看得到，堆疊順序很脆弱。
+ *
+ * 改成點卡片、大圖顯示在固定的檢視面板。位置永遠一樣，永遠看得到。
+ */
+test.describe('卡片檢視面板', () => {
+  test('點盤面上的卡會在檢視面板顯示大圖', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
-    const hand = zoneOf(page, 'you', 'hand');
-    const preview = hand.getByTestId('card-hover-image').first();
+    // 還沒選任何卡時是提示文字
+    await expect(page.getByTestId('card-inspector')).toContainText('點盤面上任何一張卡');
 
-    // 平常收著
-    await expect(preview).toBeHidden();
-
-    await hand.getByText('烈焰灼魂者').first().hover();
-    await expect(preview).toBeVisible();
-    // 圖是官方卡圖 CDN 來的
-    await expect(preview.locator('img')).toHaveAttribute('src', /rgpub\.io|playloltcg/);
+    const panel = await inspect(page, 'you', 'hand', '烈焰灼魂者');
+    await expect(panel).toContainText('烈焰灼魂者');
+    await expect(panel).toContainText('你的手牌');
+    // 大圖來自官方卡圖 CDN
+    await expect(panel.locator('img')).toHaveAttribute('src', /rgpub.io|playloltcg/);
   });
 
-  test('鍵盤聚焦也看得到 —— 不是只有滑鼠能用', async ({ page }) => {
+  test('檢視面板可以把卡搬到別的區域', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
-    const hand = zoneOf(page, 'you', 'hand');
-    const preview = hand.getByTestId('card-hover-image').first();
-    await expect(preview).toBeHidden();
+    const panel = await inspect(page, 'you', 'hand', '烈焰灼魂者');
+    await panel.getByRole('button', { name: '廢牌堆', exact: true }).click();
 
-    await hand.getByText('烈焰灼魂者').first().focus();
-    await expect(preview).toBeVisible();
+    await expect(cardIn(page, 'you', 'discard', '烈焰灼魂者')).toHaveCount(1);
+    await expect(cardIn(page, 'you', 'hand', '烈焰灼魂者')).toHaveCount(0);
+  });
+
+  test('關掉之後回到提示狀態', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+
+    const panel = await inspect(page, 'you', 'hand', '烈焰灼魂者');
+    await panel.getByRole('button', { name: '關閉' }).click();
+    await expect(page.getByTestId('card-inspector')).toContainText('點盤面上任何一張卡');
   });
 });
 
@@ -239,7 +278,7 @@ test.describe('對局復盤', () => {
     await importDeck(page, 'you', SMALL_DECK);
 
     // 預設加到手牌
-    await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 5');
@@ -248,12 +287,12 @@ test.describe('對局復盤', () => {
   test('可以把卡從手牌搬到廢牌堆', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
-    await sideOf(page, 'you').getByRole('button', { name: /從手牌搬到廢牌堆$/ }).first().click();
+    const panel = await inspect(page, 'you', 'hand', '烈焰灼魂者');
+    await panel.getByRole('button', { name: '廢牌堆', exact: true }).click();
 
-    const discard = sideOf(page, 'you').locator('[data-zone="discard"]');
-    await expect(discard).toContainText('烈焰灼魂者');
+    await expect(cardIn(page, 'you', 'discard', '烈焰灼魂者')).toHaveCount(1);
     // 搬動不影響牌堆總數
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 5');
   });
@@ -263,7 +302,7 @@ test.describe('對局復盤', () => {
     await importDeck(page, 'you', SMALL_DECK);
 
     // 牌組只有 3 張，按 4 次
-    const add = sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true });
+    const add = editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true });
     for (let i = 0; i < 4; i += 1) await add.click();
 
     await expect(page.getByText(/盤面上有卡片超過牌組裡的張數/)).toBeVisible();
@@ -280,8 +319,8 @@ test.describe('對局復盤', () => {
     await expect(section).toContainText('50.0%');
 
     // 把 3 張都放進廢牌堆後，機率變 0
-    const add = sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true });
-    await sideOf(page, 'you').getByRole('button', { name: '廢牌堆', exact: true }).click();
+    const add = editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true });
+    await editOf(page, 'you').getByRole('button', { name: '廢牌堆', exact: true }).click();
     for (let i = 0; i < 3; i += 1) await add.click();
 
     await expect(section).not.toContainText('烈焰灼魂者');
@@ -292,8 +331,8 @@ test.describe('對局復盤', () => {
     await importDeck(page, 'you', SMALL_DECK);
 
     // Cleave 1 費、Blazing Scorcher 5 費，都放進手牌
-    await sideOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }).click();
-    await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await editOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }).click();
+    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
     const hand = sideOf(page, 'you').getByTestId('playable-hand');
     await expect(hand).toBeVisible();
@@ -302,8 +341,8 @@ test.describe('對局復盤', () => {
     await expect(page.getByText('基地上 0 張符文')).toBeVisible();
 
     // 放 2 張符文到基地
-    await sideOf(page, 'you').getByRole('button', { name: '基地', exact: true }).click();
-    const rune = sideOf(page, 'you').getByRole('button', { name: '狂怒符文', exact: true });
+    await editOf(page, 'you').getByRole('button', { name: '基地', exact: true }).click();
+    const rune = editOf(page, 'you').getByRole('button', { name: '狂怒符文', exact: true });
     await rune.click();
     await rune.click();
 
@@ -325,7 +364,7 @@ test.describe('對局復盤', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
     const shared = await shareUrl(page, 'data-board-code', 'b', async () => {
-      await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+      await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
       await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
     });
 
@@ -507,16 +546,13 @@ test.describe('單位的位置（規則 198.1）', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
 
-    await sideOf(page, 'you').getByRole('button', { name: '基地', exact: true }).click();
-    await sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await editOf(page, 'you').getByRole('button', { name: '基地', exact: true }).click();
+    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
-    await sideOf(page, 'you')
-      .getByRole('button', { name: /從基地（場上）搬到戰場一/ })
-      .first()
-      .click();
+    const panel = await inspect(page, 'you', 'base', '烈焰灼魂者');
+    await panel.getByRole('button', { name: '戰場一', exact: true }).click();
 
-    const bf0 = zoneOf(page, 'you', 'bf0');
-    await expect(bf0).toContainText('烈焰灼魂者');
+    await expect(cardIn(page, 'you', 'bf0', '烈焰灼魂者')).toHaveCount(1);
   });
 });
 
@@ -553,7 +589,7 @@ test.describe('傳奇與選定英雄', () => {
 
     // 3 張裡有 1 張在英雄區域 → 牌堆剩 2
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 2');
-    await expect(sideOf(page, 'you').locator('[data-zone="champion"]')).toContainText('凱莎');
+    await expect(cardIn(page, 'you', 'champion', '凱莎')).toHaveCount(1);
   });
 
   test('可以取消選定英雄，那張卡就回到牌堆', async ({ page }) => {
@@ -585,10 +621,10 @@ test.describe('局間換牌（403.4）', () => {
     await importDeck(page, 'you', WITH_SIDEBOARD);
 
     await expect(
-      sideOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }),
+      editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }),
     ).toBeVisible();
     await expect(
-      sideOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }),
+      editOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }),
     ).toHaveCount(0);
   });
 
@@ -605,7 +641,7 @@ test.describe('局間換牌（403.4）', () => {
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 4');
     // 換進來之後就能在盤面上操作了
     await expect(
-      sideOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }),
+      editOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }),
     ).toBeVisible();
   });
 });
@@ -621,10 +657,10 @@ test.describe('直接選擇加到哪一區', () => {
     }
 
     // 直接加到戰場二
-    await scope.getByRole('button', { name: '戰二', exact: true }).click();
-    await scope.getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await editOf(page, 'you').getByRole('button', { name: '戰二', exact: true }).click();
+    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
-    await expect(zoneOf(page, 'you', 'bf1')).toContainText('烈焰灼魂者');
+    await expect(cardIn(page, 'you', 'bf1', '烈焰灼魂者')).toHaveCount(1);
   });
 });
 
@@ -750,7 +786,11 @@ test.describe('活躍與休眠（規則 414、415）', () => {
     await you.getByRole('button', { name: '基地', exact: true }).click();
     await you.getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
-    await expect(you.locator('[data-zone="base"]')).toContainText('休眠');
+    /*
+     * 休眠現在用「把卡打橫」表示（414.1 在實體對局就是這樣），
+     * 不再是一個寫著「休眠」的徽章 —— 所以查的是卡片自己標的狀態。
+     */
+    await expect(cardIn(page, 'you', 'base', '烈焰灼魂者')).toHaveAttribute('data-dormant', '1');
   });
 
   test('符文加到場上預設是活躍（430.2.a）', async ({ page }) => {

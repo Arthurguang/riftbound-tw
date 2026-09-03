@@ -2,14 +2,13 @@
 
 import { cardName } from '@/lib/cards';
 import { BoardZonePanel } from './BoardZonePanel';
+import { CardBackPile } from './BoardCard';
+import type { Selection } from './CardInspector';
 import {
   activeRunesOnBase,
   handSize,
   isInPlayZone,
-  moveCard,
   remainingDeck,
-  setDormant,
-  setInPile,
   wakeAll,
   type BoardState,
   type BoardZone,
@@ -65,6 +64,8 @@ function PlayerStrip({
   lang,
   art,
   onChange,
+  selection,
+  onSelect,
 }: {
   player: PlayerBoard;
   label: string;
@@ -73,6 +74,8 @@ function PlayerStrip({
   lang: TextLang;
   art: ArtLang;
   onChange: (next: PlayerBoard) => void;
+  selection: Selection | null;
+  onSelect: (sel: Selection) => void;
 }) {
   const remaining = remainingDeck(player);
   const runes = activeRunesOnBase(player, byId);
@@ -82,6 +85,13 @@ function PlayerStrip({
       <h3 className="text-sm font-semibold text-ink">{label}</h3>
       <span className="text-xs text-ink-dim" data-testid="side-summary">
         手牌 {handSize(player)}　牌堆 {remaining.mainSize}　活躍符文 {runes}
+      </span>
+      <span className="flex items-end gap-2">
+        <CardBackPile count={remaining.mainSize} label="主牌堆" rule="108.4" />
+        <CardBackPile count={remaining.runeSize} label="符文牌堆" rule="108.5" />
+        {isOpponent && player.unknownHand > 0 && (
+          <CardBackPile count={player.unknownHand} label="未知手牌" rule="108.7" />
+        )}
       </span>
       <button
         type="button"
@@ -106,6 +116,8 @@ function PlayerStrip({
           lang={lang}
           art={art}
           onChange={onChange}
+          selection={selection}
+          onSelect={onSelect}
         />
       ))}
     </div>
@@ -143,6 +155,8 @@ function ZoneCell({
   art,
   onChange,
   label,
+  selection,
+  onSelect,
 }: {
   zone: BoardZone;
   player: PlayerBoard;
@@ -152,7 +166,14 @@ function ZoneCell({
   art: ArtLang;
   onChange: (next: PlayerBoard) => void;
   label?: string;
+  selection: Selection | null;
+  onSelect: (sel: Selection) => void;
 }) {
+  const side = isOpponent ? 'opponent' : 'you';
+  const selectedHere =
+    selection && selection.side === side && selection.zone === zone
+      ? selection.cardId
+      : undefined;
   return (
     <BoardZonePanel
       zone={zone}
@@ -163,18 +184,8 @@ function ZoneCell({
       lang={lang}
       art={art}
       dormant={isInPlayZone(zone) ? player.dormant[zone] : undefined}
-      onDormantChange={
-        isInPlayZone(zone)
-          ? (cardId, count) => onChange(setDormant(player, zone, cardId, count))
-          : undefined
-      }
-      onMove={(cardId, to) => onChange(moveCard(player, zone, to, cardId))}
-      onRemove={(cardId) =>
-        onChange({
-          ...player,
-          [zone]: setInPile(player[zone], cardId, (player[zone][cardId] ?? 0) - 1),
-        })
-      }
+      selectedCardId={selectedHere}
+      onSelect={(cardId) => onSelect({ side, zone, cardId })}
       extra={
         zone === 'hand' && isOpponent ? (
           <label className="ml-auto flex items-center gap-1 text-[0.7rem] text-ink-dim">
@@ -209,12 +220,16 @@ export function BoardTable({
   lang,
   art,
   onChange,
+  selection,
+  onSelect,
 }: {
   board: BoardState;
   byId: Map<string, Card>;
   lang: TextLang;
   art: ArtLang;
   onChange: (next: BoardState) => void;
+  selection: Selection | null;
+  onSelect: (sel: Selection) => void;
 }) {
   const setSide = (side: 'you' | 'opponent') => (next: PlayerBoard) =>
     onChange({ ...board, [side]: next });
@@ -234,6 +249,8 @@ export function BoardTable({
           lang={lang}
           art={art}
           onChange={setSide('opponent')}
+          selection={selection}
+          onSelect={onSelect}
         />
       </div>
 
@@ -273,6 +290,8 @@ export function BoardTable({
                   lang={lang}
                   art={art}
                   onChange={setSide('opponent')}
+                  selection={selection}
+                  onSelect={onSelect}
                 />
                 <ZoneCell
                   zone={zone}
@@ -283,6 +302,8 @@ export function BoardTable({
                   lang={lang}
                   art={art}
                   onChange={setSide('you')}
+                  selection={selection}
+                  onSelect={onSelect}
                 />
               </div>
             </section>
@@ -300,6 +321,8 @@ export function BoardTable({
           lang={lang}
           art={art}
           onChange={setSide('you')}
+          selection={selection}
+          onSelect={onSelect}
         />
       </div>
     </div>

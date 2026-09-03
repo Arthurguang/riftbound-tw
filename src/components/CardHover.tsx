@@ -33,7 +33,7 @@ export function CardHover({
   children: React.ReactNode;
 }) {
   return (
-    <span className="group/cardhover relative inline-flex min-w-0">
+    <span className="group/cardhover relative inline-flex min-w-0 hover:z-50 focus-within:z-50">
       <span tabIndex={0} className="min-w-0 truncate outline-none focus-visible:underline">
         {children}
       </span>
