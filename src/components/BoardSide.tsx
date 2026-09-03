@@ -90,6 +90,17 @@ export function BoardSide({
   const [adding, setAdding] = useState<BoardZone>('hand');
   const [query, setQuery] = useState('');
 
+  /**
+   * 這一方的控制項再拆成幾塊，一次只顯示一塊。
+   *
+   * 使用者要求「加卡、機率、可打性各自獨立成一個區塊，按按鈕才跳出細節」——
+   * 攤開的話光是一方就有六七個區塊，側欄又會變回要一直捲。
+   *
+   * 全部保持掛載、只切換顯示：切走再切回來時，搜尋字串與「加到哪一區」
+   * 這些選擇不會被重置。
+   */
+  const [section, setSection] = useState<'deck' | 'add' | 'runes' | 'analysis'>('add');
+
   const remaining = useMemo(() => remainingDeck(player), [player]);
   const foreign = useMemo(() => foreignCards(player), [player]);
   /**
@@ -182,10 +193,37 @@ export function BoardSide({
       className="min-w-0 rounded-lg border border-line p-3"
       data-edit-side={isOpponent ? 'opponent' : 'you'}
     >
-      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-base font-semibold text-ink">編輯：{title}</h3>
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-sm font-semibold text-ink">編輯：{title}</h3>
       </div>
 
+      <div className="mb-2 flex flex-wrap gap-1">
+        {(
+          [
+            { id: 'deck', label: '牌組' },
+            { id: 'add', label: '加卡' },
+            { id: 'runes', label: '符文' },
+            { id: 'analysis', label: '分析' },
+          ] as const
+        ).map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            aria-pressed={section === s.id}
+            onClick={() => setSection(s.id)}
+            data-side-tab={s.id}
+            className={`rounded border px-2 py-1 text-[0.7rem] transition-colors ${
+              section === s.id
+                ? 'border-accent bg-accent/10 text-accent-soft'
+                : 'border-line text-ink-dim hover:text-ink'
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      <div hidden={section !== 'deck'} data-side-section="deck">
       <DeckImport
         cards={cards}
         byId={byId}
@@ -202,6 +240,7 @@ export function BoardSide({
           })
         }
       />
+      </div>
 
       {!hasDeck(player) ? (
         <p className="rounded-lg border border-dashed border-line px-3 py-4 text-center text-xs text-ink-faint">
@@ -209,6 +248,7 @@ export function BoardSide({
         </p>
       ) : (
         <>
+          <div hidden={section !== 'deck'} data-side-section="deck-more">
           <ChampionZone
             player={player}
             byId={byId}
@@ -224,6 +264,9 @@ export function BoardSide({
             onChange={(deck) => onChange({ ...player, deck })}
           />
 
+          </div>
+
+          <div hidden={section !== 'runes'} data-side-section="runes">
           <RuneTracker
             player={player}
             byId={byId}
@@ -233,6 +276,9 @@ export function BoardSide({
             onThePlay={onThePlay}
             onChange={onChange}
           />
+          </div>
+
+          <div hidden={section !== 'add'} data-side-section="add">
 
           {/* 加卡到盤面 */}
           <div className="mb-3 space-y-2 rounded-lg border border-line bg-surface-1 p-2.5">
@@ -308,6 +354,9 @@ export function BoardSide({
             </p>
           )}
 
+          </div>
+
+          <div hidden={section !== 'analysis'} data-side-section="analysis">
           {/* 手牌現在打不打得出來 */}
           {playable.length > 0 && (
             <section
@@ -368,6 +417,7 @@ export function BoardSide({
 
           {/* 從當下盤面算機率 */}
           <NextDrawOdds remaining={remaining} byId={byId} lang={lang} />
+          </div>
         </>
       )}
     </div>

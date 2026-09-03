@@ -198,14 +198,37 @@ function PlayerBand({
             傳奇 <span className="font-mono text-[0.6rem] font-normal text-ink-faint">103.2.a</span>
           </h4>
           {legend ? (
-            <img
-              src={cardImageUrl(legend, 160, art)}
-              alt={cardName(legend, lang)}
+            <button
+              type="button"
+              onClick={() =>
+                onSelect({
+                  side: isOpponent ? 'opponent' : 'you',
+                  zone: 'legend',
+                  cardId: legend.id,
+                })
+              }
+              aria-pressed={
+                selection?.zone === 'legend' &&
+                selection.side === (isOpponent ? 'opponent' : 'you')
+              }
               title={cardName(legend, lang)}
-              loading="lazy"
-              referrerPolicy="no-referrer"
-              className="h-[68px] w-[48px] rounded object-cover"
-            />
+              aria-label={`傳奇區域的 ${cardName(legend, lang)}`}
+              data-card={legend.id}
+              className={`rounded transition-transform hover:scale-110 focus-visible:scale-110 focus-visible:outline-none ${
+                selection?.zone === 'legend' &&
+                selection.side === (isOpponent ? 'opponent' : 'you')
+                  ? 'ring-2 ring-accent'
+                  : ''
+              }`}
+            >
+              <img
+                src={cardImageUrl(legend, 160, art)}
+                alt={cardName(legend, lang)}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                className="h-[68px] w-[48px] rounded object-cover"
+              />
+            </button>
           ) : (
             <p className="rounded border border-dashed border-line px-1 py-3 text-center text-[0.65rem] text-ink-faint">
               未指定
@@ -295,18 +318,50 @@ export function BoardTable({
               data-battlefield={index}
               className="flex min-h-0 flex-col rounded-lg border border-accent/25 bg-accent/[0.04] p-2"
             >
-              <h3 className="mb-1 flex shrink-0 flex-wrap items-baseline gap-x-2 text-xs font-semibold text-ink">
-                {index === 0 ? '戰場一' : '戰場二'}
-                <span className="font-normal text-ink-dim">
-                  {card ? cardName(card, lang) : '尚未選擇'}
-                </span>
-                <span
-                  className="rounded bg-surface-2 px-1 font-mono text-[0.6rem] font-normal text-ink-faint"
-                  title="位置包含基地與各個戰場"
-                >
-                  198.1
-                </span>
-              </h3>
+              <div className="mb-1 flex shrink-0 items-center gap-2">
+                {/* 戰場卡本身也擺在桌上 —— 它有自己的能力，復盤時要看得到 */}
+                {card ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onSelect({ side: 'you', zone: 'battlefield', cardId: card.id })
+                    }
+                    title={cardName(card, lang)}
+                    aria-label={`${index === 0 ? '戰場一' : '戰場二'}：${cardName(card, lang)}`}
+                    data-card={card.id}
+                    className={`shrink-0 rounded transition-transform hover:scale-110 focus-visible:scale-110 focus-visible:outline-none ${
+                      selection?.zone === 'battlefield' && selection.cardId === card.id
+                        ? 'ring-2 ring-accent'
+                        : ''
+                    }`}
+                  >
+                    <img
+                      src={cardImageUrl(card, 160, art)}
+                      alt={cardName(card, lang)}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      className="h-[40px] w-[57px] rounded object-cover"
+                    />
+                  </button>
+                ) : (
+                  <span className="flex h-[40px] w-[57px] shrink-0 items-center justify-center rounded border border-dashed border-line text-[0.6rem] text-ink-faint">
+                    未選
+                  </span>
+                )}
+
+                <h3 className="flex flex-wrap items-baseline gap-x-2 text-xs font-semibold text-ink">
+                  {index === 0 ? '戰場一' : '戰場二'}
+                  <span className="font-normal text-ink-dim">
+                    {card ? cardName(card, lang) : '尚未選擇'}
+                  </span>
+                  <span
+                    className="rounded bg-surface-2 px-1 font-mono text-[0.6rem] font-normal text-ink-faint"
+                    title="位置包含基地與各個戰場"
+                  >
+                    198.1
+                  </span>
+                </h3>
+              </div>
 
               <div className="grid min-h-0 flex-1 grid-rows-2 gap-1.5">
                 <ZoneCell

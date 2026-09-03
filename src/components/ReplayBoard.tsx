@@ -185,14 +185,29 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
       const owner = (turn: number): 'you' | 'opponent' =>
         turn % 2 === 1 ? (prev.onThePlay ? 'you' : 'opponent') : prev.onThePlay ? 'opponent' : 'you';
 
+      /**
+       * 這個回合的主人在這一回合會召出幾張。
+       *
+       * 平常兩張（315.3.b）。但**後手在自己的第一個召出階段多召一張**
+       * （485.7），所以後手的第一個回合是三張 —— 這就是為什麼
+       * 先手第 1 回合 2 張、後手第 2 回合 3 張、先手第 3 回合 4 張、
+       * 後手第 4 回合 5 張。
+       */
+      const summonedOn = (turn: number) => {
+        const side = owner(turn);
+        const isOnThePlay = side === 'you' ? prev.onThePlay : !prev.onThePlay;
+        const firstOwnTurn = ownTurns(turn, isOnThePlay) === 1;
+        return TURN_RULES.runesPerTurn + (firstOwnTurn && !isOnThePlay ? TURN_RULES.secondPlayerBonusRune : 0);
+      };
+
       const delta = { you: 0, opponent: 0 };
       if (next > prev.turn) {
         for (let turn = prev.turn + 1; turn <= next; turn += 1) {
-          delta[owner(turn)] += TURN_RULES.runesPerTurn;
+          delta[owner(turn)] += summonedOn(turn);
         }
       } else {
         for (let turn = prev.turn; turn > next; turn -= 1) {
-          delta[owner(turn)] -= TURN_RULES.runesPerTurn;
+          delta[owner(turn)] -= summonedOn(turn);
         }
       }
 
@@ -207,22 +222,36 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
   }, []);
 
   /** 選中的那張卡目前的資料（可能已經被搬走，所以每次重算）。 */
-  const selected = selection
-    ? {
-        card: byId.get(selection.cardId),
-        qty: board[selection.side][selection.zone][selection.cardId] ?? 0,
-        dormant:
-          selection.zone === 'base' || selection.zone === 'bf0' || selection.zone === 'bf1'
-            ? (board[selection.side].dormant[selection.zone][selection.cardId] ?? 0)
-            : 0,
-      }
-    : { card: undefined, qty: 0, dormant: 0 };
+  const selected = (() => {
+    if (!selection) return { card: undefined, qty: 0, dormant: 0 };
+    const card = byId.get(selection.cardId);
+
+    // 傳奇與戰場不住在 PlayerBoard 的區域裡，永遠是一張、也沒有休眠狀態
+    if (selection.zone === 'legend' || selection.zone === 'battlefield') {
+      return { card, qty: 1, dormant: 0 };
+    }
+
+    const zone = selection.zone;
+    return {
+      card,
+      qty: board[selection.side][zone][selection.cardId] ?? 0,
+      dormant:
+        zone === 'base' || zone === 'bf0' || zone === 'bf1'
+          ? (board[selection.side].dormant[zone][selection.cardId] ?? 0)
+          : 0,
+    };
+  })();
 
   /** 對選中的那張卡做事。搬完之後選取跟著移到新的區域。 */
   const actOnSelected = useCallback(
-    (fn: (player: PlayerBoard, sel: Selection) => PlayerBoard, nextZone?: BoardZone) => {
-      if (!selection) return;
-      setBoard((prev) => ({ ...prev, [selection.side]: fn(prev[selection.side], selection) }));
+    (
+      fn: (player: PlayerBoard, sel: Selection & { zone: BoardZone }) => PlayerBoard,
+      nextZone?: BoardZone,
+    ) => {
+      // 傳奇與戰場不能搬，也就不會有動作要套在它們身上
+      if (!selection || selection.zone === 'legend' || selection.zone === 'battlefield') return;
+      const sel = selection as Selection & { zone: BoardZone };
+      setBoard((prev) => ({ ...prev, [selection.side]: fn(prev[selection.side], sel) }));
       if (nextZone) setSelection({ ...selection, zone: nextZone });
     },
     [selection],
@@ -370,9 +399,10 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
           目前是<strong className="text-ink-dim">{turnOwner(board.turn) === 'you' ? '你' : '對手'}</strong>
           的回合（你自己打過 {yourOwnTurns} 個回合）。
           <br />
-          推進一回合會給<strong className="text-ink-dim">該回合的玩家</strong>加{' '}
-          {TURN_RULES.runesPerTurn} 張符文（315.3.b），到 {TURN_RULES.runeDeckSize} 張就不再增加
-          —— 所以雙方的符文張數本來就會不一樣。
+          推進一回合會給<strong className="text-ink-dim">該回合的玩家</strong>召出{' '}
+          {TURN_RULES.runesPerTurn} 張符文（315.3.b），
+          <strong className="text-ink-dim">後手在自己第一個回合多召一張</strong>（485.7）——
+          所以是 先手 2 → 後手 3 → 先手 4 → 後手 5。到 {TURN_RULES.runeDeckSize} 張就不再增加。
           <br />
           加減的是<strong className="text-ink-dim">差額</strong>，不是覆蓋成公式值 ——
           回收符文取得符能後那張會永久離場（164.2.b），你手動調過的張數會被保留。

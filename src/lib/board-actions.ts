@@ -98,8 +98,16 @@ export function summonRunes(
  * 133.4　　選定英雄開局就在英雄區域，不在牌堆裡
  *
  * 會先清掉場上所有東西 —— 這是「重新開一局」，不是「繼續」。
+ *
+ * runeTarget 是「照規則這一方現在該有幾張符文」，由呼叫端依回合數算好
+ * （先手第 1 回合 2 張、後手第 1 個自己的回合 3 張 —— 315.3.b、485.7）。
+ * 重設之後符文也要回到該有的狀態，否則場面清空了符文卻還留著舊的張數。
  */
-export function startGame(player: PlayerBoard, random: () => number = Math.random): PlayerBoard {
+export function startGame(
+  player: PlayerBoard,
+  runeTarget = 0,
+  random: () => number = Math.random,
+): PlayerBoard {
   const fresh: PlayerBoard = {
     ...player,
     hand: {},
@@ -114,7 +122,9 @@ export function startGame(player: PlayerBoard, random: () => number = Math.rando
     champion: player.deck.championId ? setInPile({}, player.deck.championId, 1) : {},
   };
 
-  return drawCards(fresh, TURN_RULES.openingHand, random);
+  const withHand = drawCards(fresh, TURN_RULES.openingHand, random);
+  // 場面已經清空，所以這裡的「加」等同於直接設成該有的張數
+  return adjustRunesOnBase(withHand, runeTarget, TURN_RULES.runeDeckSize);
 }
 
 /**

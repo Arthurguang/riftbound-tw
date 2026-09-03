@@ -16,7 +16,9 @@ const MOVE_TARGETS: Record<BoardZone, BoardZone[]> = {
   exile: ['hand', 'base', 'discard'],
 };
 
-const ZONE_LABELS: Record<BoardZone, string> = {
+const ZONE_LABELS: Record<BoardZone | FixedZone, string> = {
+  legend: '傳奇區域',
+  battlefield: '戰場',
   champion: '英雄區域',
   hand: '手牌',
   base: '基地',
@@ -26,11 +28,24 @@ const ZONE_LABELS: Record<BoardZone, string> = {
   exile: '放逐區',
 };
 
+/**
+ * 有些卡在盤面上是**固定的**，不會在區域之間移動：
+ *   · 傳奇整場都在傳奇區域（103.2.a）
+ *   · 戰場在遊戲開始就擺定（485.4.a、485.5）
+ *
+ * 它們仍然要看得到大圖與能力文字，所以也能被選取 ——
+ * 只是檢視面板不會給搬移按鈕。
+ */
+export type FixedZone = 'legend' | 'battlefield';
+
 export type Selection = {
   side: 'you' | 'opponent';
-  zone: BoardZone;
+  zone: BoardZone | FixedZone;
   cardId: string;
 };
+
+const isFixed = (zone: BoardZone | FixedZone): zone is FixedZone =>
+  zone === 'legend' || zone === 'battlefield';
 
 /**
  * 選中卡片的檢視與操作面板。
@@ -82,6 +97,7 @@ export function CardInspector({
   }
 
   const { zone, side } = selection;
+  const fixed = isFixed(zone);
   const inPlay = zone === 'base' || zone === 'bf0' || zone === 'bf1';
   const btn =
     'rounded border border-line px-2 py-1 text-[0.7rem] text-ink-dim transition-colors hover:border-accent hover:text-accent-soft';
@@ -102,7 +118,7 @@ export function CardInspector({
           className="rounded bg-surface-2 px-1 font-mono text-[0.65rem] text-ink-faint"
           title="官方規則條號"
         >
-          {ZONE_RULES[zone].rule}
+          {fixed ? (zone === 'legend' ? '103.2.a' : '107.2') : ZONE_RULES[zone].rule}
         </span>
         <button type="button" onClick={onClose} className={`ml-auto ${btn}`}>
           關閉
@@ -122,10 +138,17 @@ export function CardInspector({
             {cardTextToPlain(cardText(card, lang)) || '（這張卡沒有能力文字）'}
           </p>
 
+          {fixed ? (
+            <p className="text-[0.65rem] leading-relaxed text-ink-faint">
+              {zone === 'legend'
+                ? '傳奇整場都在傳奇區域（103.2.a），不會移動到其他地方。'
+                : '戰場在遊戲開始時就擺定（485.4.a、485.5），整場不會換。'}
+            </p>
+          ) : (
           <div>
             <p className="mb-1 text-[0.65rem] text-ink-faint">搬到</p>
             <div className="flex flex-wrap gap-1">
-              {MOVE_TARGETS[zone].map((target) => (
+              {(fixed ? [] : MOVE_TARGETS[zone]).map((target) => (
                 <button key={target} type="button" onClick={() => onMove(target)} className={btn}>
                   {ZONE_LABELS[target]}
                 </button>
@@ -137,6 +160,7 @@ export function CardInspector({
               )}
             </div>
           </div>
+          )}
 
           {inPlay && (
             <div>
