@@ -73,6 +73,12 @@ export function BoardSide({
   art: ArtLang;
   isOpponent: boolean;
   /** 目前回合，用來提示照規則應該召出幾張符文。 */
+  /**
+   * 這一方**自己**打過幾個回合。
+   *
+   * 不是全域回合數 —— 回合雙方交替，抽牌與召符文都是「每人在自己的回合
+   * 各做一次」，所以符文追蹤要用這一方自己的回合數才算得對。
+   */
   turn: number;
   onThePlay: boolean;
   /** 回合狀態（308、309），決定手牌哪幾張現在打得出來。 */

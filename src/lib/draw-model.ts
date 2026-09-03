@@ -38,6 +38,26 @@ export function cardsSeenByTurn(turn: number): number {
 }
 
 /**
+ * 全域第 N 回合時，指定的一方已經打過幾個「自己的」回合。
+ *
+ * ── 兩種「回合」的差別 ──────────────────────────────────────────
+ * 復盤板的回合數是**全域交替**的：先手打第 1 回合，對手打第 2 回合，
+ * 先手再打第 3 回合。但抽牌與召符文是「每個人在**自己**的回合各做一次」，
+ * 所以算符文與抽牌時要換算成那一方自己打過幾個回合。
+ *
+ *   全域第 5 回合 → 先手打過 3 個自己的回合、後手打過 2 個
+ *
+ * ⚠️ 官方核心規則 PDF 用的是 CID 字型，中文抽不出可讀文字，
+ * 所以**這個編號慣例沒有從官方文件逐字查證過** —— 它是實體對局與
+ * 各家模擬器的通行做法。介面上有把定義寫出來讓使用者自己判斷。
+ */
+export function ownTurns(globalTurn: number, isOnThePlay: boolean): number {
+  if (!Number.isInteger(globalTurn) || globalTurn <= 0) return 0;
+  // 先手拿奇數回合，後手拿偶數回合
+  return isOnThePlay ? Math.ceil(globalTurn / 2) : Math.floor(globalTurn / 2);
+}
+
+/**
  * 到第 N 回合為止，你場上召出過幾張符文。
  *
  * 每回合 2 張（315.3.b），後手第一個召出階段多 1 張（485.7），

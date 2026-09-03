@@ -38,11 +38,32 @@ const zoneOf = (page: Page, side: 'you' | 'opponent', zone: string) =>
  * 模擬控制列與戰場選擇現在都是一方一組（各自貼著自己那側的桌緣），
  * 所以取用時一定要指名是哪一方的。
  */
-const controlsOf = (page: Page, side: 'you' | 'opponent') =>
-  page.locator(`[data-testid="game-controls"][data-controls-side="${side}"]`);
+async function controlsOf(page: Page, side: 'you' | 'opponent') {
+  await openRail(page, side);
+  return page.locator(`[data-testid="game-controls"][data-controls-side="${side}"]`);
+}
 
-const battlefieldOf = (page: Page, side: 'you' | 'opponent') =>
-  page.locator(`[data-testid="battlefield-zone"][data-controls-side="${side}"]`);
+async function battlefieldOf(page: Page, side: 'you' | 'opponent') {
+  await openRail(page, side);
+  return page.locator(`[data-testid="battlefield-zone"][data-controls-side="${side}"]`);
+}
+
+/**
+ * 打開右側欄的某一個分頁。
+ *
+ * 側欄一次只展開一組（使用者反映「匯入牌組後右側列還是需要滾動」），
+ * 所以要操作某一方的控制項之前，得先按那一方的分頁 ——
+ * 這跟真人使用的順序一樣。
+ */
+async function openRail(page: Page, tab: 'turn' | 'card' | 'opponent' | 'you') {
+  await page.locator(`[data-rail-tab="${tab}"]`).click();
+}
+
+/** 回合那一組（開局設定、回合數、回合狀態）。 */
+async function turnBox(page: Page) {
+  await openRail(page, 'turn');
+  return page.getByTestId('turn-control');
+}
 
 /**
  * 編輯面板 —— 匯入牌組、加卡、備牌、符文都在這裡。
@@ -50,8 +71,10 @@ const battlefieldOf = (page: Page, side: 'you' | 'opponent') =>
  * 盤面上的卡片磚也是 button 而且叫得出卡名，所以「加入某張卡」一定要
  * 指名編輯面板，否則會同時命中盤面上那張。
  */
-const editOf = (page: Page, side: 'you' | 'opponent') =>
-  page.locator(`[data-edit-side="${side}"]`);
+async function editOf(page: Page, side: 'you' | 'opponent') {
+  await openRail(page, side);
+  return page.locator(`[data-edit-side="${side}"]`);
+}
 
 /** 盤面上某一區的某張卡（卡片磚）。 */
 const cardIn = (page: Page, side: 'you' | 'opponent', zone: string, name: string) =>
@@ -65,6 +88,7 @@ async function inspect(page: Page, side: 'you' | 'opponent', zone: string, name:
 
 /** 在指定的一方匯入一副小牌組。 */
 async function importDeck(page: Page, side: 'you' | 'opponent', lines: string[]) {
+  await openRail(page, side);
   const scope = sideOf(page, side);
   await scope.getByRole('button', { name: /^匯入牌組/ }).click();
   await scope.getByLabel('牌表內容').fill(lines.join('\n'));
@@ -111,7 +135,7 @@ test.describe('牌桌版面', () => {
 
     // 雙方各放一張到戰場一
     for (const side of ['you', 'opponent'] as const) {
-      const edit = page.locator(`[data-edit-side="${side}"]`);
+      const edit = await editOf(page, side);
       await edit.getByRole('button', { name: '戰一', exact: true }).click();
       await edit
         .getByRole('button', { name: side === 'you' ? '烈焰灼魂者' : '劈砍', exact: true })
@@ -149,9 +173,22 @@ test.describe('牌桌版面', () => {
   });
 });
 
+/*
+ * 回合是**雙方交替**的：先手打奇數回合、對手打偶數回合。
+ * 所以推進一回合時，符文只加給**該回合的玩家** —— 這也是雙方符文
+ * 張數本來就會不一樣的原因。
+ *
+ * ⚠️ 官方核心規則 PDF 是 CID 字型，中文抽不出可讀文字，這個編號慣例
+ * 沒能從官方文件逐字查證，採用的是實體對局與各家模擬器的通行做法。
+ */
 test.describe('回合數與先後手', () => {
+  /** 從牌桌上的摘要讀某一方的活躍符文數（摘要永遠看得到，不受側欄分頁影響）。 */
+  const runesOf = (page: Page, side: 'you' | 'opponent') =>
+    page.locator(`[data-side="${side}"] [data-testid="side-summary"]`);
+
   test('先後手跟回合數是分開的兩塊', async ({ page }) => {
     await gotoReplay(page);
+    await openRail(page, 'turn');
 
     // 先後手決定一次就不會再動，所以獨立出來
     const setup = page.getByTestId('match-setup');
@@ -159,72 +196,83 @@ test.describe('回合數與先後手', () => {
     await expect(setup).toContainText('決定後就不會再變');
 
     // 回合數是復盤時一直在調的
-    const turn = page.getByTestId('turn-control');
-    await expect(turn.getByLabel(/回合/).or(turn.locator('#replay-turn'))).toBeVisible();
+    const turns = await turnBox(page);
+    await expect(turns.locator('#replay-turn')).toBeVisible();
     // 先後手不該混在回合那一塊裡
-    await expect(turn.getByRole('button', { name: '先手' })).toHaveCount(0);
+    await expect(turns.getByRole('button', { name: '先手' })).toHaveCount(0);
   });
 
-  test('推進回合會同時把雙方的符文各加 2 張（315.3.b）', async ({ page }) => {
+  test('推進一回合，符文只加給該回合的玩家（315.3.b）', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
     await importDeck(page, 'opponent', SMALL_DECK);
 
-    const yourRunes = sideOf(page, 'you').getByTestId('rune-total');
-    const oppRunes = sideOf(page, 'opponent').getByTestId('rune-total');
-    await expect(yourRunes).toHaveText('0');
+    const turns = await turnBox(page);
+    await expect(runesOf(page, 'you')).toContainText('活躍符文 0');
 
-    await page.getByTestId('turn-control').getByRole('button', { name: '下一回合' }).click();
-    await expect(yourRunes).toHaveText('2');
-    await expect(oppRunes).toHaveText('2');
+    // 你是先手 → 第 2 回合是對手的
+    await turns.getByRole('button', { name: '下一回合' }).click();
+    await expect(runesOf(page, 'opponent')).toContainText('活躍符文 2');
+    await expect(runesOf(page, 'you')).toContainText('活躍符文 0');
 
-    await page.getByTestId('turn-control').getByRole('button', { name: '下一回合' }).click();
-    await expect(yourRunes).toHaveText('4');
+    // 第 3 回合回到你
+    await turns.getByRole('button', { name: '下一回合' }).click();
+    await expect(runesOf(page, 'you')).toContainText('活躍符文 2');
+    await expect(runesOf(page, 'opponent')).toContainText('活躍符文 2');
+
+    // 第 4 回合又是對手
+    await turns.getByRole('button', { name: '下一回合' }).click();
+    await expect(runesOf(page, 'opponent')).toContainText('活躍符文 4');
+    await expect(runesOf(page, 'you')).toContainText('活躍符文 2');
+  });
+
+  test('回合數決定輪到誰', async ({ page }) => {
+    await gotoReplay(page);
+    const turns = await turnBox(page);
+
+    // 你是先手 → 第 1 回合是你的
+    await expect(page.getByTestId('strip-you')).toContainText('回合方');
+
+    await turns.getByRole('button', { name: '下一回合' }).click();
+    await expect(page.getByTestId('strip-opponent')).toContainText('回合方');
+    await expect(page.getByTestId('strip-you')).not.toContainText('回合方');
   });
 
   test('退回上一回合會把符文減回去', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
 
-    const turnBox = page.getByTestId('turn-control');
-    const runes = sideOf(page, 'you').getByTestId('rune-total');
+    const turns = await turnBox(page);
+    // 第 2（對手）、第 3（你）→ 你有 2 張
+    await turns.getByRole('button', { name: '下一回合' }).click();
+    await turns.getByRole('button', { name: '下一回合' }).click();
+    await expect(runesOf(page, 'you')).toContainText('活躍符文 2');
 
-    await turnBox.getByRole('button', { name: '下一回合' }).click();
-    await turnBox.getByRole('button', { name: '下一回合' }).click();
-    await expect(runes).toHaveText('4');
-
-    await turnBox.getByRole('button', { name: '上一回合' }).click();
-    await expect(runes).toHaveText('2');
+    // 退回第 2 回合 → 那 2 張是你在第 3 回合拿的，要收回去
+    await turns.getByRole('button', { name: '上一回合' }).click();
+    await expect(runesOf(page, 'you')).toContainText('活躍符文 0');
   });
 
   test('到符文牌組張數就不再增加', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
+    await openRail(page, 'turn');
 
-    // 直接輸入很後面的回合
-    await page.locator('#replay-turn').fill('20');
-    await expect(sideOf(page, 'you').getByTestId('rune-total')).toHaveText('12');
+    // 直接跳到很後面的回合，雙方都會召滿 12 張
+    await page.locator('#replay-turn').fill('40');
+    await expect(runesOf(page, 'you')).toContainText('活躍符文 12');
 
-    // 再推一回合也不會超過
-    await page.getByTestId('turn-control').getByRole('button', { name: '下一回合' }).click();
-    await expect(sideOf(page, 'you').getByTestId('rune-total')).toHaveText('12');
+    const turns = await turnBox(page);
+    await turns.getByRole('button', { name: '下一回合' }).click();
+    await expect(runesOf(page, 'you')).toContainText('活躍符文 12');
   });
 });
 
-/*
- * 檢視卡片的方式。
- *
- * 原本是 hover 卡名跳出浮層。使用者反映「有時會跳有時不會」——
- * 浮層有兩個先天問題：卡片靠近視窗底部時浮層會跑到畫面外，
- * 而且要贏過後面的兄弟元素才看得到，堆疊順序很脆弱。
- *
- * 改成點卡片、大圖顯示在固定的檢視面板。位置永遠一樣，永遠看得到。
- */
 test.describe('卡片檢視面板', () => {
   test('點盤面上的卡會在檢視面板顯示大圖', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
     // 還沒選任何卡時是提示文字
     await expect(page.getByTestId('card-inspector')).toContainText('點盤面上任何一張卡');
@@ -239,7 +287,7 @@ test.describe('卡片檢視面板', () => {
   test('檢視面板可以把卡搬到別的區域', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
     const panel = await inspect(page, 'you', 'hand', '烈焰灼魂者');
     await panel.getByRole('button', { name: '廢牌堆', exact: true }).click();
@@ -251,7 +299,7 @@ test.describe('卡片檢視面板', () => {
   test('關掉之後回到提示狀態', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
     const panel = await inspect(page, 'you', 'hand', '烈焰灼魂者');
     await panel.getByRole('button', { name: '關閉' }).click();
@@ -262,7 +310,9 @@ test.describe('卡片檢視面板', () => {
 test.describe('對局復盤', () => {
   test('沒有牌組時提示要先匯入', async ({ page }) => {
     await gotoReplay(page);
-    await expect(page.getByText(/先匯入這一方的牌組/).first()).toBeVisible();
+    await expect(
+      await (await editOf(page, 'you')).getByText(/先匯入這一方的牌組/),
+    ).toBeVisible();
   });
 
   test('匯入牌組後算得出牌堆剩幾張', async ({ page }) => {
@@ -278,7 +328,7 @@ test.describe('對局復盤', () => {
     await importDeck(page, 'you', SMALL_DECK);
 
     // 預設加到手牌
-    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 5');
@@ -287,7 +337,7 @@ test.describe('對局復盤', () => {
   test('可以把卡從手牌搬到廢牌堆', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
-    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
     const panel = await inspect(page, 'you', 'hand', '烈焰灼魂者');
     await panel.getByRole('button', { name: '廢牌堆', exact: true }).click();
@@ -302,7 +352,7 @@ test.describe('對局復盤', () => {
     await importDeck(page, 'you', SMALL_DECK);
 
     // 牌組只有 3 張，按 4 次
-    const add = editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true });
+    const add = (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true });
     for (let i = 0; i < 4; i += 1) await add.click();
 
     await expect(page.getByText(/盤面上有卡片超過牌組裡的張數/)).toBeVisible();
@@ -319,8 +369,8 @@ test.describe('對局復盤', () => {
     await expect(section).toContainText('50.0%');
 
     // 把 3 張都放進廢牌堆後，機率變 0
-    const add = editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true });
-    await editOf(page, 'you').getByRole('button', { name: '廢牌堆', exact: true }).click();
+    const add = (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true });
+    await (await editOf(page, 'you')).getByRole('button', { name: '廢牌堆', exact: true }).click();
     for (let i = 0; i < 3; i += 1) await add.click();
 
     await expect(section).not.toContainText('烈焰灼魂者');
@@ -331,18 +381,18 @@ test.describe('對局復盤', () => {
     await importDeck(page, 'you', SMALL_DECK);
 
     // Cleave 1 費、Blazing Scorcher 5 費，都放進手牌
-    await editOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }).click();
-    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await (await editOf(page, 'you')).getByRole('button', { name: '劈砍', exact: true }).click();
+    await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
-    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    const hand = (await editOf(page, 'you')).getByTestId('playable-hand');
     await expect(hand).toBeVisible();
 
     // 還沒放符文 → 兩張都付不起
     await expect(page.getByText('基地上 0 張符文')).toBeVisible();
 
     // 放 2 張符文到基地
-    await editOf(page, 'you').getByRole('button', { name: '基地', exact: true }).click();
-    const rune = editOf(page, 'you').getByRole('button', { name: '狂怒符文', exact: true });
+    await (await editOf(page, 'you')).getByRole('button', { name: '基地', exact: true }).click();
+    const rune = (await editOf(page, 'you')).getByRole('button', { name: '狂怒符文', exact: true });
     await rune.click();
     await rune.click();
 
@@ -364,7 +414,7 @@ test.describe('對局復盤', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
     const shared = await shareUrl(page, 'data-board-code', 'b', async () => {
-      await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+      await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
       await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
     });
 
@@ -379,14 +429,17 @@ test.describe('對局復盤', () => {
 
   test('先後手會改變公式算出的應召符文張數', async ({ page }) => {
     await gotoReplay(page);
-    const turnBox = page.getByTestId('turn-control');
+    const turns = await turnBox(page);
 
     // 先手第 1 回合 2 張（315.3.b）
-    await expect(turnBox).toContainText(/應召出過\s*2\s*張/);
+    await expect(turns).toContainText(/應召出過\s*2\s*張/);
 
     await page.getByTestId('match-setup').getByRole('button', { name: '後手' }).click();
-    // 後手第 1 回合 3 張（485.7）
-    await expect(turnBox).toContainText(/應召出過\s*3\s*張/);
+    /*
+     * 改成後手之後第 1 回合就變成對手的 —— 你自己還沒打過任何回合，
+     * 所以照公式應召出過 0 張。這正是「先後手會改變結果」要驗的事。
+     */
+    await expect(turns).toContainText(/應召出過\s*0\s*張/);
   });
 
   test('頁面明說不會給最佳解', async ({ page }) => {
@@ -417,7 +470,7 @@ test.describe('對局復盤', () => {
   test('控制列的用詞不會讓人以為在對戰', async ({ page }) => {
     await gotoReplay(page);
 
-    const controls = controlsOf(page, 'you');
+    const controls = (await controlsOf(page, 'you'));
     await expect(controls.getByRole('heading', { name: '模擬規則流程' })).toBeVisible();
 
     // 不該出現「開始遊戲」「對戰」這類說法
@@ -484,14 +537,19 @@ test.describe('場上符文', () => {
     await importDeck(page, 'you', SMALL_DECK);
 
     // 第 1 回合先手應召出 2 張（315.3.b）
-    await sideOf(page, 'you').getByRole('button', { name: '補到 2 張' }).click();
-    await expect(sideOf(page, 'you').getByTestId('rune-total')).toHaveText('2');
+    const you = await editOf(page, 'you');
+    await you.getByRole('button', { name: '補到 2 張' }).click();
+    await expect(you.getByTestId('rune-total')).toHaveText('2');
 
-    // 改到第 4 回合 → 8 張
-    const turn = page.getByLabel(/回合/).first();
-    await turn.fill('4');
-    await sideOf(page, 'you').getByRole('button', { name: '補到 8 張' }).click();
-    await expect(sideOf(page, 'you').getByTestId('rune-total')).toHaveText('8');
+    /*
+     * 改到第 7 回合。回合是雙方交替的，你打奇數回合 ——
+     * 到第 7 回合你自己打過 4 個回合，照公式應召出 8 張。
+     */
+    await openRail(page, 'turn');
+    await page.locator('#replay-turn').fill('7');
+    const you2 = await editOf(page, 'you');
+    await you2.getByRole('button', { name: '補到 8 張' }).click();
+    await expect(you2.getByTestId('rune-total')).toHaveText('8');
   });
 });
 
@@ -506,7 +564,7 @@ test.describe('戰場區域', () => {
   test('可以選定雙方各帶來的戰場（485.4、485.5）', async ({ page }) => {
     await gotoReplay(page);
 
-    const zone = battlefieldOf(page, 'you');
+    const zone = (await battlefieldOf(page, 'you'));
     await expect(zone).toBeVisible();
     await expect(zone).toContainText('107.2');
 
@@ -537,7 +595,9 @@ test.describe('戰場區域', () => {
 
   test('沒有戰場的牌組會提示要先匯入', async ({ page }) => {
     await gotoReplay(page);
-    await expect(page.getByText(/這一方的牌組裡還沒有戰場/).first()).toBeVisible();
+    await expect(
+      await (await battlefieldOf(page, 'you')).getByText(/這一方的牌組裡還沒有戰場/),
+    ).toBeVisible();
   });
 });
 
@@ -546,8 +606,8 @@ test.describe('單位的位置（規則 198.1）', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
 
-    await editOf(page, 'you').getByRole('button', { name: '基地', exact: true }).click();
-    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await (await editOf(page, 'you')).getByRole('button', { name: '基地', exact: true }).click();
+    await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
     const panel = await inspect(page, 'you', 'base', '烈焰灼魂者');
     await panel.getByRole('button', { name: '戰場一', exact: true }).click();
@@ -621,10 +681,10 @@ test.describe('局間換牌（403.4）', () => {
     await importDeck(page, 'you', WITH_SIDEBOARD);
 
     await expect(
-      editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }),
+      await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }),
     ).toBeVisible();
     await expect(
-      editOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }),
+      await (await editOf(page, 'you')).getByRole('button', { name: '劈砍', exact: true }),
     ).toHaveCount(0);
   });
 
@@ -641,7 +701,7 @@ test.describe('局間換牌（403.4）', () => {
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 4');
     // 換進來之後就能在盤面上操作了
     await expect(
-      editOf(page, 'you').getByRole('button', { name: '劈砍', exact: true }),
+      await (await editOf(page, 'you')).getByRole('button', { name: '劈砍', exact: true }),
     ).toBeVisible();
   });
 });
@@ -651,14 +711,14 @@ test.describe('直接選擇加到哪一區', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
 
-    const scope = sideOf(page, 'you');
+    const scope = await editOf(page, 'you');
     for (const label of ['手牌', '基地', '戰一', '戰二', '廢牌堆', '放逐']) {
       await expect(scope.getByRole('button', { name: label, exact: true })).toBeVisible();
     }
 
     // 直接加到戰場二
-    await editOf(page, 'you').getByRole('button', { name: '戰二', exact: true }).click();
-    await editOf(page, 'you').getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await (await editOf(page, 'you')).getByRole('button', { name: '戰二', exact: true }).click();
+    await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
     await expect(cardIn(page, 'you', 'bf1', '烈焰灼魂者')).toHaveCount(1);
   });
@@ -689,19 +749,23 @@ test.describe('回合狀態（規則 307–310）', () => {
   test('四種狀態切換得到，並顯示對應條號', async ({ page }) => {
     await gotoReplay(page);
 
+    await openRail(page, 'turn');
     const label = page.getByTestId('turn-state-label');
     await expect(label).toHaveText('普通開環');
     await expect(page.getByTestId('turn-state')).toContainText('310.1');
 
+    await openRail(page, 'turn');
     await page.getByLabel(/結算鏈上有東西/).check();
     await expect(label).toHaveText('普通閉環');
     await expect(page.getByTestId('turn-state')).toContainText('309.1.a');
 
     await page.getByLabel(/結算鏈上有東西/).uncheck();
+    await openRail(page, 'turn');
     await page.getByLabel(/正在法術對決或戰鬥中/).check();
     await expect(label).toHaveText('法術對決開環');
     await expect(page.getByTestId('turn-state')).toContainText('308.1.a');
 
+    await openRail(page, 'turn');
     await page.getByLabel(/結算鏈上有東西/).check();
     await expect(label).toHaveText('法術對決閉環');
   });
@@ -710,7 +774,7 @@ test.describe('回合狀態（規則 307–310）', () => {
     await gotoReplay(page);
     await setUpHand(page);
 
-    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    const hand = (await editOf(page, 'you')).getByTestId('playable-hand');
     await expect(hand).toBeVisible();
     // 三張都是「時機可」
     await expect(hand.getByText('時機不可')).toHaveCount(0);
@@ -719,9 +783,10 @@ test.describe('回合狀態（規則 307–310）', () => {
   test('法術對決：沒有迅捷或反應的卡打不出來（308.1.a）', async ({ page }) => {
     await gotoReplay(page);
     await setUpHand(page);
+    await openRail(page, 'turn');
     await page.getByLabel(/正在法術對決或戰鬥中/).check();
 
-    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    const hand = (await editOf(page, 'you')).getByTestId('playable-hand');
     // 烈焰灼魂者兩個關鍵字都沒有 → 時機不可
     await expect(hand.getByText('時機不可')).toHaveCount(1);
     // 迅捷與反應那兩張還是可以
@@ -731,9 +796,10 @@ test.describe('回合狀態（規則 307–310）', () => {
   test('閉環：只剩反應（309.1.a）', async ({ page }) => {
     await gotoReplay(page);
     await setUpHand(page);
+    await openRail(page, 'turn');
     await page.getByLabel(/結算鏈上有東西/).check();
 
-    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    const hand = (await editOf(page, 'you')).getByTestId('playable-hand');
     // 只有帶反應的那一張可以
     await expect(hand.getByText('時機可')).toHaveCount(1);
     await expect(hand.getByText('時機不可')).toHaveCount(2);
@@ -742,9 +808,10 @@ test.describe('回合狀態（規則 307–310）', () => {
   test('不是你的回合時，只有反應打得出來（310.1.a）', async ({ page }) => {
     await gotoReplay(page);
     await setUpHand(page);
+    await openRail(page, 'turn');
     await page.getByRole('button', { name: '對手的回合' }).click();
 
-    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    const hand = (await editOf(page, 'you')).getByTestId('playable-hand');
     await expect(hand.getByText('時機可')).toHaveCount(1);
   });
 
@@ -757,7 +824,7 @@ test.describe('回合狀態（規則 307–310）', () => {
       .getByRole('button', { name: '烈焰灼魂者', exact: true })
       .click();
 
-    const hand = sideOf(page, 'you').getByTestId('playable-hand');
+    const hand = (await editOf(page, 'you')).getByTestId('playable-hand');
     // 普通開環 → 時機可，但沒有符文 → 資源不足
     await expect(hand).toContainText('時機可');
     await expect(hand).toContainText('資源差');
@@ -767,7 +834,8 @@ test.describe('回合狀態（規則 307–310）', () => {
     await gotoReplay(page);
 
     const shared = await shareUrl(page, 'data-board-code', 'b', async () => {
-      await page.getByLabel(/正在法術對決或戰鬥中/).check();
+      await openRail(page, 'turn');
+    await page.getByLabel(/正在法術對決或戰鬥中/).check();
       await expect(page.getByTestId('turn-state-label')).toHaveText('法術對決開環');
     });
 
@@ -885,7 +953,7 @@ test.describe('模擬規則流程', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', PLAYABLE);
 
-    await controlsOf(page, 'you').getByRole('button', { name: '重設成開局狀態' }).click();
+    await (await controlsOf(page, 'you')).getByRole('button', { name: '重設成開局狀態' }).click();
 
     // 主牌組 9 張 − 英雄區域 1 張 − 手牌 4 張 = 牌堆 4 張
     const summary = sideOf(page, 'you').getByTestId('side-summary');
@@ -896,33 +964,40 @@ test.describe('模擬規則流程', () => {
   test('抽一張會從牌堆移到手牌（315.4.b）', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', PLAYABLE);
-    await controlsOf(page, 'you').getByRole('button', { name: '重設成開局狀態' }).click();
+    await (await controlsOf(page, 'you')).getByRole('button', { name: '重設成開局狀態' }).click();
 
-    await controlsOf(page, 'you').getByRole('button', { name: '抽一張' }).click();
+    await (await controlsOf(page, 'you')).getByRole('button', { name: '抽一張' }).click();
 
     const summary = sideOf(page, 'you').getByTestId('side-summary');
     await expect(summary).toContainText('手牌 5');
     await expect(summary).toContainText('牌堆 3');
   });
 
-  test('下一回合會喚醒、召符文、抽牌', async ({ page }) => {
+  /*
+   * 「推進 X 一個回合」那顆按鈕拿掉了 —— 回合是雙方交替的，一顆掛在
+   * 某一方底下的按鈕會讓人以為推進之後還是同一個人的回合。
+   * 推進回合改由回合數那一組負責，符文只加給該回合的玩家。
+   */
+  test('推進回合會給該回合的玩家召符文', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', PLAYABLE);
-    await controlsOf(page, 'you').getByRole('button', { name: '重設成開局狀態' }).click();
+    await (await controlsOf(page, 'you')).getByRole('button', { name: '重設成開局狀態' }).click();
 
-    await controlsOf(page, 'you').getByRole('button', { name: /^推進 你 一個回合$/ }).click();
+    const turns = await turnBox(page);
+    // 你是先手 → 第 2 回合是對手的，你不該拿到符文
+    await turns.getByRole('button', { name: '下一回合' }).click();
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('活躍符文 0');
 
-    const summary = sideOf(page, 'you').getByTestId('side-summary');
-    // 315.3.b 召兩張符文（先手）、315.4.b 抽一張
-    await expect(summary).toContainText('活躍符文 2');
-    await expect(summary).toContainText('手牌 5');
+    // 第 3 回合回到你 → 315.3.b 召兩張
+    await turns.getByRole('button', { name: '下一回合' }).click();
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('活躍符文 2');
   });
 
   test('手牌調度換掉的張數等於補回的張數（117）', async ({ page }) => {
     await gotoReplay(page);
     await importDeck(page, 'you', PLAYABLE);
 
-    const controls = controlsOf(page, 'you');
+    const controls = (await controlsOf(page, 'you'));
     await controls.getByRole('button', { name: '重設成開局狀態' }).click();
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 4');
 
@@ -936,7 +1011,7 @@ test.describe('模擬規則流程', () => {
 
   test('沒有牌組時提示要先匯入', async ({ page }) => {
     await gotoReplay(page);
-    await expect(controlsOf(page, 'you')).toContainText('先匯入 你 的牌組');
+    await expect((await controlsOf(page, 'you'))).toContainText('先匯入 你 的牌組');
   });
 
   /*
@@ -951,10 +1026,10 @@ test.describe('模擬規則流程', () => {
     await importDeck(page, 'opponent', PLAYABLE);
 
     // 你這方還沒匯入牌組，你的那一組會這樣說
-    await expect(controlsOf(page, 'you')).toContainText('先匯入 你 的牌組');
+    await expect((await controlsOf(page, 'you'))).toContainText('先匯入 你 的牌組');
 
     // 不必切換，直接按對手那一組
-    await controlsOf(page, 'opponent').getByRole('button', { name: '重設成開局狀態' }).click();
+    await (await controlsOf(page, 'opponent')).getByRole('button', { name: '重設成開局狀態' }).click();
 
     await expect(sideOf(page, 'opponent').getByTestId('side-summary')).toContainText('手牌 4');
     // 你這方沒被動到
@@ -973,15 +1048,25 @@ test.describe('模擬規則流程', () => {
     await expect(rail.locator('[data-block-side="opponent"]')).toHaveCount(1);
     await expect(rail.locator('[data-block-side="you"]')).toHaveCount(1);
 
-    // 對手的那組排在你的前面，跟桌上的座位一致
-    const oppBlock = await page.locator('[data-block-side="opponent"]').boundingBox();
-    const youBlock = await page.locator('[data-block-side="you"]').boundingBox();
-    expect(oppBlock!.y).toBeLessThan(youBlock!.y);
+    /*
+     * 側欄一次只展開一組 —— 按哪個分頁才顯示哪一組。
+     * 這正是使用者要的：「直接把右側的欄位變成一系列的按鈕，
+     * 按下按鈕才跳出要調整的細節」。
+     */
+    await openRail(page, 'opponent');
+    await expect(rail.locator('[data-rail-content="opponent"]')).toBeVisible();
+    await expect(rail.locator('[data-rail-content="you"]')).toBeHidden();
+
+    await openRail(page, 'you');
+    await expect(rail.locator('[data-rail-content="you"]')).toBeVisible();
+    await expect(rail.locator('[data-rail-content="opponent"]')).toBeHidden();
 
     // 戰場選擇與匯入各自跟著自己那一組
-    await expect(battlefieldOf(page, 'opponent')).toHaveCount(1);
-    await expect(battlefieldOf(page, 'you')).toHaveCount(1);
+    await expect((await battlefieldOf(page, 'opponent'))).toHaveCount(1);
+    await expect((await battlefieldOf(page, 'you'))).toHaveCount(1);
+    // 逐一開啟才數得到 —— 收起來的那組對輔助技術是隱藏的
     for (const side of ['opponent', 'you'] as const) {
+      await openRail(page, side);
       await expect(
         page.locator(`[data-block-side="${side}"]`).getByRole('button', { name: /^匯入牌組/ }),
       ).toHaveCount(1);
@@ -1010,7 +1095,7 @@ test.describe('模擬規則流程', () => {
     await importDeck(page, 'you', PLAYABLE);
 
     const shared = await shareUrl(page, 'data-board-code', 'b', async () => {
-      await controlsOf(page, 'you').getByRole('button', { name: '重設成開局狀態' }).click();
+      await (await controlsOf(page, 'you')).getByRole('button', { name: '重設成開局狀態' }).click();
       await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 4');
     });
 

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BoardSide } from './BoardSide';
 import { BoardTable } from './BoardTable';
+import { BoardRail } from './BoardRail';
 import { CardInspector, type Selection } from './CardInspector';
 import { BattlefieldPicker } from './BattlefieldPicker';
 import { TurnStateControl } from './TurnStateControl';
@@ -21,7 +22,7 @@ import {
 } from '@/lib/board-state';
 import { decodeBoard, emptyBoardCode, encodeBoard } from '@/lib/board-url';
 import { buildCodeIndex } from '@/lib/deck-url';
-import { runesSummonedByTurn, TURN_RULES } from '@/lib/draw-model';
+import { ownTurns, runesSummonedByTurn, TURN_RULES } from '@/lib/draw-model';
 import { readArtLang, readTextLang, DEFAULT_ART_LANG, DEFAULT_TEXT_LANG } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
 
@@ -147,8 +148,20 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
     [board, byId],
   );
 
-  /** 依回合推算應該召出過幾張符文，方便使用者對照有沒有擺漏。 */
-  const expectedRunes = runesSummonedByTurn(board.turn, board.onThePlay);
+  /**
+   * 全域第 N 回合時，輪到誰。
+   *
+   * 回合是雙方交替的：先手打奇數回合、後手打偶數回合。
+   * activePlayer 由回合數推導，不另外存 —— 兩個地方存同一件事一定會不同步。
+   */
+  const turnOwner = (turn: number): 'you' | 'opponent' =>
+    turn % 2 === 1 ? (board.onThePlay ? 'you' : 'opponent') : board.onThePlay ? 'opponent' : 'you';
+
+  /** 你到目前為止打過幾個自己的回合（抽牌與召符文都是以此計算）。 */
+  const yourOwnTurns = ownTurns(board.turn, board.onThePlay);
+
+  /** 依你自己的回合數推算應該召出過幾張符文，方便對照有沒有擺漏。 */
+  const expectedRunes = runesSummonedByTurn(yourOwnTurns, board.onThePlay);
 
   /**
    * 改回合數時，雙方基地的符文跟著加減。
@@ -160,14 +173,35 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
    */
   const setTurn = useCallback((next: number) => {
     setBoard((prev) => {
-      const delta = next - prev.turn;
-      if (delta === 0) return prev;
-      const runes = delta * TURN_RULES.runesPerTurn;
+      if (next === prev.turn) return prev;
+
+      /*
+       * 回合是交替的，所以符文只加給**該回合的玩家**，不是雙方一起加。
+       * 這也是雙方符文張數會不一樣的原因（先手在奇數回合累積、後手在偶數回合）。
+       *
+       * 一次可能跨好幾個回合（直接輸入數字），所以逐回合結算，
+       * 每個回合把兩張算到那個回合的主人頭上。
+       */
+      const owner = (turn: number): 'you' | 'opponent' =>
+        turn % 2 === 1 ? (prev.onThePlay ? 'you' : 'opponent') : prev.onThePlay ? 'opponent' : 'you';
+
+      const delta = { you: 0, opponent: 0 };
+      if (next > prev.turn) {
+        for (let turn = prev.turn + 1; turn <= next; turn += 1) {
+          delta[owner(turn)] += TURN_RULES.runesPerTurn;
+        }
+      } else {
+        for (let turn = prev.turn; turn > next; turn -= 1) {
+          delta[owner(turn)] -= TURN_RULES.runesPerTurn;
+        }
+      }
+
       return {
         ...prev,
         turn: next,
-        you: adjustRunesOnBase(prev.you, runes, TURN_RULES.runeDeckSize),
-        opponent: adjustRunesOnBase(prev.opponent, runes, TURN_RULES.runeDeckSize),
+        activePlayer: owner(next),
+        you: adjustRunesOnBase(prev.you, delta.you, TURN_RULES.runeDeckSize),
+        opponent: adjustRunesOnBase(prev.opponent, delta.opponent, TURN_RULES.runeDeckSize),
       };
     });
   }, []);
@@ -242,7 +276,10 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
           />
         </div>
 
-        <div className="flex min-h-0 flex-col gap-2 overflow-y-auto lg:pr-1" data-testid="board-rail">
+        <BoardRail
+          selectionKey={selection ? `${selection.side}/${selection.zone}/${selection.cardId}` : null}
+          turn={
+            <div className="space-y-2">
       {/*
        * 先後手：開局決定一次就不會再動，所以跟每次都在調的回合數分開放。
        * 混在同一列會讓人以為它也是常常要改的東西。
@@ -327,13 +364,19 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
           </button>
         </div>
 
-        <p className="text-xs text-ink-faint">
-          改回合數會<strong className="text-ink-dim">同時把雙方基地的符文加減 {TURN_RULES.runesPerTurn} 張</strong>
-          （315.3.b），到 {TURN_RULES.runeDeckSize} 張就不再增加。
+        <p className="w-full text-xs text-ink-faint">
+          回合<strong className="text-ink-dim">雙方交替</strong>：
+          {board.onThePlay ? '你打奇數回合、對手打偶數回合' : '對手打奇數回合、你打偶數回合'}。
+          目前是<strong className="text-ink-dim">{turnOwner(board.turn) === 'you' ? '你' : '對手'}</strong>
+          的回合（你自己打過 {yourOwnTurns} 個回合）。
           <br />
-          加減的是<strong className="text-ink-dim">差額</strong>，不是覆蓋成公式算出來的張數 ——
-          回收符文取得符能後那張會永久離場（164.2.b），所以你手動調過的張數會被保留。
-          目前你照公式應召出過 <strong className="text-ink-dim">{expectedRunes}</strong> 張。
+          推進一回合會給<strong className="text-ink-dim">該回合的玩家</strong>加{' '}
+          {TURN_RULES.runesPerTurn} 張符文（315.3.b），到 {TURN_RULES.runeDeckSize} 張就不再增加
+          —— 所以雙方的符文張數本來就會不一樣。
+          <br />
+          加減的是<strong className="text-ink-dim">差額</strong>，不是覆蓋成公式值 ——
+          回收符文取得符能後那張會永久離場（164.2.b），你手動調過的張數會被保留。
+          照公式你應召出過 <strong className="text-ink-dim">{expectedRunes}</strong> 張。
         </p>
       </div>
 
@@ -346,19 +389,11 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
         onChange={(next) => setBoard((prev) => ({ ...prev, ...next }))}
       />
 
-      {/*
-       * ── 全部按「誰的」上下分開 ──
-       *
-       * 對手的東西一律在牌桌上方、你的一律在下方 ——
-       * 控制項、戰場選擇、牌組匯入、加卡，通通跟著自己那一側。
-       *
-       * 上半部的順序是刻意倒過來的（先控制項、再盤面），
-       * 這樣「對手的控制項」與「你的控制項」各自貼著桌子的外緣，
-       * 中間留給雙方共用的戰場 —— 跟實體對局坐下來的樣子一致。
-       */}
-
-          {/* 選中那張卡的大圖與操作 —— 固定位置，不會像浮動提示那樣跑掉 */}
-          <CardInspector
+            </div>
+          }
+          /* 卡片檢視：固定位置，不會像浮動提示那樣跑掉 */
+          card={
+            <CardInspector
             selection={selection}
             card={selected.card}
             qty={selected.qty}
@@ -379,9 +414,10 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
                   : p,
               )
             }
-            onClose={() => setSelection(null)}
-          />
-
+              onClose={() => setSelection(null)}
+            />
+          }
+          opponent={
           <SideBlock side="opponent">
             <GameControls
               board={board}
@@ -407,14 +443,15 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
               lang={lang}
               art={art}
               isOpponent
-              turn={board.turn}
-              onThePlay={board.onThePlay}
+              turn={ownTurns(board.turn, !board.onThePlay)}
+              onThePlay={!board.onThePlay}
               phase={board.phase}
               isTurnPlayer={board.activePlayer === 'opponent'}
               onChange={setSide('opponent')}
             />
           </SideBlock>
-
+          }
+          you={
           <SideBlock side="you">
             <GameControls board={board} side="you" byId={byId} lang={lang} onChange={setBoard} />
             <BattlefieldPicker
@@ -434,14 +471,15 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
               lang={lang}
               art={art}
               isOpponent={false}
-              turn={board.turn}
+              turn={yourOwnTurns}
               onThePlay={board.onThePlay}
               phase={board.phase}
               isTurnPlayer={board.activePlayer === 'you'}
               onChange={setSide('you')}
             />
           </SideBlock>
-        </div>
+          }
+        />
       </div>
 
       {/* 這個工具的界線 */}

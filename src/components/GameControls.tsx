@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { cardName } from '@/lib/cards';
 import {
-  beginTurn,
   drawCards,
   handEntries,
   mulligan,
@@ -26,6 +25,10 @@ import type { Card } from '@/lib/types';
  * ── 這不是什麼 ──────────────────────────────────────────────────
  * 這**不是對戰系統**：沒有配對、沒有對手連線、沒有勝負判定，
  * 也不檢查你打的牌合不合法。那些需要規則引擎，而本站明確不做。
+ *
+ * 「推進一回合」那顆按鈕拿掉了：回合是**雙方交替**的，一顆掛在某一方
+ * 底下的按鈕會讓人以為推進之後還是同一個人的回合。推進回合改由上方
+ * 回合數的「上一回合／下一回合」負責，那裡才看得到輪到誰。
  *
  * 用詞刻意避開「開始遊戲」「對戰」這類說法 —— 這是研究工具，
  * 讓使用者一眼就知道自己在用什麼，不該以為能在這裡跟別人打牌。
@@ -116,17 +119,6 @@ export function GameControls({
               召出 {TURN_RULES.runesPerTurn} 張符文
             </button>
 
-            <button
-              type="button"
-              className={btn}
-              title="喚醒（415.3.a）＋召出符文（315.3.b、485.7）＋抽一張（315.4.b）"
-              onClick={() => {
-                onChange(beginTurn(board, side));
-                setSwapping([]);
-              }}
-            >
-              推進 {label} 一個回合
-            </button>
           </div>
 
           {/* 手牌調度 */}

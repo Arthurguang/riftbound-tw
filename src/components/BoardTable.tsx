@@ -1,6 +1,6 @@
 'use client';
 
-import { cardName } from '@/lib/cards';
+import { cardImageUrl, cardName } from '@/lib/cards';
 import { BoardZonePanel } from './BoardZonePanel';
 import { CardBackPile } from './BoardCard';
 import type { Selection } from './CardInspector';
@@ -136,6 +136,7 @@ function PlayerBand({
 }) {
   const remaining = remainingDeck(player);
   const runes = activeRunesOnBase(player, byId);
+  const legend = player.deck.legendId ? byId.get(player.deck.legendId) : undefined;
 
   const cell = (zone: BoardZone, cellLabel: string, className: string) => (
     <ZoneCell
@@ -178,8 +179,40 @@ function PlayerBand({
         ))}
       </div>
 
-      {/* 側欄：英雄區域、牌堆、廢牌堆、放逐、摘要 */}
+      {/* 側欄：傳奇、英雄區域、牌堆、廢牌堆、放逐、摘要 */}
       <div className="flex shrink-0 gap-2 overflow-x-auto">
+        {/*
+         * 傳奇區域（103.2.a）。傳奇整場都在場上，不會進出牌堆，
+         * 所以直接從牌組設定畫出來，不需要另一個可搬動的區域 ——
+         * 位置就擺在選定英雄旁邊，跟實體對局一樣。
+         */}
+        <div
+          className="flex w-[76px] shrink-0 flex-col rounded-lg border border-line bg-surface-1 p-1.5"
+          data-zone="legend"
+          data-owner={isOpponent ? 'opponent' : 'you'}
+        >
+          <h4
+            className="mb-1 shrink-0 whitespace-nowrap text-xs font-semibold text-ink"
+            title="傳奇區域（官方規則 103.2.a）"
+          >
+            傳奇 <span className="font-mono text-[0.6rem] font-normal text-ink-faint">103.2.a</span>
+          </h4>
+          {legend ? (
+            <img
+              src={cardImageUrl(legend, 160, art)}
+              alt={cardName(legend, lang)}
+              title={cardName(legend, lang)}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              className="h-[68px] w-[48px] rounded object-cover"
+            />
+          ) : (
+            <p className="rounded border border-dashed border-line px-1 py-3 text-center text-[0.65rem] text-ink-faint">
+              未指定
+            </p>
+          )}
+        </div>
+
         {cell('champion', '英雄', 'w-[110px] shrink-0 overflow-auto')}
 
         <div className="flex shrink-0 items-center gap-2 rounded-lg border border-line bg-surface-1 px-2">
