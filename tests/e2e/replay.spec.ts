@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { shareUrl } from './url-assert';
 
 /**
@@ -260,6 +260,113 @@ test.describe('牌桌版面', () => {
  * 「抽一張」「多召一張符文」在遊戲中是卡牌效果隨時會做的事，
  * 每次都跑去右側欄按按鈕太慢 —— 牌堆就在桌上，點它最直覺。
  */
+/*
+ * 戰力加成計數器。
+ *
+ * 卡牌、傳奇、法術會在某些時刻給單位增益，那些數字**不在卡面上** ——
+ * 復盤時最容易記錯的就是這個，而「這隻現在幾點」往往決定戰場打不打得贏。
+ *
+ * 拖曳快但對鍵盤與觸控不友善，所以檢視面板裡另有 +／−／清除做同一件事。
+ */
+test.describe('戰力加成', () => {
+  /** 在基地放一張 5 力量的烈焰灼魂者，回傳那張卡片磚。 */
+  async function unitOnBase(page: Page) {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    const add = await editOf(page, 'you', 'add');
+    await add.getByRole('button', { name: '基地', exact: true }).click();
+    await add.getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    return zoneOf(page, 'you', 'base').locator('[data-card]').first();
+  }
+
+  /** 點一下數字讓它待命，再點卡片套用 —— 每個瀏覽器都能用的那條路。 */
+  async function applyBuff(page: Page, amount: number, card: Locator) {
+    await page.locator(`[data-buff-chip="${amount}"]`).click();
+    await card.click();
+  }
+
+  test('套用加成後顯示算好的總戰力', async ({ page }) => {
+    const card = await unitOnBase(page);
+    await expect(card).not.toHaveAttribute('data-buff', /d/);
+
+    await applyBuff(page, 3, card);
+
+    await expect(card).toHaveAttribute('data-buff', '3');
+    // 烈焰灼魂者 5 力量 + 3 = 8。顯示總戰力而不是「+3」——
+    // 使用者要看的是「這隻現在幾點」，不該還要自己心算。
+    await expect(card).toContainText('8');
+  });
+
+  test('套用兩次會累加，而且待命只用一次就解除', async ({ page }) => {
+    const card = await unitOnBase(page);
+    await applyBuff(page, 2, card);
+    await applyBuff(page, 1, card);
+    await expect(card).toHaveAttribute('data-buff', '3');
+
+    /*
+     * 待命用過就解除 —— 不然接下來每點一張卡都會莫名其妙多加成。
+     * 這時候點卡片應該回到「選取」的行為（開檢視面板）。
+     */
+    await card.click();
+    await expect(card).toHaveAttribute('data-buff', '3');
+    await expect(page.getByTestId('card-inspector')).toContainText('烈焰灼魂者');
+  });
+
+  test('拖曳也做得到同一件事（WebKit 的 HTML5 拖放不可靠，只在 Chromium 驗）', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium', 'WebKit／Firefox 的 HTML5 拖放不穩定');
+    const card = await unitOnBase(page);
+    await page.locator('[data-buff-chip="3"]').dragTo(card);
+    await expect(card).toHaveAttribute('data-buff', '3');
+  });
+
+  test('檢視面板可以減少與清除', async ({ page }) => {
+    const card = await unitOnBase(page);
+    await applyBuff(page, 3, card);
+    await card.click();
+
+    const inspector = page.getByTestId('card-inspector');
+    await expect(inspector.getByTestId('inspector-buff')).toHaveText('目前 +3');
+
+    await inspector.getByRole('button', { name: '−1' }).click();
+    await expect(inspector.getByTestId('inspector-buff')).toHaveText('目前 +2');
+
+    await inspector.getByRole('button', { name: '清除' }).click();
+    await expect(card).not.toHaveAttribute('data-buff', /d/);
+  });
+
+  test('加成會編進網址，分享得出去', async ({ page, context }) => {
+    const card = await unitOnBase(page);
+    await applyBuff(page, 5, card);
+    await expect(card).toHaveAttribute('data-buff', '5');
+
+    const url = await shareUrl(page, 'data-board-code', 'b', async () => {});
+
+    const other = await context.newPage();
+    await other.goto(url);
+    await expect(other.locator('[data-replay-ready="true"]')).toBeAttached();
+    await expect(
+      other.locator('[data-owner="you"][data-zone="base"] [data-card]').first(),
+    ).toHaveAttribute('data-buff', '5');
+    await other.close();
+  });
+
+  test('手牌不能放加成 —— 加成只在場上有意義', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await (await editOf(page, 'you', 'add'))
+      .getByRole('button', { name: '烈焰灼魂者', exact: true })
+      .click();
+
+    const inHand = zoneOf(page, 'you', 'hand').locator('[data-card]').first();
+    await page.locator('[data-buff-chip="3"]').click();
+    await inHand.click();
+    // 手牌不是場上的位置 —— 點下去只會選取，不會套用加成
+    await expect(inHand).not.toHaveAttribute('data-buff', /d/);
+  });
+});
+
 test.describe('點牌堆直接抽牌／召符文', () => {
   const pile = (page: Page, side: 'you' | 'opponent', label: string) =>
     page.locator(`[data-side="${side}"] [data-pile-action="${label}"]`);

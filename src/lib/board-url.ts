@@ -111,6 +111,10 @@ function encodePlayer(player: PlayerBoard, cards: Card[], byId: Map<string, Card
     encodePile(player.dormant.base, byId),
     encodePile(player.dormant.bf0, byId),
     encodePile(player.dormant.bf1, byId),
+    // 戰力加成。跟休眠一樣是每個位置一疊，沿用同一套編碼
+    encodePile(player.buffs.base, byId),
+    encodePile(player.buffs.bf0, byId),
+    encodePile(player.buffs.bf1, byId),
   ].join(PLAYER_SEP);
 }
 
@@ -132,6 +136,9 @@ function decodePlayer(
     dormantBaseRaw = '',
     dormantBf0Raw = '',
     dormantBf1Raw = '',
+    buffBaseRaw = '',
+    buffBf0Raw = '',
+    buffBf1Raw = '',
   ] = encoded.split(PLAYER_SEP);
 
   const deck = decodeDeck(deckRaw, index);
@@ -142,6 +149,9 @@ function decodePlayer(
   const bf0 = decodePile(bf0Raw, index);
   const bf1 = decodePile(bf1Raw, index);
   const champion = decodePile(championRaw, index);
+  const buffBase = decodePile(buffBaseRaw, index);
+  const buffBf0 = decodePile(buffBf0Raw, index);
+  const buffBf1 = decodePile(buffBf1Raw, index);
   const dormantBase = decodePile(dormantBaseRaw, index);
   const dormantBf0 = decodePile(dormantBf0Raw, index);
   const dormantBf1 = decodePile(dormantBf1Raw, index);
@@ -163,6 +173,11 @@ function decodePlayer(
         bf0: dormantBf0.pile,
         bf1: dormantBf1.pile,
       },
+      buffs: {
+        base: buffBase.pile,
+        bf0: buffBf0.pile,
+        bf1: buffBf1.pile,
+      },
       base: base.pile,
       bf0: bf0.pile,
       bf1: bf1.pile,
@@ -178,6 +193,9 @@ function decodePlayer(
       bf0.dropped +
       bf1.dropped +
       champion.dropped +
+      buffBase.dropped +
+      buffBf0.dropped +
+      buffBf1.dropped +
       dormantBase.dropped +
       dormantBf0.dropped +
       dormantBf1.dropped,

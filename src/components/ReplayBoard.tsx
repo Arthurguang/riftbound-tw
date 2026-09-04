@@ -7,6 +7,7 @@ import { BoardSide } from './BoardSide';
 import { BoardTable } from './BoardTable';
 import { BoardRail, type RailTab } from './BoardRail';
 import { BoardAnalysis } from './BoardAnalysis';
+import { BuffPalette } from './BuffPalette';
 import { CardInspector, type Selection } from './CardInspector';
 import { BattlefieldPicker } from './BattlefieldPicker';
 import { TurnStateControl } from './TurnStateControl';
@@ -21,6 +22,8 @@ import {
   EMPTY_BOARD,
   moveCard,
   wakeAll,
+  buffOn,
+  setBuff,
   setDormant,
   setInPile,
   type BoardState,
@@ -137,11 +140,43 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
    */
   const [railTab, setRailTab] = useState<RailTab>('you');
 
-  /** 點盤面上的卡：選起來，並且**一定**切到「卡片」分頁。 */
-  const selectCard = useCallback((next: Selection) => {
-    setSelection(next);
-    setRailTab('card');
-  }, []);
+  /**
+   * 待命中的戰力加成。
+   *
+   * 拖曳在 WebKit（Safari）上不可靠 —— 所以還有一條「點數字讓它待命，
+   * 再點卡片套用」的路。待命只用一次就自動解除，避免接下來每點一張卡
+   * 都莫名其妙多了加成。
+   */
+  const [armedBuff, setArmedBuff] = useState<number | null>(null);
+
+  /**
+   * 點盤面上的卡。
+   *
+   * 有加成待命而且點的是場上的位置 → 套用加成並解除待命；
+   * 其餘情況就是單純選取，並**一定**切到「卡片」分頁。
+   */
+  const selectCard = useCallback(
+    (next: Selection) => {
+      const zone =
+        next.zone === 'base' || next.zone === 'bf0' || next.zone === 'bf1' ? next.zone : null;
+      if (armedBuff !== null && zone !== null) {
+        setBoard((prev) => ({
+          ...prev,
+          [next.side]: setBuff(
+            prev[next.side],
+            zone,
+            next.cardId,
+            buffOn(prev[next.side], zone, next.cardId) + armedBuff,
+          ),
+        }));
+        setArmedBuff(null);
+        return;
+      }
+      setSelection(next);
+      setRailTab('card');
+    },
+    [armedBuff],
+  );
 
   /**
    * 推進回合前的盤面，供「上一回合」還原。
@@ -332,12 +367,12 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
 
   /** 選中的那張卡目前的資料（可能已經被搬走，所以每次重算）。 */
   const selected = (() => {
-    if (!selection) return { card: undefined, qty: 0, dormant: 0 };
+    if (!selection) return { card: undefined, qty: 0, dormant: 0, buff: 0 };
     const card = byId.get(selection.cardId);
 
     // 傳奇與戰場不住在 PlayerBoard 的區域裡，永遠是一張、也沒有休眠狀態
     if (selection.zone === 'legend' || selection.zone === 'battlefield') {
-      return { card, qty: 1, dormant: 0 };
+      return { card, qty: 1, dormant: 0, buff: 0 };
     }
 
     const zone = selection.zone;
@@ -347,6 +382,10 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
       dormant:
         zone === 'base' || zone === 'bf0' || zone === 'bf1'
           ? (board[selection.side].dormant[zone][selection.cardId] ?? 0)
+          : 0,
+      buff:
+        zone === 'base' || zone === 'bf0' || zone === 'bf1'
+          ? (board[selection.side].buffs[zone][selection.cardId] ?? 0)
           : 0,
     };
   })();
@@ -561,7 +600,15 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
                 [sel.zone]: setInPile(p[sel.zone], sel.cardId, (p[sel.zone][sel.cardId] ?? 0) - 1),
               }))
             }
-            onDormant={(count) =>
+            buff={selected.buff}
+          onBuff={(amount) =>
+            actOnSelected((p, sel) =>
+              sel.zone === 'base' || sel.zone === 'bf0' || sel.zone === 'bf1'
+                ? setBuff(p, sel.zone, sel.cardId, amount)
+                : p,
+            )
+          }
+          onDormant={(count) =>
               actOnSelected((p, sel) =>
                 sel.zone === 'base' || sel.zone === 'bf0' || sel.zone === 'bf1'
                   ? setDormant(p, sel.zone, sel.cardId, count)
@@ -604,7 +651,12 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
             />
           </SideBlock>
           }
-          analysis={<BoardAnalysis board={board} byId={byId} lang={lang} />}
+          analysis={
+            <div className="space-y-2">
+              <BuffPalette armed={armedBuff} onArm={setArmedBuff} />
+              <BoardAnalysis board={board} byId={byId} lang={lang} />
+            </div>
+          }
           you={
           <SideBlock side="you">
             <GameControls board={board} side="you" byId={byId} lang={lang} onChange={setBoard} />

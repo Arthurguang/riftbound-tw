@@ -12,6 +12,8 @@ import {
   isInPlayZone,
   moveCard,
   remainingDeck,
+  buffOn,
+  setBuff,
   setDormant,
   setInPile,
   splitBaseByRunes,
@@ -89,6 +91,13 @@ function ZoneCell({
       art={art}
       className={className}
       dormant={isInPlayZone(zone) ? player.dormant[zone] : undefined}
+      buffs={isInPlayZone(zone) ? player.buffs[zone] : undefined}
+      onBuffDrop={
+        isInPlayZone(zone)
+          ? (cardId, amount) =>
+              onChange(setBuff(player, zone, cardId, buffOn(player, zone, cardId) + amount))
+          : undefined
+      }
       selectedCardId={selectedHere}
       onSelect={(cardId) => onSelect({ side, zone, cardId })}
       onMove={(cardId, to) => {
@@ -210,6 +219,10 @@ function PlayerBand({
         art={art}
         className={grow}
         dormant={player.dormant.base}
+        buffs={player.buffs.base}
+        onBuffDrop={(cardId, amount) =>
+          onChange(setBuff(player, 'base', cardId, buffOn(player, 'base', cardId) + amount))
+        }
         selectedCardId={
           selection && selection.side === (isOpponent ? 'opponent' : 'you') &&
           selection.zone === 'base'
