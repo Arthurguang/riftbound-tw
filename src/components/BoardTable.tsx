@@ -4,6 +4,7 @@ import { cardImageUrl, cardName } from '@/lib/cards';
 import { BoardZonePanel } from './BoardZonePanel';
 import { CardBackPile } from './BoardCard';
 import { RuneRow } from './RuneRow';
+import { drawCards, summonRunes } from '@/lib/board-actions';
 import type { Selection } from './CardInspector';
 import {
   activeRunesOnBase,
@@ -323,9 +324,27 @@ function PlayerBand({
 
         {cell('champion', '英雄', 'w-[110px] shrink-0 overflow-auto')}
 
+        {/*
+         * 牌堆可以直接點：抽一張（315.4.b）、召一張符文（315.3.b）。
+         *
+         * 遊戲中「抽一張」「多召一張符文」是卡牌效果隨時會做的事，
+         * 每次都跑去右側欄按按鈕太慢 —— 牌堆就在桌上，點它最直覺。
+         */}
         <div className="flex shrink-0 items-center gap-2 rounded-lg border border-line bg-surface-1 px-2">
-          <CardBackPile count={remaining.mainSize} label="牌堆" rule="108.4" />
-          <CardBackPile count={remaining.runeSize} label="符文堆" rule="108.5" />
+          <CardBackPile
+            count={remaining.mainSize}
+            label="牌堆"
+            rule="108.4"
+            actionHint="點一下抽一張（315.4.b）"
+            onClick={() => onChange(drawCards(player, 1))}
+          />
+          <CardBackPile
+            count={remaining.runeSize}
+            label="符文堆"
+            rule="108.5"
+            actionHint="點一下召出一張符文到基地（315.3.b、430.2.a）"
+            onClick={() => onChange(summonRunes(player, 1))}
+          />
         </div>
 
         {cell('discard', '廢牌堆', 'w-[110px] shrink-0 overflow-auto')}

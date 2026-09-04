@@ -254,6 +254,66 @@ test.describe('牌桌版面', () => {
  * 沒有網址參數時才拿來還原。**網址一定優先** —— 別人分享給你的連結
  * 必須照那個連結顯示，不能被你自己上次擺的蓋掉。
  */
+/*
+ * 牌堆可以直接點。
+ *
+ * 「抽一張」「多召一張符文」在遊戲中是卡牌效果隨時會做的事，
+ * 每次都跑去右側欄按按鈕太慢 —— 牌堆就在桌上，點它最直覺。
+ */
+test.describe('點牌堆直接抽牌／召符文', () => {
+  const pile = (page: Page, side: 'you' | 'opponent', label: string) =>
+    page.locator(`[data-side="${side}"] [data-pile-action="${label}"]`);
+
+  test('點主牌堆抽一張（315.4.b）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const summary = sideOf(page, 'you').getByTestId('side-summary');
+    await expect(summary).toContainText('手牌 0');
+    await expect(summary).toContainText('牌堆 6');
+
+    await pile(page, 'you', '牌堆').click();
+    await expect(summary).toContainText('手牌 1');
+    await expect(summary).toContainText('牌堆 5');
+  });
+
+  test('點符文堆召一張到基地（315.3.b、430.2.a）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    await pile(page, 'you', '符文堆').click();
+
+    // 430.2.a：預設以活躍狀態召出
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('活躍符文 1');
+    await expect(
+      page.locator('[data-side="you"] [data-testid="rune-row"] [data-rune]'),
+    ).toHaveCount(1);
+  });
+
+  test('牌堆空了就不能再點', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const deck = pile(page, 'you', '牌堆');
+    // 主牌組只有 6 張
+    for (let i = 0; i < 6; i += 1) await deck.click();
+
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 0');
+    await expect(deck).toBeDisabled();
+  });
+
+  test('只影響按下去的那一方', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await importDeck(page, 'opponent', SMALL_DECK);
+
+    await pile(page, 'opponent', '牌堆').click();
+
+    await expect(sideOf(page, 'opponent').getByTestId('side-summary')).toContainText('手牌 1');
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 0');
+  });
+});
+
 test.describe('切換頁面後盤面還在', () => {
   /** 導覽列的連結（頁面內文也有同名連結，要指名 header）。 */
   const nav = (page: Page, name: string) =>
