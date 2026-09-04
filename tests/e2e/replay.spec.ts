@@ -246,6 +246,60 @@ test.describe('牌桌版面', () => {
  * 所以候選清單必須**永遠**列出衍生物，而且場上出現衍生物不該跳
  * 「不在這副牌組裡」的警告 —— 那完全是正常的局面。
  */
+/*
+ * 盤面編在網址裡，但導覽列的連結是乾淨的 /replay ——
+ * 所以切去圖鑑再回來，擺好的東西就沒了。使用者反映了這件事。
+ *
+ * 修法是把編碼後的盤面記在 sessionStorage（只活在這個分頁），
+ * 沒有網址參數時才拿來還原。**網址一定優先** —— 別人分享給你的連結
+ * 必須照那個連結顯示，不能被你自己上次擺的蓋掉。
+ */
+test.describe('切換頁面後盤面還在', () => {
+  /** 導覽列的連結（頁面內文也有同名連結，要指名 header）。 */
+  const nav = (page: Page, name: string) =>
+    page.locator('header').getByRole('link', { name, exact: true });
+
+  test('切到圖鑑再回來，盤面還在', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await (await editOf(page, 'you', 'add'))
+      .getByRole('button', { name: '烈焰灼魂者', exact: true })
+      .click();
+
+    const summary = sideOf(page, 'you').getByTestId('side-summary');
+    await expect(summary).toContainText('手牌 1');
+
+    await nav(page, '卡牌圖鑑').click();
+    await page.waitForURL(/\/cards/);
+    await nav(page, '對局復盤').click();
+    await expect(page.locator('[data-replay-ready="true"]')).toBeAttached();
+
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
+  });
+
+  test('分享連結優先於上次的狀態', async ({ page, context }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await (await editOf(page, 'you', 'add'))
+      .getByRole('button', { name: '烈焰灼魂者', exact: true })
+      .click();
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
+
+    /*
+     * 同一個分頁開一個「別人分享的」空盤面網址。
+     * 這裡刻意用 b= 帶一個空的盤面碼，代表分享者當時什麼都沒擺。
+     */
+    const other = await context.newPage();
+    await other.goto('/replay');
+    await expect(other.locator('[data-replay-ready="true"]')).toBeAttached();
+    // 新分頁有自己的 sessionStorage，所以是空的
+    await expect(other.locator('[data-side="you"] [data-testid="side-summary"]')).toContainText(
+      '手牌 0',
+    );
+    await other.close();
+  });
+});
+
 test.describe('分析區與卡片檢視', () => {
   /*
    * 這一條守的是一個很容易再犯的 bug。

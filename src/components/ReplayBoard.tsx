@@ -29,6 +29,7 @@ import {
 } from '@/lib/board-state';
 import { decodeBoard, emptyBoardCode, encodeBoard } from '@/lib/board-url';
 import { buildCodeIndex } from '@/lib/deck-url';
+import { recallState, rememberState } from '@/lib/session-state';
 import { ownTurns, runesSummonedByTurn, TURN_RULES } from '@/lib/draw-model';
 import { readArtLang, readTextLang, DEFAULT_ART_LANG, DEFAULT_TEXT_LANG } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
@@ -81,6 +82,9 @@ function SideBlock({
  * 對手的東西一律在牌桌上方、你的一律在下方。中間是雙方共用的戰場。
  * 只有真正屬於整個盤面的東西（回合數、先後手、回合狀態）留在最上面。
  */
+/** sessionStorage 的鍵。跟牌組編輯器分開存，兩邊互不影響。 */
+const BOARD_KEY = 'replay-board';
+
 export function ReplayBoard({ cards }: { cards: Card[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -93,9 +97,18 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
   const codeIndex = useMemo(() => buildCodeIndex(cards), [cards]);
   const emptyCode = useMemo(() => emptyBoardCode(cards), [cards]);
 
-  // 網址是使用者可編造的輸入，decodeBoard 會逐項比對真實卡片
+  /*
+   * 起始盤面：**網址優先，其次是這個分頁上次的狀態**。
+   *
+   * 網址優先是因為別人分享給你的連結一定要照那個連結顯示。
+   * 沒有網址參數時（例如從導覽列點回「對局復盤」），才還原上次擺的盤面 ——
+   * 使用者反映切去圖鑑再回來，擺好的東西就不見了。
+   *
+   * 兩個來源都是**不可信輸入**（sessionStorage 使用者可以用開發者工具改），
+   * 所以走同一個 decodeBoard，逐項比對真實卡片後才採用。
+   */
   const initial = useMemo(
-    () => decodeBoard(params.get('b') ?? '', codeIndex),
+    () => decodeBoard(params.get('b') || recallState(BOARD_KEY), codeIndex),
     // 只在第一次掛載時讀取，之後由本元件掌握狀態
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -148,6 +161,12 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
    * 那些猜法前後錯過四次，每次都是在兩次非同步寫入之間誤判。
    */
   const boardCode = useMemo(() => encodeBoard(board, cards), [board, cards]);
+
+  // 記住這個分頁的盤面，離開再回來時還原得回去
+  useEffect(() => {
+    if (!ready) return;
+    rememberState(BOARD_KEY, boardCode === emptyCode ? '' : boardCode);
+  }, [boardCode, emptyCode, ready]);
 
   // 把盤面寫回網址，讓使用者可以複製連結分享復盤
   useEffect(() => {
