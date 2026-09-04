@@ -19,9 +19,13 @@ import {
   type Deck,
 } from '@/lib/deck-rules';
 import { buildCodeIndex, decodeDeck, encodeDeck } from '@/lib/deck-url';
+import { recallState, rememberState } from '@/lib/session-state';
 
 /** 空牌組編出來長什麼樣。用來判斷網址要不要帶 d 參數。 */
 const EMPTY_ENCODED = encodeDeck(EMPTY_DECK, []);
+
+/** sessionStorage 的鍵。跟復盤板分開存，兩邊互不影響。 */
+const DECK_KEY = 'deck-builder';
 import {
   loadCollection,
   loadTracking,
@@ -57,9 +61,17 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
   const codeIndex = useMemo(() => buildCodeIndex(cards), [cards]);
   const validIds = useMemo(() => new Set(cards.map((c) => c.id)), [cards]);
 
-  // 網址是使用者可編造的輸入，decodeDeck 會逐項比對真實卡片後才採用
+  /*
+   * 起始牌組：**網址優先，其次是這個分頁上次的狀態**。
+   *
+   * 網址優先是因為別人分享給你的連結一定要照那個連結顯示。
+   * 沒有網址參數時（例如從導覽列點回「牌組編輯器」），才還原上次編到一半
+   * 的牌組 —— 跑去看圖鑑再回來，不該從頭開始。
+   *
+   * 兩個來源都是**不可信輸入**，走同一個 decodeDeck 逐項比對真實卡片。
+   */
   const initial = useMemo(
-    () => decodeDeck(params.get('d') ?? '', codeIndex),
+    () => decodeDeck(params.get('d') || recallState(DECK_KEY), codeIndex),
     // 只在第一次掛載時讀取；之後由本元件掌握狀態
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -86,6 +98,12 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
 
   /** 目前牌組對應的編碼。也公布在 DOM 上供端對端測試等待（見 ReplayBoard 的說明）。 */
   const deckCode = useMemo(() => encodeDeck(deck, cards), [deck, cards]);
+
+  // 記住這個分頁的牌組，離開再回來時還原得回去
+  useEffect(() => {
+    if (!ready) return;
+    rememberState(DECK_KEY, deckCode === EMPTY_ENCODED ? '' : deckCode);
+  }, [deckCode, ready]);
 
   // 把牌組寫回網址，讓使用者可以直接複製連結分享
   useEffect(() => {

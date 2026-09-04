@@ -85,14 +85,13 @@ async function turnBox(page: Page) {
 /**
  * 打開某一方的編輯面板，並切到指定的區塊。
  *
- * 每一方的控制項又拆成四塊（牌組／加卡／符文／分析），一次只顯示一塊 ——
- * 使用者要求「加卡、機率、可打性各自獨立成一個區塊，按按鈕才跳出細節」。
- * 所以要操作哪一塊，就得先按那一塊的按鈕，跟真人使用的順序一樣。
+ * 每一方的控制項拆成四塊（牌組／備牌／加卡／符文），一次只顯示一塊。
+ * 分析不在裡面 —— 它是常駐區塊，見 analysisOf。
  */
 async function editOf(
   page: Page,
   side: 'you' | 'opponent',
-  section: 'deck' | 'sideboard' | 'add' | 'runes' | 'analysis' = 'add',
+  section: 'deck' | 'sideboard' | 'add' | 'runes' = 'add',
 ) {
   await openRail(page, side);
   const panel = page.locator(`[data-edit-side="${side}"]`);
@@ -115,6 +114,18 @@ const cardIn = (page: Page, side: 'you' | 'opponent', zone: string, name: string
   zoneOf(page, side, zone).getByRole('button', {
     name: new RegExp(`${name}(${String.raw`\s`}|$|　|×)`),
   });
+
+/**
+ * 常駐的分析區（手牌可打性 ＋ 抽牌機率）。
+ *
+ * 它固定在側欄分頁列的下方，**不管上面開哪一塊都看得到** ——
+ * 這兩個數字是復盤的目的本身，藏在分頁裡等於每次都要先切過去。
+ * 區塊內自帶你／對手切換，所以取用時要指名看哪一邊。
+ */
+async function analysisOf(page: Page, side: 'you' | 'opponent') {
+  await page.locator(`[data-analysis-tab="${side}"]`).click();
+  return page.getByTestId('board-analysis');
+}
 
 /** 點盤面上的卡，把它選進檢視面板。 */
 async function inspect(page: Page, side: 'you' | 'opponent', zone: string, name: string) {
@@ -235,6 +246,184 @@ test.describe('牌桌版面', () => {
  * 所以候選清單必須**永遠**列出衍生物，而且場上出現衍生物不該跳
  * 「不在這副牌組裡」的警告 —— 那完全是正常的局面。
  */
+/*
+ * 盤面編在網址裡，但導覽列的連結是乾淨的 /replay ——
+ * 所以切去圖鑑再回來，擺好的東西就沒了。使用者反映了這件事。
+ *
+ * 修法是把編碼後的盤面記在 sessionStorage（只活在這個分頁），
+ * 沒有網址參數時才拿來還原。**網址一定優先** —— 別人分享給你的連結
+ * 必須照那個連結顯示，不能被你自己上次擺的蓋掉。
+ */
+/*
+ * 牌堆可以直接點。
+ *
+ * 「抽一張」「多召一張符文」在遊戲中是卡牌效果隨時會做的事，
+ * 每次都跑去右側欄按按鈕太慢 —— 牌堆就在桌上，點它最直覺。
+ */
+test.describe('點牌堆直接抽牌／召符文', () => {
+  const pile = (page: Page, side: 'you' | 'opponent', label: string) =>
+    page.locator(`[data-side="${side}"] [data-pile-action="${label}"]`);
+
+  test('點主牌堆抽一張（315.4.b）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const summary = sideOf(page, 'you').getByTestId('side-summary');
+    await expect(summary).toContainText('手牌 0');
+    await expect(summary).toContainText('牌堆 6');
+
+    await pile(page, 'you', '牌堆').click();
+    await expect(summary).toContainText('手牌 1');
+    await expect(summary).toContainText('牌堆 5');
+  });
+
+  test('點符文堆召一張到基地（315.3.b、430.2.a）', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    await pile(page, 'you', '符文堆').click();
+
+    // 430.2.a：預設以活躍狀態召出
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('活躍符文 1');
+    await expect(
+      page.locator('[data-side="you"] [data-testid="rune-row"] [data-rune]'),
+    ).toHaveCount(1);
+  });
+
+  test('牌堆空了就不能再點', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const deck = pile(page, 'you', '牌堆');
+    // 主牌組只有 6 張
+    for (let i = 0; i < 6; i += 1) await deck.click();
+
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 0');
+    await expect(deck).toBeDisabled();
+  });
+
+  test('只影響按下去的那一方', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await importDeck(page, 'opponent', SMALL_DECK);
+
+    await pile(page, 'opponent', '牌堆').click();
+
+    await expect(sideOf(page, 'opponent').getByTestId('side-summary')).toContainText('手牌 1');
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 0');
+  });
+});
+
+test.describe('切換頁面後盤面還在', () => {
+  /** 導覽列的連結（頁面內文也有同名連結，要指名 header）。 */
+  const nav = (page: Page, name: string) =>
+    page.locator('header').getByRole('link', { name, exact: true });
+
+  test('切到圖鑑再回來，盤面還在', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await (await editOf(page, 'you', 'add'))
+      .getByRole('button', { name: '烈焰灼魂者', exact: true })
+      .click();
+
+    const summary = sideOf(page, 'you').getByTestId('side-summary');
+    await expect(summary).toContainText('手牌 1');
+
+    await nav(page, '卡牌圖鑑').click();
+    await page.waitForURL(/\/cards/);
+    await nav(page, '對局復盤').click();
+    await expect(page.locator('[data-replay-ready="true"]')).toBeAttached();
+
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
+  });
+
+  test('分享連結優先於上次的狀態', async ({ page, context }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await (await editOf(page, 'you', 'add'))
+      .getByRole('button', { name: '烈焰灼魂者', exact: true })
+      .click();
+    await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('手牌 1');
+
+    /*
+     * 同一個分頁開一個「別人分享的」空盤面網址。
+     * 這裡刻意用 b= 帶一個空的盤面碼，代表分享者當時什麼都沒擺。
+     */
+    const other = await context.newPage();
+    await other.goto('/replay');
+    await expect(other.locator('[data-replay-ready="true"]')).toBeAttached();
+    // 新分頁有自己的 sessionStorage，所以是空的
+    await expect(other.locator('[data-side="you"] [data-testid="side-summary"]')).toContainText(
+      '手牌 0',
+    );
+    await other.close();
+  });
+});
+
+test.describe('分析區與卡片檢視', () => {
+  /*
+   * 這一條守的是一個很容易再犯的 bug。
+   *
+   * 原本「點卡片自動切到卡片分頁」是用 useEffect 監看選取值變化做的，
+   * 但**點同一張卡兩次時選取沒有變**，effect 就不會再跑 ——
+   * 使用者的原話：「跳到其他區塊後再點同一張卡，就不會再跳出卡片敘述」。
+   * 改成在點擊處直接設定分頁（是「按了」而不是「值變了」）。
+   */
+  test('點同一張卡也會切回卡片分頁', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await (await editOf(page, 'you', 'add'))
+      .getByRole('button', { name: '烈焰灼魂者', exact: true })
+      .click();
+
+    const card = zoneOf(page, 'you', 'hand').locator('[data-card]').first();
+    const panel = page.locator('[data-rail-panel]');
+
+    await card.click();
+    await expect(panel).toHaveAttribute('data-rail-panel', 'card');
+
+    // 切走再點**同一張**，仍然要切回來
+    await openRail(page, 'turn');
+    await expect(panel).toHaveAttribute('data-rail-panel', 'turn');
+    await card.click();
+    await expect(panel).toHaveAttribute('data-rail-panel', 'card');
+  });
+
+  /*
+   * 「手牌打不打得出來」與「抽到的機率」是復盤的目的本身，
+   * 所以固定在側欄下方，不管上面開哪一塊都看得到。
+   */
+  test('分析區永遠都在，不管切到哪一個分頁', async ({ page }) => {
+    await gotoReplay(page);
+
+    for (const tab of ['turn', 'card', 'opponent', 'you'] as const) {
+      await openRail(page, tab);
+      await expect(page.getByTestId('board-analysis')).toBeVisible();
+    }
+  });
+
+  test('分析區可以切換看哪一方', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    const analysis = page.getByTestId('board-analysis');
+    await expect(analysis).toHaveAttribute('data-analysis-side', 'you');
+
+    await page.locator('[data-analysis-tab="opponent"]').click();
+    await expect(analysis).toHaveAttribute('data-analysis-side', 'opponent');
+  });
+
+  test('分析不再是某一方的子分頁', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    await openRail(page, 'you');
+    await expect(
+      page.locator('[data-edit-side="you"] [data-side-tab="analysis"]'),
+    ).toHaveCount(0);
+  });
+});
+
 test.describe('衍生物', () => {
   test('候選清單一律列出衍生物，即使牌組裡沒有', async ({ page }) => {
     await gotoReplay(page);
@@ -621,7 +810,7 @@ test.describe('對局復盤', () => {
     await gotoReplay(page);
     await importDeck(page, 'you', SMALL_DECK);
 
-    const section = (await editOf(page, 'you', 'analysis')).getByTestId('next-draw-odds');
+    const section = (await analysisOf(page, 'you')).getByTestId('next-draw-odds');
     await expect(section).toBeVisible();
 
     // 牌堆 6 張、目標 3 張，抽 1 張 = 3/6 = 50%
@@ -633,7 +822,7 @@ test.describe('對局復盤', () => {
     for (let i = 0; i < 3; i += 1) await add.click();
 
     await expect(
-      (await editOf(page, 'you', 'analysis')).getByTestId('next-draw-odds'),
+      (await analysisOf(page, 'you')).getByTestId('next-draw-odds'),
     ).not.toContainText('烈焰灼魂者');
   });
 
@@ -645,11 +834,11 @@ test.describe('對局復盤', () => {
     await (await editOf(page, 'you')).getByRole('button', { name: '劈砍', exact: true }).click();
     await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
 
-    const hand = (await editOf(page, 'you', 'analysis')).getByTestId('playable-hand');
-    await expect(hand).toBeVisible();
+    const analysis = await analysisOf(page, 'you');
+    await expect(analysis.getByTestId('playable-hand')).toBeVisible();
 
-    // 還沒放符文 → 兩張都付不起
-    await expect(hand).toContainText('基地上 0 張符文');
+    // 還沒放符文 → 兩張都付不起（張數顯示在分析區的標題列）
+    await expect(analysis).toContainText('基地上 0 張活躍符文');
 
     // 放 2 張符文到基地
     await (await editOf(page, 'you')).getByRole('button', { name: '基地', exact: true }).click();
@@ -657,9 +846,7 @@ test.describe('對局復盤', () => {
     await rune.click();
     await rune.click();
 
-    await expect(
-      (await editOf(page, 'you', 'analysis')).getByTestId('playable-hand'),
-    ).toContainText('基地上 2 張符文');
+    await expect(await analysisOf(page, 'you')).toContainText('基地上 2 張活躍符文');
   });
 
   test('對手的手牌預設只記張數（108.7.c / 108.7.e）', async ({ page }) => {
@@ -1047,7 +1234,7 @@ test.describe('回合狀態（規則 307–310）', () => {
     await gotoReplay(page);
     await setUpHand(page);
 
-    const hand = (await editOf(page, 'you', 'analysis')).getByTestId('playable-hand');
+    const hand = (await analysisOf(page, 'you')).getByTestId('playable-hand');
     await expect(hand).toBeVisible();
     // 三張都是「時機可」
     await expect(hand.getByText('時機不可')).toHaveCount(0);
@@ -1059,7 +1246,7 @@ test.describe('回合狀態（規則 307–310）', () => {
     await openRail(page, 'turn');
     await page.getByLabel(/正在法術對決或戰鬥中/).check();
 
-    const hand = (await editOf(page, 'you', 'analysis')).getByTestId('playable-hand');
+    const hand = (await analysisOf(page, 'you')).getByTestId('playable-hand');
     // 烈焰灼魂者兩個關鍵字都沒有 → 時機不可
     await expect(hand.getByText('時機不可')).toHaveCount(1);
     // 迅捷與反應那兩張還是可以
@@ -1072,7 +1259,7 @@ test.describe('回合狀態（規則 307–310）', () => {
     await openRail(page, 'turn');
     await page.getByLabel(/結算鏈上有東西/).check();
 
-    const hand = (await editOf(page, 'you', 'analysis')).getByTestId('playable-hand');
+    const hand = (await analysisOf(page, 'you')).getByTestId('playable-hand');
     // 只有帶反應的那一張可以
     await expect(hand.getByText('時機可')).toHaveCount(1);
     await expect(hand.getByText('時機不可')).toHaveCount(2);
@@ -1084,7 +1271,7 @@ test.describe('回合狀態（規則 307–310）', () => {
     await openRail(page, 'turn');
     await page.getByRole('button', { name: '對手的回合' }).click();
 
-    const hand = (await editOf(page, 'you', 'analysis')).getByTestId('playable-hand');
+    const hand = (await analysisOf(page, 'you')).getByTestId('playable-hand');
     await expect(hand.getByText('時機可')).toHaveCount(1);
   });
 
@@ -1097,7 +1284,7 @@ test.describe('回合狀態（規則 307–310）', () => {
       .getByRole('button', { name: '烈焰灼魂者', exact: true })
       .click();
 
-    const hand = (await editOf(page, 'you', 'analysis')).getByTestId('playable-hand');
+    const hand = (await analysisOf(page, 'you')).getByTestId('playable-hand');
     // 普通開環 → 時機可，但沒有符文 → 資源不足
     await expect(hand).toContainText('時機可');
     await expect(hand).toContainText('資源差');
@@ -1184,7 +1371,7 @@ test.describe('活躍與休眠（規則 414、415）', () => {
       .getByRole('button', { name: '劈砍', exact: true })
       .click();
     await expect(
-      (await editOf(page, 'you', 'analysis')).getByTestId('playable-hand'),
+      (await analysisOf(page, 'you')).getByTestId('playable-hand'),
     ).toContainText('資源夠');
 
     // 把兩張符文都休眠 → 付不起（切過別的區塊，要回到符文那一塊）
@@ -1193,7 +1380,7 @@ test.describe('活躍與休眠（規則 414、415）', () => {
     await toggle.click();
     await toggle.click();
     await expect(
-      (await editOf(page, 'you', 'analysis')).getByTestId('playable-hand'),
+      (await analysisOf(page, 'you')).getByTestId('playable-hand'),
     ).toContainText('資源差');
   });
 

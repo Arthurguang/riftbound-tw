@@ -87,38 +87,76 @@ export function BoardCard({
 }
 
 /**
- * 一疊看不到內容的牌（牌堆、對手不知道內容的手牌）。
+ * 一疊看不到內容的牌（牌堆、符文牌堆、對手不知道內容的手牌）。
  *
  * 使用者要求「看得到牌堆」—— 牌堆剩幾張是復盤時最常看的數字之一，
  * 藏在摘要文字裡不夠明顯。這裡畫成一疊卡背，數字直接壓在上面。
+ *
+ * ── 可以點的那幾疊 ──────────────────────────────────────────────
+ * 傳了 onClick 就變成按鈕：點主牌堆抽一張、點符文牌堆召一張。
+ * 這是為了配合卡牌效果 —— 遊戲中「抽一張」「多召一張符文」隨時可能發生，
+ * 每次都要跑去右側欄按按鈕太慢。牌堆就在桌上，點它最直覺。
+ *
+ * 空的牌堆不能點（disabled），因為抽不到也召不出來。
  */
 export function CardBackPile({
   count,
   label,
   rule,
+  onClick,
+  actionHint,
 }: {
   count: number;
   label: string;
   rule?: string;
+  /** 有傳才變成可點的按鈕。 */
+  onClick?: () => void;
+  /** 點下去會發生什麼，寫進 title 與可及名稱。 */
+  actionHint?: string;
 }) {
-  return (
-    <div className="flex flex-col items-center gap-1" title={`${label} ${count} 張`}>
-      <div
-        className={`relative h-[52px] w-[38px] rounded border ${
-          count > 0
-            ? 'border-accent/40 bg-gradient-to-br from-surface-2 to-surface-3'
-            : 'border-dashed border-line bg-transparent'
-        }`}
-        data-pile={label}
-      >
-        <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-ink">
-          {count}
-        </span>
-      </div>
-      <span className="text-[0.6rem] leading-none text-ink-faint">
-        {label}
-        {rule && <span className="ml-0.5 font-mono opacity-70">{rule}</span>}
+  const face = (
+    <span
+      className={`relative block h-[52px] w-[38px] rounded border transition-transform ${
+        count > 0
+          ? 'border-accent/40 bg-gradient-to-br from-surface-2 to-surface-3'
+          : 'border-dashed border-line bg-transparent'
+      } ${onClick && count > 0 ? 'group-hover/pile:scale-105 group-hover/pile:border-accent' : ''}`}
+      data-pile={label}
+    >
+      <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-ink">
+        {count}
       </span>
-    </div>
+    </span>
+  );
+
+  const caption = (
+    <span className="text-[0.6rem] leading-none text-ink-faint">
+      {label}
+      {rule && <span className="ml-0.5 font-mono opacity-70">{rule}</span>}
+    </span>
+  );
+
+  if (!onClick) {
+    return (
+      <div className="flex flex-col items-center gap-1" title={`${label} ${count} 張`}>
+        {face}
+        {caption}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={count === 0}
+      data-pile-action={label}
+      title={`${label} ${count} 張　${count === 0 ? '（空了）' : actionHint ?? ''}`}
+      aria-label={`${label}（${count} 張）${actionHint ? `：${actionHint}` : ''}`}
+      className="group/pile flex flex-col items-center gap-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {face}
+      {caption}
+    </button>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 
 export type RailTab = 'turn' | 'card' | 'opponent' | 'you';
 
@@ -22,31 +21,31 @@ const TABS: { id: RailTab; label: string; hint: string }[] = [
  * 你在調對手盤面時不會同時在改自己的符文。所以改成頂部一排按鈕，
  * 按哪個才展開哪個 —— 側欄高度就固定了，不再越用越長。
  *
- * ── 點卡片會自動切到「卡片」 ────────────────────────────────────
- * 不然點了桌上的卡卻沒反應（面板收在另一個分頁裡），會以為壞掉。
+ * ── 分頁狀態由外面掌握 ──────────────────────────────────────────
+ * 點桌上的卡要自動切到「卡片」，不然點了沒反應會以為壞掉。
+ *
+ * 這件事原本是在這裡用 useEffect 監看選取變化來做的 —— 但**點同一張卡
+ * 兩次時選取沒有變**，effect 就不會再跑。所以改成由 ReplayBoard 在處理
+ * 點擊時直接設定分頁，那是「使用者按了」而不是「值變了」，永遠可靠。
  */
 export function BoardRail({
-  selectionKey,
+  tab,
+  onTabChange,
   turn,
   card,
   opponent,
   you,
+  analysis,
 }: {
-  /**
-   * 目前選中的卡的識別字串（沒有選就是 null）。
-   * 一變動就自動切到「卡片」分頁 —— 讓點擊有立即的回應。
-   */
-  selectionKey: string | null;
+  tab: RailTab;
+  onTabChange: (tab: RailTab) => void;
   turn: React.ReactNode;
   card: React.ReactNode;
   opponent: React.ReactNode;
   you: React.ReactNode;
+  /** 永遠顯示在分頁列下方 —— 不管上面切到哪一塊都看得到。 */
+  analysis: React.ReactNode;
 }) {
-  const [tab, setTab] = useState<RailTab>('you');
-
-  useEffect(() => {
-    if (selectionKey) setTab('card');
-  }, [selectionKey]);
 
   const panels: Record<RailTab, React.ReactNode> = { turn, card, opponent, you };
 
@@ -59,7 +58,7 @@ export function BoardRail({
             type="button"
             aria-pressed={tab === t.id}
             title={t.hint}
-            onClick={() => setTab(t.id)}
+            onClick={() => onTabChange(t.id)}
             data-rail-tab={t.id}
             className={`flex-1 rounded px-2 py-1.5 text-xs transition-colors ${
               tab === t.id
@@ -86,6 +85,15 @@ export function BoardRail({
           </div>
         ))}
       </div>
+
+      {/*
+       * 分析永遠在最下面。
+       *
+       * 「手牌打不打得出來」與「抽到的機率」是復盤的**目的本身** ——
+       * 擺盤面是手段，看數字才是目的。藏在某個分頁裡等於每次都要先切過去，
+       * 所以固定放在這裡，不管上面開哪一塊都看得到。
+       */}
+      <div className="shrink-0">{analysis}</div>
     </div>
   );
 }
