@@ -10,8 +10,11 @@ import {
   activeRunesOnBase,
   handSize,
   isInPlayZone,
+  mightAt,
   moveCard,
   remainingDeck,
+  buffOn,
+  setBuff,
   setDormant,
   setInPile,
   splitBaseByRunes,
@@ -48,6 +51,34 @@ import type { Card } from '@/lib/types';
  * 這樣雙方的「場上」都緊鄰戰場，跟實體對局坐下來的樣子一致。
  * 側欄（英雄／牌堆／廢牌堆／放逐）兩方順序相同，上下對齊方便對照。
  */
+
+/**
+ * 一方在某個戰場的戰力合計。
+ *
+ * 卡面與增益分開顯示（「12 + 5」），因為復盤時常要判斷
+ * 「這些增益消失之後還打不打得贏」—— 只給總和就看不出來了。
+ */
+function MightTotal({
+  label,
+  might,
+  tone,
+}: {
+  label: string;
+  might: { base: number; buff: number; total: number };
+  tone: string;
+}) {
+  return (
+    <span
+      className="rounded bg-surface-2 px-1 font-mono"
+      data-might-total={label}
+      title={`${label}：卡面 ${might.base} ＋ 增益 ${might.buff} ＝ ${might.total}（單純加總，不是戰鬥結果）`}
+    >
+      <span className="text-ink-faint">{label} </span>
+      <span className={tone}>{might.base}</span>
+      {might.buff > 0 && <span className="text-emerald-300">+{might.buff}</span>}
+    </span>
+  );
+}
 
 function ZoneCell({
   zone,
@@ -89,6 +120,13 @@ function ZoneCell({
       art={art}
       className={className}
       dormant={isInPlayZone(zone) ? player.dormant[zone] : undefined}
+      buffs={isInPlayZone(zone) ? player.buffs[zone] : undefined}
+      onBuffDrop={
+        isInPlayZone(zone)
+          ? (cardId, amount) =>
+              onChange(setBuff(player, zone, cardId, buffOn(player, zone, cardId) + amount))
+          : undefined
+      }
       selectedCardId={selectedHere}
       onSelect={(cardId) => onSelect({ side, zone, cardId })}
       onMove={(cardId, to) => {
@@ -210,6 +248,10 @@ function PlayerBand({
         art={art}
         className={grow}
         dormant={player.dormant.base}
+        buffs={player.buffs.base}
+        onBuffDrop={(cardId, amount) =>
+          onChange(setBuff(player, 'base', cardId, buffOn(player, 'base', cardId) + amount))
+        }
         selectedCardId={
           selection && selection.side === (isOpponent ? 'opponent' : 'you') &&
           selection.zone === 'base'
@@ -412,7 +454,7 @@ export function BoardTable({
       {/* ── 戰場（中間，雙方共用） ── */}
       <div className="grid min-h-0 gap-2 md:grid-cols-2" data-testid="battlefield-row">
         {([0, 1] as const).map((index) => {
-          const zone = (index === 0 ? 'bf0' : 'bf1') as BoardZone;
+          const zone = index === 0 ? ('bf0' as const) : ('bf1' as const);
           const cardId = board.battlefields[index];
           const card = cardId ? byId.get(cardId) : undefined;
 
@@ -465,6 +507,27 @@ export function BoardTable({
                     198.1
                   </span>
                 </h3>
+
+                {/*
+                 * 雙方在這個戰場的戰力合計。
+                 *
+                 * 這是**單純的加總**，不是戰鬥結果 —— 誰能參戰、有沒有被
+                 * 效果排除、休眠算不算，那些需要規則引擎，本站不做。
+                 * 卡面與增益分開寫，才看得出「增益消失之後還剩多少」。
+                 */}
+                <span className="ml-auto flex shrink-0 items-center gap-1.5 text-[0.65rem]">
+                  <MightTotal
+                    label="對手"
+                    might={mightAt(board.opponent, zone, byId)}
+                    tone="text-rose-300"
+                  />
+                  <span className="text-ink-faint">vs</span>
+                  <MightTotal
+                    label="你"
+                    might={mightAt(board.you, zone, byId)}
+                    tone="text-accent-soft"
+                  />
+                </span>
               </div>
 
               <div className="grid min-h-0 flex-1 grid-rows-2 gap-1.5">

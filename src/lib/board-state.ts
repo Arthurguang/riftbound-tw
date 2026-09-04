@@ -151,6 +151,19 @@ export type PlayerBoard = {
    */
   dormant: { base: Pile; bf0: Pile; bf1: Pile };
   /** 廢牌堆（108.2）。 */
+  /**
+   * 場上單位臨時增加的戰力。
+   *
+   * 卡牌、傳奇、法術會在某些時刻給單位增益（例如 [疾襲] 或各種
+   * 「這回合 +N 力量」），這些數字不在卡面上，復盤時很容易記錯。
+   *
+   * ⚠️ **跟休眠一樣是「這個卡號在這一區的總量」**，不是每一張各自的值。
+   * 同一區有兩張同名單位時，模型分不出哪一張被加成 —— 這是盤面模型
+   * 本來就有的限制（休眠也是這樣），不是這個功能新增的問題。
+   * 介面上會把它顯示成整疊的加成。
+   */
+  buffs: Record<InPlayZone, Pile>;
+
   discard: Pile;
   /** 放逐區域（108.6）。 */
   exile: Pile;
@@ -193,6 +206,7 @@ export const EMPTY_PLAYER: PlayerBoard = {
   bf0: {},
   bf1: {},
   dormant: { base: {}, bf0: {}, bf1: {} },
+  buffs: { base: {}, bf0: {}, bf1: {} },
   discard: {},
   exile: {},
 };
@@ -351,6 +365,59 @@ export function foreignCards(player: PlayerBoard, byId?: Map<string, Card>): str
  * 但操作方式完全不同：符文是資源，每一張各自有活躍／休眠（414、415），
  * 使用者要能一張一張指定。所以**顯示時**拆成兩塊，資料本身不動。
  */
+/**
+ * 設定某張卡在某個位置的戰力加成。
+ *
+ * 傳 0（或負數）代表清掉 —— 增益結束就該消失，留一個 +0 只是雜訊。
+ * 上限跟盤面其他數量一樣是 99，避免使用者手滑或網址被亂改灌爆畫面。
+ */
+export function setBuff(
+  player: PlayerBoard,
+  zone: InPlayZone,
+  cardId: string,
+  amount: number,
+): PlayerBoard {
+  const next = Math.max(0, Math.min(99, Math.round(amount)));
+  return {
+    ...player,
+    buffs: { ...player.buffs, [zone]: setInPile(player.buffs[zone], cardId, next) },
+  };
+}
+
+/**
+ * 某一方在某個位置的戰力合計 —— 卡面戰力與增益分開回傳。
+ *
+ * 為什麼分開而不是只給總和：復盤時要判斷的往往是「這個增益消失之後
+ * 還打不打得贏」，總和會把那個資訊蓋掉。介面顯示成「12 + 5」。
+ *
+ * ⚠️ 這是**單純的加總**，不是戰鬥結果的預測。
+ * 誰能參與戰鬥、有沒有被效果排除、休眠算不算 —— 那些需要規則引擎，
+ * 本站不做。介面上要標明這一點。
+ */
+export function mightAt(
+  player: PlayerBoard,
+  zone: InPlayZone,
+  byId: Map<string, Card>,
+): { base: number; buff: number; total: number } {
+  let base = 0;
+  let buff = 0;
+
+  for (const [cardId, qty] of Object.entries(player[zone])) {
+    if (qty <= 0) continue;
+    const card = byId.get(cardId);
+    // 沒有戰力的卡（法術、裝備、符文）不算進去
+    if (!card || card.might === null) continue;
+    base += card.might * qty;
+    buff += player.buffs[zone][cardId] ?? 0;
+  }
+
+  return { base, buff, total: base + buff };
+}
+
+/** 某張卡在某個位置目前的加成（沒有就是 0）。 */
+export const buffOn = (player: PlayerBoard, zone: InPlayZone, cardId: string): number =>
+  player.buffs[zone][cardId] ?? 0;
+
 export function splitBaseByRunes(
   player: PlayerBoard,
   byId: Map<string, Card>,

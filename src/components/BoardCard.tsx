@@ -2,6 +2,7 @@
 
 import { cardImageUrl, cardName } from '@/lib/cards';
 import type { ArtLang, TextLang } from '@/lib/i18n';
+import { BUFF_DRAG_TYPE } from './BuffPalette';
 import type { Card } from '@/lib/types';
 
 /**
@@ -31,6 +32,8 @@ export function BoardCard({
   selected,
   onSelect,
   zoneLabel,
+  buff = 0,
+  onBuffDrop,
 }: {
   card: Card;
   qty: number;
@@ -42,6 +45,10 @@ export function BoardCard({
   art: ArtLang;
   selected: boolean;
   onSelect: () => void;
+  /** 這張卡目前的戰力加成（0 就不顯示）。 */
+  buff?: number;
+  /** 有傳才接受把加成拖上來。只有場上的位置會傳。 */
+  onBuffDrop?: (amount: number) => void;
 }) {
   const name = cardName(card, lang);
   const landscape = card.orientation === 'landscape';
@@ -56,6 +63,29 @@ export function BoardCard({
       aria-label={`${zoneLabel}的 ${name}${qty > 1 ? ` ×${qty}` : ''}`}
       data-card={card.id}
       data-dormant={dormant > 0 ? dormant : undefined}
+      data-buff={buff > 0 ? buff : undefined}
+      onDragOver={
+        onBuffDrop
+          ? (e) => {
+              // 只有真的帶著加成才接受，否則不要攔別人的拖放
+              if (!e.dataTransfer.types.includes(BUFF_DRAG_TYPE)) return;
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'copy';
+            }
+          : undefined
+      }
+      onDrop={
+        onBuffDrop
+          ? (e) => {
+              const raw = e.dataTransfer.getData(BUFF_DRAG_TYPE);
+              if (raw === '') return;
+              const amount = Number(raw);
+              if (!Number.isFinite(amount)) return;
+              e.preventDefault();
+              onBuffDrop(amount);
+            }
+          : undefined
+      }
       className={`relative shrink-0 rounded transition-transform hover:z-20 hover:scale-110 focus-visible:z-20 focus-visible:scale-110 focus-visible:outline-none ${
         selected ? 'z-20 ring-2 ring-accent' : ''
       } ${landscape ? 'h-[48px] w-[68px]' : 'h-[68px] w-[48px]'}`}
@@ -73,6 +103,27 @@ export function BoardCard({
       {qty > 1 && (
         <span className="absolute -right-1 -top-1 rounded bg-surface-2 px-1 text-[0.6rem] font-semibold text-ink shadow">
           {qty}
+        </span>
+      )}
+
+      {/*
+       * 加成顯示成「卡面＋增益」而不是算好的總和。
+       *
+       * 一開始寫的是總和（3 加 2 就顯示 5），但使用者要的是看得出
+       * **哪些是原本的、哪些是效果給的** —— 復盤時要判斷的往往是
+       * 「這個增益消失之後還打得贏嗎」，總和把那個資訊蓋掉了。
+       * 加總的責任留給戰場的合計，那裡才是真的要一個數字。
+       */}
+      {buff > 0 && (
+        <span
+          className="absolute -bottom-1 -right-1 rounded bg-emerald-500 px-1 text-[0.6rem] font-bold text-black shadow"
+          title={
+            card.might === null
+              ? `加成 +${buff}（這張卡沒有戰力）`
+              : `戰力 ${card.might} + 增益 ${buff} = ${card.might + buff}`
+          }
+        >
+          {card.might === null ? `+${buff}` : `${card.might}+${buff}`}
         </span>
       )}
 

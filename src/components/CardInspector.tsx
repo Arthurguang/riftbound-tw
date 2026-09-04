@@ -61,6 +61,8 @@ export function CardInspector({
   onMove,
   onRemove,
   onDormant,
+  onBuff,
+  buff,
   onClose,
 }: {
   selection: Selection | null;
@@ -72,6 +74,10 @@ export function CardInspector({
   onMove: (to: BoardZone) => void;
   onRemove: () => void;
   onDormant: (count: number) => void;
+  /** 目前的戰力加成。 */
+  buff: number;
+  /** 設定戰力加成（0 代表清除）。 */
+  onBuff: (amount: number) => void;
   onClose: () => void;
 }) {
   if (!selection || !card) {
@@ -153,6 +159,33 @@ export function CardInspector({
 
           {inPlay && (
             <div>
+              {/*
+               * 拖曳很快，但對鍵盤與觸控不友善 —— 這裡是同一件事的另一條路。
+               * 也只有這裡能減少或清除（調色盤只做「加」）。
+               */}
+              <p className="mb-1 text-[0.65rem] text-ink-faint">
+                戰力加成
+                {card.might !== null && (
+                  <span className="ml-1 text-ink-dim">
+                    {card.might} + {buff} = <strong>{card.might + buff}</strong>
+                  </span>
+                )}
+              </p>
+              <div className="mb-2 flex flex-wrap items-center gap-1">
+                <button type="button" onClick={() => onBuff(buff - 1)} className={btn}>
+                  −1
+                </button>
+                <button type="button" onClick={() => onBuff(buff + 1)} className={btn}>
+                  +1
+                </button>
+                <button type="button" onClick={() => onBuff(0)} className={btn}>
+                  清除
+                </button>
+                <span className="text-[0.65rem] text-ink-faint" data-testid="inspector-buff">
+                  目前 +{buff}
+                </span>
+              </div>
+
               <p className="mb-1 text-[0.65rem] text-ink-faint">
                 活躍／休眠（414、415）—— 休眠在桌上就是把卡打橫
               </p>

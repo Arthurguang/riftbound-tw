@@ -34,6 +34,8 @@ export function BoardZonePanel({
   lang,
   art,
   dormant,
+  buffs,
+  onBuffDrop,
   extra,
   owner,
   label,
@@ -50,6 +52,10 @@ export function BoardZonePanel({
   art: ArtLang;
   /** 這個位置有幾張處於休眠（只有場上的位置會傳）。 */
   dormant?: Pile;
+  /** 這個位置每張卡的戰力加成（只有場上的位置會傳）。 */
+  buffs?: Pile;
+  /** 把加成拖到某張卡上。只有場上的位置會傳。 */
+  onBuffDrop?: (cardId: string, amount: number) => void;
   /** 額外的控制項，例如對手手牌的「未知張數」。 */
   extra?: React.ReactNode;
   /**
@@ -119,6 +125,10 @@ export function BoardZonePanel({
               card={card}
               qty={qty}
               dormant={dormant?.[card.id] ?? 0}
+              buff={buffs?.[card.id] ?? 0}
+              onBuffDrop={
+                onBuffDrop ? (amount) => onBuffDrop(card.id, amount) : undefined
+              }
               lang={lang}
               art={art}
               zoneLabel={label ?? ZONE_LABELS[zone]}
