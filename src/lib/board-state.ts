@@ -384,6 +384,36 @@ export function setBuff(
   };
 }
 
+/**
+ * 某一方在某個位置的戰力合計 —— 卡面戰力與增益分開回傳。
+ *
+ * 為什麼分開而不是只給總和：復盤時要判斷的往往是「這個增益消失之後
+ * 還打不打得贏」，總和會把那個資訊蓋掉。介面顯示成「12 + 5」。
+ *
+ * ⚠️ 這是**單純的加總**，不是戰鬥結果的預測。
+ * 誰能參與戰鬥、有沒有被效果排除、休眠算不算 —— 那些需要規則引擎，
+ * 本站不做。介面上要標明這一點。
+ */
+export function mightAt(
+  player: PlayerBoard,
+  zone: InPlayZone,
+  byId: Map<string, Card>,
+): { base: number; buff: number; total: number } {
+  let base = 0;
+  let buff = 0;
+
+  for (const [cardId, qty] of Object.entries(player[zone])) {
+    if (qty <= 0) continue;
+    const card = byId.get(cardId);
+    // 沒有戰力的卡（法術、裝備、符文）不算進去
+    if (!card || card.might === null) continue;
+    base += card.might * qty;
+    buff += player.buffs[zone][cardId] ?? 0;
+  }
+
+  return { base, buff, total: base + buff };
+}
+
 /** 某張卡在某個位置目前的加成（沒有就是 0）。 */
 export const buffOn = (player: PlayerBoard, zone: InPlayZone, cardId: string): number =>
   player.buffs[zone][cardId] ?? 0;

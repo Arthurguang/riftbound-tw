@@ -292,9 +292,12 @@ test.describe('戰力加成', () => {
     await applyBuff(page, 3, card);
 
     await expect(card).toHaveAttribute('data-buff', '3');
-    // 烈焰灼魂者 5 力量 + 3 = 8。顯示總戰力而不是「+3」——
-    // 使用者要看的是「這隻現在幾點」，不該還要自己心算。
-    await expect(card).toContainText('8');
+    /*
+     * 顯示成「卡面＋增益」而不是算好的總和（烈焰灼魂者 5 力量 → 5+3）。
+     * 復盤時要判斷的往往是「增益消失之後還打得贏嗎」，
+     * 總和會把那個資訊蓋掉；加總的責任留給戰場合計。
+     */
+    await expect(card).toContainText('5+3');
   });
 
   test('套用兩次會累加，而且待命只用一次就解除', async ({ page }) => {
@@ -350,6 +353,26 @@ test.describe('戰力加成', () => {
       other.locator('[data-owner="you"][data-zone="base"] [data-card]').first(),
     ).toHaveAttribute('data-buff', '5');
     await other.close();
+  });
+
+  test('戰場顯示雙方的戰力合計，卡面與增益分開', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await importDeck(page, 'opponent', SMALL_DECK);
+
+    // 你放一張 5 力量的到戰場一，加 2
+    const yourEdit = await editOf(page, 'you', 'add');
+    await yourEdit.getByRole('button', { name: '戰一', exact: true }).click();
+    await yourEdit.getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+
+    const yours = zoneOf(page, 'you', 'bf0').locator('[data-card]').first();
+    await applyBuff(page, 2, yours);
+
+    const bf = page.locator('[data-battlefield="0"]');
+    await expect(bf.locator('[data-might-total="你"]')).toContainText('5');
+    await expect(bf.locator('[data-might-total="你"]')).toContainText('+2');
+    // 對手那邊還是空的
+    await expect(bf.locator('[data-might-total="對手"]')).toContainText('0');
   });
 
   test('手牌不能放加成 —— 加成只在場上有意義', async ({ page }) => {
@@ -464,6 +487,71 @@ test.describe('切換頁面後盤面還在', () => {
       '手牌 0',
     );
     await other.close();
+  });
+});
+
+/*
+ * 側欄由上而下固定成四段：分頁按鈕／分頁內容／戰力加成／分析。
+ *
+ * 加成與分析先前是疊在一起的，把上面的分頁內容擠掉 ——
+ * 使用者反映「加成的介面直接擋住了原本按鈕的空間」。
+ * 現在分析有自己的高度上限與捲軸，往下滑就看得到抽牌機率。
+ */
+test.describe('側欄的四段版面', () => {
+  test('四個主要按鈕與分頁內容都保有空間', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+
+    await expect(page.locator('[data-rail-tab]')).toHaveCount(4);
+
+    const panel = await page.locator('[data-rail-panel]').boundingBox();
+    expect(panel!.height).toBeGreaterThan(80);
+  });
+
+  test('由上而下是 分頁／內容／加成／分析', async ({ page }) => {
+    await gotoReplay(page);
+
+    const tabs = await page.locator('[data-rail-tab]').first().boundingBox();
+    const panel = await page.locator('[data-rail-panel]').boundingBox();
+    const buff = await page.getByTestId('buff-palette').boundingBox();
+    const analysis = await page.getByTestId('analysis-scroll').boundingBox();
+
+    expect(tabs!.y).toBeLessThan(panel!.y);
+    expect(panel!.y).toBeLessThan(buff!.y);
+    expect(buff!.y).toBeLessThan(analysis!.y);
+  });
+
+  test('分析區內容太長時自己捲，不會擠掉上面', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', [
+      '【主牌組】',
+      '3 Blazing Scorcher',
+      '3 Cleave',
+      '3 Get Excited!',
+      '3 Hextech Ray',
+      '【符文牌組】',
+      '12 Fury Rune',
+    ]);
+
+    const add = await editOf(page, 'you', 'add');
+    for (const name of ['烈焰灼魂者', '劈砍', '嗨起來！', '海克斯科技射線']) {
+      const button = add.getByRole('button', { name, exact: true });
+      if (await button.count()) await button.click();
+    }
+
+    const scroll = page.getByTestId('analysis-scroll');
+    const canScroll = await scroll.evaluate((el) => el.scrollHeight > el.clientHeight);
+    expect(canScroll).toBe(true);
+
+    // 捲到底就看得到抽牌機率
+    await scroll.evaluate((el) => {
+      el.scrollTop = el.scrollHeight;
+    });
+    await expect(page.getByTestId('next-draw-odds')).toBeVisible();
+
+    // 上面的分頁內容沒有被擠掉
+    const panel = await page.locator('[data-rail-panel]').boundingBox();
+    expect(panel!.height).toBeGreaterThan(80);
   });
 });
 

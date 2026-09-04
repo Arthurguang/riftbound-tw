@@ -651,12 +651,8 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
             />
           </SideBlock>
           }
-          analysis={
-            <div className="space-y-2">
-              <BuffPalette armed={armedBuff} onArm={setArmedBuff} />
-              <BoardAnalysis board={board} byId={byId} lang={lang} />
-            </div>
-          }
+          buff={<BuffPalette armed={armedBuff} onArm={setArmedBuff} />}
+          analysis={<BoardAnalysis board={board} byId={byId} lang={lang} />}
           you={
           <SideBlock side="you">
             <GameControls board={board} side="you" byId={byId} lang={lang} onChange={setBoard} />

@@ -35,6 +35,7 @@ export function BoardRail({
   card,
   opponent,
   you,
+  buff,
   analysis,
 }: {
   tab: RailTab;
@@ -43,7 +44,9 @@ export function BoardRail({
   card: React.ReactNode;
   opponent: React.ReactNode;
   you: React.ReactNode;
-  /** 永遠顯示在分頁列下方 —— 不管上面切到哪一塊都看得到。 */
+  /** 戰力加成的計數器。固定一小條，不佔分頁內容的空間。 */
+  buff: React.ReactNode;
+  /** 永遠顯示在最下面 —— 不管上面切到哪一塊都看得到，自己可以捲。 */
   analysis: React.ReactNode;
 }) {
 
@@ -86,14 +89,26 @@ export function BoardRail({
         ))}
       </div>
 
+      {/* 戰力加成：固定一小條 */}
+      <div className="shrink-0">{buff}</div>
+
       {/*
-       * 分析永遠在最下面。
+       * 分析永遠在最下面，而且**自己可以捲**。
        *
        * 「手牌打不打得出來」與「抽到的機率」是復盤的**目的本身** ——
-       * 擺盤面是手段，看數字才是目的。藏在某個分頁裡等於每次都要先切過去，
-       * 所以固定放在這裡，不管上面開哪一塊都看得到。
+       * 擺盤面是手段，看數字才是目的，所以不管上面開哪一塊都看得到。
+       *
+       * 但它可能很長（手牌一多，可打性清單就長）。先前它直接撐開，
+       * 把上面的分頁內容擠掉 —— 使用者反映「加成的介面直接擋住原本按鈕
+       * 的空間」。所以給它一個高度上限，超過就在**這一塊裡面**捲，
+       * 往下滑就看得到抽牌機率。
        */}
-      <div className="shrink-0">{analysis}</div>
+      <div
+        className="max-h-[38vh] shrink-0 overflow-y-auto pr-1"
+        data-testid="analysis-scroll"
+      >
+        {analysis}
+      </div>
     </div>
   );
 }

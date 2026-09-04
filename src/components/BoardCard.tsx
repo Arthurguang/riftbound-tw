@@ -107,9 +107,12 @@ export function BoardCard({
       )}
 
       {/*
-       * 加成連同**算好的總戰力**一起顯示。
-       * 只顯示「+3」的話，使用者還要自己回想卡面幾點再心算 ——
-       * 而「這隻現在幾點」正是要看的那個數字。
+       * 加成顯示成「卡面＋增益」而不是算好的總和。
+       *
+       * 一開始寫的是總和（3 加 2 就顯示 5），但使用者要的是看得出
+       * **哪些是原本的、哪些是效果給的** —— 復盤時要判斷的往往是
+       * 「這個增益消失之後還打得贏嗎」，總和把那個資訊蓋掉了。
+       * 加總的責任留給戰場的合計，那裡才是真的要一個數字。
        */}
       {buff > 0 && (
         <span
@@ -117,10 +120,10 @@ export function BoardCard({
           title={
             card.might === null
               ? `加成 +${buff}（這張卡沒有戰力）`
-              : `戰力 ${card.might} + ${buff} = ${card.might + buff}`
+              : `戰力 ${card.might} + 增益 ${buff} = ${card.might + buff}`
           }
         >
-          {card.might === null ? `+${buff}` : `${card.might + buff}`}
+          {card.might === null ? `+${buff}` : `${card.might}+${buff}`}
         </span>
       )}
 
