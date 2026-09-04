@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BoardSide } from './BoardSide';
 import { BoardTable } from './BoardTable';
-import { BoardRail } from './BoardRail';
+import { BoardRail, type RailTab } from './BoardRail';
+import { BoardAnalysis } from './BoardAnalysis';
 import { CardInspector, type Selection } from './CardInspector';
 import { BattlefieldPicker } from './BattlefieldPicker';
 import { TurnStateControl } from './TurnStateControl';
@@ -110,6 +111,24 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
    * 而且很容易誤按到隔壁那張。
    */
   const [selection, setSelection] = useState<Selection | null>(null);
+
+  /**
+   * 右側欄目前開哪一個分頁。
+   *
+   * 由這裡掌握而不是 BoardRail 自己存，是為了讓「點卡片」能同時做兩件事：
+   * 設定選取、並切到「卡片」分頁。
+   *
+   * 先前是在 BoardRail 裡用 useEffect 監看選取變化來切分頁 —— 但**點同一張
+   * 卡兩次時選取沒有變**，effect 就不會再跑，分頁也就不會切回去。
+   * 使用者的原話：「跳到其他區塊後再點同一張卡，就不會再跳出卡片敘述」。
+   */
+  const [railTab, setRailTab] = useState<RailTab>('you');
+
+  /** 點盤面上的卡：選起來，並且**一定**切到「卡片」分頁。 */
+  const selectCard = useCallback((next: Selection) => {
+    setSelection(next);
+    setRailTab('card');
+  }, []);
 
   /**
    * 推進回合前的盤面，供「上一回合」還原。
@@ -372,12 +391,13 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
             art={art}
             onChange={setBoard}
             selection={selection}
-            onSelect={setSelection}
+            onSelect={selectCard}
           />
         </div>
 
         <BoardRail
-          selectionKey={selection ? `${selection.side}/${selection.zone}/${selection.cardId}` : null}
+          tab={railTab}
+          onTabChange={setRailTab}
           turn={
             <div className="space-y-2">
       {/*
@@ -560,13 +580,12 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
               isOpponent
               turn={ownTurns(board.turn, !board.onThePlay)}
               onThePlay={!board.onThePlay}
-              phase={board.phase}
-              isTurnPlayer={board.activePlayer === 'opponent'}
               onRestart={resetToOpening}
               onChange={setSide('opponent')}
             />
           </SideBlock>
           }
+          analysis={<BoardAnalysis board={board} byId={byId} lang={lang} />}
           you={
           <SideBlock side="you">
             <GameControls board={board} side="you" byId={byId} lang={lang} onChange={setBoard} />
@@ -589,8 +608,6 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
               isOpponent={false}
               turn={yourOwnTurns}
               onThePlay={board.onThePlay}
-              phase={board.phase}
-              isTurnPlayer={board.activePlayer === 'you'}
               onRestart={resetToOpening}
               onChange={setSide('you')}
             />
