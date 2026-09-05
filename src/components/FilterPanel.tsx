@@ -96,7 +96,12 @@ export function FilterPanel({
         title={strings.filterMarks}
         options={MARKS.map((mark) => ({
           value: mark,
-          label: mark === 'banned' ? strings.markBanned : strings.markToken,
+          label:
+            mark === 'banned'
+              ? strings.markBanned
+              : mark === 'errata'
+                ? strings.markErrata
+                : strings.markToken,
         }))}
         selected={filters.marks}
         onToggle={(v) => toggle('marks', v)}
