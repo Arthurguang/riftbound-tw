@@ -153,5 +153,16 @@ export function cardImageAlt(card: Card, lang: TextLang = 'en', art: ArtLang = '
 export function legendFullName(card: Card): string {
   if (!card.types.includes('legend')) return card.name;
   const champion = card.tags[0];
-  return champion ? `${champion}, ${card.name}` : card.name;
+  if (!champion) return card.name;
+  /*
+   * 已經合併好的就別再合一次。
+   *
+   * OGN 的傳奇是拆開的，但查官方全系列卡表時發現**後續系列不是**：
+   * SFD 的 Draven 傳奇，name 欄位直接就是「Draven, Vanquisher」。
+   * 等收錄那些系列時，少了這一行就會變成「Draven, Draven, Vanquisher」。
+   *
+   * 與其等它壞掉，不如現在就擋住 —— 反正這個判斷不會誤傷拆開的資料。
+   */
+  if (card.name.startsWith(`${champion},`)) return card.name;
+  return `${champion}, ${card.name}`;
 }

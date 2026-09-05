@@ -18,6 +18,7 @@ import {
   isConvertedText,
   resolveArtLang,
 } from '@/lib/cards';
+import { BAN_LIST_VERSION, banEntriesFor } from '@/lib/ban-list';
 import { SET_LABELS } from '@/lib/labels';
 import { readArtLang, readTextLang, t, DEFAULT_ART_LANG, DEFAULT_TEXT_LANG } from '@/lib/i18n';
 
@@ -87,6 +88,14 @@ export default async function CardDetailPage({ params, searchParams }: PageProps
   const subtitle = cardSubtitle(card, lang);
   const flavor = cardFlavor(card, lang);
   const converted = isConvertedText(card, lang);
+
+  /*
+   * 禁卡狀態。banEntriesFor 回傳所有賽制的禁用紀錄，
+   * 再另外判斷 1v1 有沒有被禁 —— 兩者不一樣：有一張傳奇只在 2v2 被禁，
+   * 官方公告特別說明過它在 1v1 是合理的，標成「禁用」會誤導使用者。
+   */
+  const bans = banEntriesFor(card);
+  const oneVsOneBanned = bans.some((b) => b.formats.includes('constructed'));
   const twNameFromCommunity = lang === 'zh-TW' && card.zh.tw?.nameSource === 'community';
 
   return (
@@ -148,6 +157,45 @@ export default async function CardDetailPage({ params, searchParams }: PageProps
               </p>
             )}
           </header>
+
+          {/*
+            賽事禁用標示。
+
+            放在數值上方、卡名正下方 —— 這是會影響「這張卡能不能帶去比賽」的資訊，
+            使用者往往看完卡名就決定要不要用了，藏在頁面下方等於沒說。
+
+            一律附上官方原文與版本日期：禁卡表是人工維護、沒有 API 的資料，
+            使用者要能自己去對官方公告。
+          */}
+          {bans.length > 0 && (
+            <aside
+              className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2.5"
+              data-testid="ban-notice"
+            >
+              <p className="text-sm font-medium text-rose-200">
+                {oneVsOneBanned ? '正式賽事構築禁用' : '2v2 構築禁用（1v1 可用）'}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-rose-200/75">
+                {oneVsOneBanned
+                  ? '這張卡在官方認證賽事的構築賽制中不可使用。'
+                  : '這張卡只在 2v2 構築賽制被禁用，1v1 不受影響。'}
+                {bans[0]!.official !== card.name && (
+                  <> 官方禁卡表上列為「{bans[0]!.official}」。</>
+                )}
+              </p>
+              <p className="mt-1.5 text-[0.7rem] text-rose-200/55">
+                依據 {BAN_LIST_VERSION.updated} 版禁卡表 ·{' '}
+                <a
+                  href={BAN_LIST_VERSION.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-rose-200"
+                >
+                  官方公告
+                </a>
+              </p>
+            </aside>
+          )}
 
           {(card.energy !== null || card.might !== null || card.power !== null) && (
             <div className="flex flex-wrap items-center gap-2">

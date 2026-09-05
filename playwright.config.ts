@@ -22,6 +22,22 @@ const usingDeployedSite = Boolean(process.env.E2E_BASE_URL);
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
+
+  /*
+   * 限制並行的 worker 數量。
+   *
+   * 這台機器有 24 核，Playwright 預設會開 12 個 worker —— 但**伺服器只有一個**，
+   * 而且 next start 是單執行緒的。12 個瀏覽器同時要求頁面掛載，伺服器就開始排隊，
+   * 於是偶發紅燈：每次落在不同測試上，單獨重跑又一定過（實測 6 次全過，每次 3.7 秒）。
+   *
+   * 先前把 expect 逾時放寬到 15 秒只治標 —— 排隊夠久照樣會超過。
+   * 真正的瓶頸是那一個伺服器行程，所以要限制的是需求端。
+   *
+   * 6 個 worker 是實測出來的：總時間從 1.4 分變成 2.0 分，慢了四成，
+   * 但完整套件連跑三次全綠。多花 36 秒換掉「每次都要猜這次紅燈是不是真的」，
+   * 這筆交易很划算 —— 會說謊的測試比慢的測試貴得多。
+   */
+  workers: 6,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
