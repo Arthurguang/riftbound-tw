@@ -19,6 +19,7 @@
  */
 
 import type { Card, Domain } from './types';
+import { BAN_LIST_VERSION, bannedEntryFor } from './ban-list';
 import type { TextLang } from './i18n';
 
 /** 官方核心規則的版本，介面上會標示，方便日後對照。 */
@@ -195,8 +196,20 @@ const msg = (tw: string, cn: string, en: string): Record<TextLang, string> => ({
  * 檢查牌組是否符合 1v1 構築規則。
  *
  * 設計原則：**只檢查我們能從官方規則明確推導的事**。
- * 賽制限制（禁卡表、可用系列）不在這裡檢查 —— 那需要另一份官方文件，
- * 而且會隨賽制變動。寧可不擋，也不要讓玩家以為通過檢查就一定合法。
+ *
+ * ── 禁卡表：原本不查，後來改成要查 ──────────────────────────────
+ *
+ * 這裡原本寫著「禁卡表不在這裡檢查，寧可不擋，也不要讓玩家以為通過檢查
+ * 就一定合法」。那個判斷被一件事推翻了：把本站匯出的牌表貼到別的社群工具，
+ * 對方的驗證器跳出「'Aspirant's Climb' is banned in Standard Constructed」——
+ * **而那副牌是本站判定為合法組出來的**。
+ *
+ * 也就是說「不擋」並沒有比較保守，它只是把錯誤留給使用者在賽場上發現。
+ *
+ * 所以改成要查，但用「提醒」而不是「錯誤」，理由跟賽事構築限制一樣：
+ * 禁卡表只在正式賽事適用，隨便跟朋友玩不受限制。
+ * 介面上會一併標示禁卡表的版本日期（BAN_LIST_VERSION）—— 這份資料沒有 API，
+ * 不會自己更新，使用者有權知道它可能過期。
  */
 export function checkLegality(deck: Deck, cardsById: Map<string, Card>): LegalityResult {
   const issues: LegalityIssue[] = [];
@@ -425,6 +438,31 @@ export function checkLegality(deck: Deck, cardsById: Map<string, Card>): Legalit
     }
   }
 
+  // ── 賽事禁卡表 ──
+  //
+  // 用卡名比對（禁卡表針對的是卡名，異畫版一樣被禁）。
+  // 只查 1v1 構築的表 —— 2v2 另外多禁一張傳奇，那不適用於這裡。
+  {
+    const flagged = new Set<string>();
+    for (const [id, qty] of allEntries) {
+      if (qty <= 0) continue;
+      const card = get(id);
+      if (!card || flagged.has(card.name)) continue;
+      const ban = bannedEntryFor(card, 'constructed');
+      if (!ban) continue;
+      flagged.add(card.name);
+      issues.push({
+        severity: 'warning',
+        rule: `禁卡表 ${BAN_LIST_VERSION.updated}`,
+        message: msg(
+          `「${card.name}」在正式賽事的構築賽制被禁用（官方列為「${ban.official}」）。`,
+          `「${card.name}」在正式赛事的构筑赛制被禁用（官方列为「${ban.official}」）。`,
+          `"${card.name}" is banned in sanctioned Constructed play (listed officially as "${ban.official}").`,
+        ),
+      });
+    }
+  }
+
   // ── 備牌（賽事規則 403、601.1.c）──
   //
   // 備牌只有正式賽事才有（403.1「某些賽事」），所以這裡的問題一律是「提醒」，
@@ -533,8 +571,15 @@ export function checkLegality(deck: Deck, cardsById: Map<string, Card>): Legalit
  *
  * 讓玩家以為「通過檢查 = 一定合法」比不檢查更危險。
  */
+/**
+ * 介面上要誠實說明「這個檢查涵蓋什麼、不涵蓋什麼」。
+ *
+ * 這段文字原本寫「不包含禁卡表」。現在已經會查禁卡表了，
+ * **這種說明如果沒跟著改，比不做功能還糟** —— 使用者會以為自己還要另外查，
+ * 或反過來以為我們什麼都查了。所以改動檢查邏輯時，這段一定要一起看。
+ */
 export const NOT_CHECKED = msg(
-  '本工具只檢查核心規則的構築限制，不包含賽制規定（禁卡表、可用系列等）—— 那需要另一份會隨賽制變動的官方文件。參加正式賽事前請自行對照官方賽事規則與禁卡表。',
-  '本工具只检查核心规则的构筑限制，不包含赛制规定（禁卡表、可用系列等）—— 那需要另一份会随赛制变动的官方文件。参加正式赛事前请自行对照官方赛事规则与禁卡表。',
-  'This tool checks core-rules deck construction only. Format legality (ban list, legal sets) is not checked — consult the official tournament rules and ban list before competitive play.',
+  `本工具檢查核心規則的構築限制，並會對照 ${BAN_LIST_VERSION.updated} 版的官方構築賽禁卡表（1v1）。禁卡表沒有官方 API，是人工維護的，官方更新後本站可能有落差；可用系列與輪替也不在檢查範圍。參加正式賽事前請自行對照官方公告。`,
+  `本工具检查核心规则的构筑限制，并会对照 ${BAN_LIST_VERSION.updated} 版的官方构筑赛禁卡表（1v1）。禁卡表没有官方 API，是人工维护的，官方更新后本站可能有落差；可用系列与轮替也不在检查范围。参加正式赛事前请自行对照官方公告。`,
+  `This tool checks core-rules deck construction and the official 1v1 Constructed ban list as of ${BAN_LIST_VERSION.updated}. The ban list has no official API and is maintained by hand, so it may lag behind official updates; legal sets and rotation are not checked. Confirm against official announcements before competitive play.`,
 );

@@ -1,5 +1,6 @@
 'use client';
 
+import { BAN_LIST_VERSION } from '@/lib/ban-list';
 import { NOT_CHECKED, RULES_VERSION, type LegalityResult } from '@/lib/deck-rules';
 import type { TextLang } from '@/lib/i18n';
 
@@ -35,7 +36,7 @@ export function DeckLegality({ result, lang }: { result: LegalityResult; lang: T
         </p>
 
         {(errors.length > 0 || warnings.length > 0) && (
-          <ul className="mt-2 space-y-1.5">
+          <ul className="mt-2 space-y-1.5" data-testid="legality-issues">
             {[...errors, ...warnings].map((issue, index) => (
               <li key={`${issue.rule}-${index}`} className="flex gap-2 text-xs leading-relaxed">
                 <span
@@ -44,7 +45,10 @@ export function DeckLegality({ result, lang }: { result: LegalityResult; lang: T
                       ? 'bg-rose-500/15 text-rose-300'
                       : 'bg-amber-500/15 text-amber-300'
                   }`}
-                  title="官方核心規則條號"
+                  /* 禁卡提醒帶的是禁卡表版本日期，不是規則條號 —— 別標錯 */
+                  title={
+                    issue.rule.startsWith('禁卡表') ? '官方禁卡表版本' : '官方核心規則條號'
+                  }
                 >
                   {issue.rule}
                 </span>
@@ -66,6 +70,21 @@ export function DeckLegality({ result, lang }: { result: LegalityResult; lang: T
         </p>
         <p className="mt-1 text-[0.7rem] text-ink-faint">
           規則依據：{RULES_VERSION.document}（{RULES_VERSION.updated}）
+        </p>
+        {/*
+          禁卡表是人工維護、沒有 API 的資料，會過期。
+          把版本日期與官方出處放在使用者看得到的地方，他才有辦法自己判斷可不可信。
+        */}
+        <p className="mt-0.5 text-[0.7rem] text-ink-faint">
+          禁卡表依據：{BAN_LIST_VERSION.document}（{BAN_LIST_VERSION.updated}）·{' '}
+          <a
+            href={BAN_LIST_VERSION.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-ink-dim"
+          >
+            官方公告
+          </a>
         </p>
       </details>
     </section>
