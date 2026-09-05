@@ -17,6 +17,7 @@
  * 認不得的一律略過並回報數量，絕不猜測。
  */
 
+import { legendFullName } from './cards';
 import { EMPTY_DECK, zoneForCard, type Deck, type DeckZone } from './deck-rules';
 import { shortCode } from './deck-url';
 import type { Card } from './types';
@@ -84,6 +85,8 @@ export function buildImportIndex(cards: Card[]): Lookup {
 
     // 三種語言的卡名都收，貼中文或英文都找得到
     addName(card.name, card);
+    // 傳奇在牌表上寫成「英雄名, 稱號」，官方 API 卻把兩半拆開存
+    addName(legendFullName(card), card);
     addName(card.zh.tw?.name, card);
     addName(card.zh.cn?.name, card);
 

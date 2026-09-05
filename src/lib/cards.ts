@@ -135,3 +135,23 @@ export function cardImageAlt(card: Card, lang: TextLang = 'en', art: ArtLang = '
   const subtitle = cardSubtitle(card, lang);
   return `${name}${subtitle ? `・${subtitle}` : ''}（${card.code}）`;
 }
+
+/**
+ * 傳奇卡在牌表上的完整英文名。
+ *
+ * 官方 API 把傳奇的名字拆成兩半：`name` 只有稱號（`Daughter of the Void`），
+ * 英雄名放在 `tags`（`["Kai'Sa"]`）。但牌表上寫的是合起來的
+ * `Kai'Sa, Daughter of the Void` —— 繁中資料本來就是合的（凱莎-虛空之女），
+ * 只有英文是拆的。
+ *
+ * 這個差異先前害我們匯出的牌表貼到別的社群工具時，**傳奇那一行會被判成
+ * 找不到卡**。所以匯出與匯入共用這一個函式，兩邊的規則不會走鐘。
+ *
+ * 已驗證 OGN 全部 40 張傳奇都剛好一個 tag，所以這個組法沒有例外。
+ * 非傳奇卡（英雄單位等）的 `name` 本來就是完整的，直接回傳。
+ */
+export function legendFullName(card: Card): string {
+  if (!card.types.includes('legend')) return card.name;
+  const champion = card.tags[0];
+  return champion ? `${champion}, ${card.name}` : card.name;
+}

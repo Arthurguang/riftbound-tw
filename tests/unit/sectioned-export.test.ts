@@ -14,6 +14,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { toSectionedText } from '../../src/lib/deck-export';
+import { legendFullName } from '../../src/lib/cards';
 import { importDeck, inferChampion } from '../../src/lib/deck-import';
 import { ALL_CARDS } from '../../src/lib/cards';
 import type { Deck } from '../../src/lib/deck-rules';
@@ -128,6 +129,48 @@ describe('分區英文牌表', () => {
     for (const [, next] of [...text.matchAll(/^(\w[\w ]*):\n(.*)$/gm)]) {
       expect(next).not.toBe('');
     }
+  });
+});
+
+/*
+ * 官方 API 把傳奇的名字拆成兩半：name 只有稱號（Daughter of the Void），
+ * 英雄名放在 tags（["Kai'Sa"]）。但牌表上寫的是合起來的
+ * 「Kai'Sa, Daughter of the Void」—— 繁中資料本來就是合的，只有英文是拆的。
+ *
+ * 這個差異先前害我們匯出的牌表貼到別的社群工具時，傳奇那一行被判成找不到卡。
+ */
+describe('傳奇的完整卡名', () => {
+  it('全部傳奇都剛好一個 tag，組法沒有例外', () => {
+    const legends = ALL_CARDS.filter((c) => c.types.includes('legend'));
+    expect(legends.length).toBeGreaterThan(0);
+    for (const l of legends) expect(l.tags).toHaveLength(1);
+  });
+
+  it('匯出時補上英雄名前綴', () => {
+    const kaisa = ALL_CARDS.find((c) => c.code === 'OGN-247/298')!;
+    expect(kaisa.name).toBe('Daughter of the Void');
+    expect(legendFullName(kaisa)).toBe("Kai'Sa, Daughter of the Void");
+
+    const text = toSectionedText({ ...deck, legendId: kaisa.id }, byId);
+    expect(text).toContain("1 Kai'Sa, Daughter of the Void");
+  });
+
+  it('非傳奇卡不動它的名字 —— 英雄卡本來就是完整的', () => {
+    const unitCard = ALL_CARDS.find((c) => c.subtype === 'champion')!;
+    expect(legendFullName(unitCard)).toBe(unitCard.name);
+  });
+
+  it('匯入認得完整名稱 —— 貼別家工具的牌表也讀得進來', () => {
+    const kaisa = ALL_CARDS.find((c) => c.code === 'OGN-247/298')!;
+    const result = importDeck(["Legend:", "1 Kai'Sa, Daughter of the Void"].join('\n'), ALL_CARDS);
+    expect(result.deck.legendId).toBe(kaisa.id);
+    expect(result.issues).toEqual([]);
+  });
+
+  it('只寫稱號也還是認得 —— 不能因為改格式就讓舊牌表壞掉', () => {
+    const kaisa = ALL_CARDS.find((c) => c.code === 'OGN-247/298')!;
+    const result = importDeck(['Legend:', '1 Daughter of the Void'].join('\n'), ALL_CARDS);
+    expect(result.deck.legendId).toBe(kaisa.id);
   });
 });
 

@@ -17,7 +17,7 @@
  * 實體卡玩家帶去卡店時只要看一張表，不必在「牌表」和「缺卡清單」之間切換。
  */
 
-import { cardName } from './cards';
+import { cardName, legendFullName } from './cards';
 import { TYPE_LABELS, DOMAIN_LABELS } from './labels';
 import { RULES_VERSION, deckNeeds, type Deck } from './deck-rules';
 import { shortCode } from './deck-url';
@@ -290,7 +290,12 @@ export function toSectionedText(deck: Deck, byId: Map<string, Card>): string {
        * 兩區加起來仍是正確的總數，而且沒有任何一張卡重複出現。
        */
       const listed = zone === 'main' && card.id === deck.championId ? qty - 1 : qty;
-      if (listed > 0) merged.set(card.name, (merged.get(card.name) ?? 0) + listed);
+      /*
+       * 傳奇要用「英雄名, 稱號」的完整寫法 —— 官方 API 把這兩半拆開存，
+       * 但牌表上寫的是合起來的。只給稱號的話，別的工具會找不到這張卡。
+       */
+      const name = legendFullName(card);
+      if (listed > 0) merged.set(name, (merged.get(name) ?? 0) + listed);
     }
 
     // 扣掉之後可能整區都空了（例如主牌組裡只有選定英雄那一張）

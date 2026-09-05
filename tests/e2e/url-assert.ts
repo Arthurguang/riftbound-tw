@@ -76,12 +76,22 @@ export async function shareUrl(
 ): Promise<string> {
   await action();
 
+  /*
+   * 逾時放寬到 15 秒。
+   *
+   * 預設的 5 秒在單引擎下綽綽有餘，但三種引擎並跑時伺服器負載高，
+   * router.replace 有時要等更久 —— 那不是壞掉，只是慢。
+   * 條件本身沒有放寬：仍然要求網址**完全等於**元件公布的編碼。
+   */
   await expect
-    .poll(async () => {
-      const expected = await page.locator(`[${attribute}]`).getAttribute(attribute);
-      const actual = new URL(page.url()).searchParams.get(param);
-      return expected !== null && actual === expected;
-    })
+    .poll(
+      async () => {
+        const expected = await page.locator(`[${attribute}]`).getAttribute(attribute);
+        const actual = new URL(page.url()).searchParams.get(param);
+        return expected !== null && actual === expected;
+      },
+      { timeout: 15_000 },
+    )
     .toBe(true);
 
   return page.url();
