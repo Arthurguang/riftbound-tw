@@ -109,6 +109,7 @@ type UiStrings = {
   filterMarks: string;
   markBanned: string;
   markToken: string;
+  markErrata: string;
 };
 
 const ZH_TW: UiStrings = {
@@ -162,6 +163,7 @@ const ZH_TW: UiStrings = {
   filterMarks: '特殊標記',
   markBanned: '賽事禁用',
   markToken: '衍生物',
+  markErrata: '已勘誤',
 };
 
 const ZH_CN: UiStrings = {
@@ -214,6 +216,7 @@ const ZH_CN: UiStrings = {
   filterMarks: '特殊标记',
   markBanned: '赛事禁用',
   markToken: '衍生物',
+  markErrata: '已勘误',
 };
 
 const EN: UiStrings = {
@@ -266,6 +269,7 @@ const EN: UiStrings = {
   filterMarks: 'Special',
   markBanned: 'Banned',
   markToken: 'Token',
+  markErrata: 'Errata',
 };
 
 const STRINGS: Record<TextLang, UiStrings> = { 'zh-TW': ZH_TW, 'zh-CN': ZH_CN, en: EN };

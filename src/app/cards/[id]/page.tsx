@@ -19,6 +19,7 @@ import {
   resolveArtLang,
 } from '@/lib/cards';
 import { BAN_LIST_VERSION, banEntriesFor } from '@/lib/ban-list';
+import { ERRATA_VERSION, errataFor, isEnglishOnly } from '@/lib/errata';
 import { SET_LABELS } from '@/lib/labels';
 import { readArtLang, readTextLang, t, DEFAULT_ART_LANG, DEFAULT_TEXT_LANG } from '@/lib/i18n';
 
@@ -94,6 +95,8 @@ export default async function CardDetailPage({ params, searchParams }: PageProps
    * 再另外判斷 1v1 有沒有被禁 —— 兩者不一樣：有一張傳奇只在 2v2 被禁，
    * 官方公告特別說明過它在 1v1 是合理的，標成「禁用」會誤導使用者。
    */
+  const errata = errataFor(card);
+
   const bans = banEntriesFor(card);
   const oneVsOneBanned = bans.some((b) => b.formats.includes('constructed'));
   const twNameFromCommunity = lang === 'zh-TW' && card.zh.tw?.nameSource === 'community';
@@ -216,6 +219,57 @@ export default async function CardDetailPage({ params, searchParams }: PageProps
               {strings.abilityText}
             </h2>
             <CardText blocks={cardText(card, lang)} lang={lang} />
+
+            {/*
+              勘誤。
+
+              刻意緊接在能力文字**下面**：使用者剛讀完卡上寫什麼，
+              下一件該知道的就是「這段已經被官方更正了」。放到頁面別處
+              等於讓人先讀了一段失效的文字。
+
+              官方原文照登不翻譯 —— 這是規則文字，我們自己翻等於是在發明
+              一段看起來很官方的敘述。本站的原則是寧可讓使用者看英文，
+              也不要給他一段沒有出處的中文規則。
+            */}
+            {errata && (
+              <div
+                className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3"
+                data-testid="errata-notice"
+              >
+                <p className="text-xs font-semibold text-amber-200">
+                  這張卡已勘誤 —— 實際生效的是下面這段文字
+                </p>
+                <p className="mt-1.5 text-[0.7rem] leading-relaxed text-amber-100/85 whitespace-pre-line">
+                  {errata.updated}
+                </p>
+
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-[0.7rem] text-amber-200/60 hover:text-amber-200">
+                    卡片上原本印的文字
+                  </summary>
+                  <p className="mt-1 text-[0.7rem] leading-relaxed text-ink-faint whitespace-pre-line">
+                    {errata.printed}
+                  </p>
+                </details>
+
+                <p className="mt-2 text-[0.7rem] leading-relaxed text-amber-200/55">
+                  {isEnglishOnly(errata)
+                    ? '官方註明這張卡只有英文版的文字不同，中文卡不受影響。'
+                    : '官方明說勘誤文字取代印刷文字。這些更正不會印在再版或在地化的卡片上，所以你手上的實體卡（含繁中版）看到的仍是舊文字。'}
+                </p>
+                <p className="mt-1 text-[0.7rem] text-amber-200/45">
+                  依據 {ERRATA_VERSION.published} 版{' '}
+                  <a
+                    href={ERRATA_VERSION.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-amber-200"
+                  >
+                    官方勘誤表
+                  </a>
+                </p>
+              </div>
+            )}
 
             {/* 誠實標示：繁中能力文字目前是簡轉繁，不是官方在地化用詞 */}
             {converted && (

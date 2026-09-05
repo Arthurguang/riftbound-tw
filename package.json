@@ -5,6 +5,7 @@
   "description": "符文戰場 (Riftbound) 繁體中文玩家資源站 — 卡牌圖鑑",
   "scripts": {
     "fetch:cards": "node scripts/fetch-cards.mjs",
+    "fetch:errata": "node scripts/fetch-errata.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

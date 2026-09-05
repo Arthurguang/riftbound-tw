@@ -7,6 +7,7 @@
 
 import { bannedEntryFor } from './ban-list';
 import { cardName, cardTextToPlain } from './cards';
+import { errataFor } from './errata';
 import type { TextLang } from './i18n';
 import { RARITY_ORDER } from './labels';
 import type { Card, CardType, Domain, Rarity, SetId, Taxonomy } from './types';
@@ -40,7 +41,7 @@ export function isSortId(value: string): value is SortId {
  * 是官方 API 給的），而是**要另外查資料才知道**的事。禁卡要對照禁卡表，
  * 衍生物要看 subtype。混進 taxonomy 會讓「這是官方分類」這件事變得模糊。
  */
-export const MARKS = ['banned', 'token'] as const;
+export const MARKS = ['banned', 'errata', 'token'] as const;
 export type Mark = (typeof MARKS)[number];
 
 export type Filters = {
@@ -197,6 +198,7 @@ function sortCards(cards: Card[], sort: SortId, lang: TextLang): Card[] {
 /** 這張卡有沒有某個標記。 */
 export function hasMark(card: Card, mark: Mark): boolean {
   if (mark === 'token') return card.subtype === 'token';
+  if (mark === 'errata') return errataFor(card) !== null;
   return bannedEntryFor(card, 'constructed') !== null;
 }
 
@@ -223,8 +225,11 @@ export function applyFilters(
     }
     if (filters.tags.length > 0 && !card.tags.some((t) => filters.tags.includes(t))) return false;
     /*
-     * 標記是 OR 而不是 AND：勾「禁卡」＋「衍生物」要看到兩者的聯集。
-     * 沒有任何一張卡同時是禁卡又是衍生物，用 AND 會直接空白，那顯然不是使用者要的。
+     * 標記之間是 OR 而不是 AND：勾兩個要看到聯集。
+     *
+     * 一開始的理由是「沒有卡同時是禁卡又是衍生物，用 AND 會直接空白」。
+     * 加入勘誤之後這個理由更站得住 —— 現在**確實有卡同時被禁又有勘誤**
+     *（The Dreaming Tree），但使用者勾兩個框想看的顯然還是「這兩類都給我看」。
      */
     if (filters.marks.length > 0 && !filters.marks.some((m) => hasMark(card, m))) return false;
     if (query !== '' && !matchesQuery(card, query, index)) return false;
