@@ -23,6 +23,7 @@
  */
 
 import { writeFileSync } from 'node:fs';
+import { assertPlainText, decodeEntities, stripTags } from './lib/html-text.mjs';
 
 const SOURCE = 'https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/';
 const OUT = new URL('../src/data/errata.json', import.meta.url);
@@ -31,33 +32,6 @@ const OUT = new URL('../src/data/errata.json', import.meta.url);
 const NAME_FIXES = {
   'Dark Child, Starter': 'Dark Child - Starter',
 };
-
-/**
- * 允許出現在勘誤文字裡的字元。
- *
- * 這是資安防線，跟 card-text-parser 同一個原則：**與其事後消毒，
- * 不如一開始就不讓奇怪的東西進到專案裡**。這些文字最後會直接渲染給使用者，
- * 出現角括號就代表頁面結構跟我們以為的不一樣，寧可中斷也不要猜。
- */
-function assertPlainText(value, where) {
-  if (/[<>]/.test(value)) throw new Error(`${where} 含有角括號，可能混進了標籤：${value}`);
-  if (value.length === 0 || value.length > 1200) throw new Error(`${where} 長度不合理：${value.length}`);
-}
-
-function decodeEntities(s) {
-  return s
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&rsquo;/g, String.fromCharCode(8217))
-    .replace(/&lsquo;/g, String.fromCharCode(8216))
-    .replace(/&mdash;/g, String.fromCharCode(8212))
-    .replace(/&ndash;/g, String.fromCharCode(8211));
-}
 
 /**
  * 取出某個標記（[NEW TEXT] / [OLD TEXT]）後面那一整段的純文字。
@@ -86,7 +60,7 @@ function textAfter(block, marker) {
     const inner = m[1];
     // <p> 裡官方只用純文字與少數行內強調；出現別的標籤就代表結構變了
     if (/<(?!\/?(em|strong|i|b)\b)[a-z]/i.test(inner)) return null;
-    const text = decodeEntities(inner.replace(/<[^>]+>/g, '')).trim();
+    const text = decodeEntities(stripTags(inner)).trim();
     if (text !== '') parts.push(text);
   }
   return parts.length > 0 ? parts.join('\n') : null;
@@ -116,7 +90,7 @@ async function main() {
   for (const block of blocks) {
     const close = block.indexOf('</h2>');
     if (close === -1) continue;
-    const heading = decodeEntities(block.slice(0, close).replace(/<[^>]+>/g, '')).trim();
+    const heading = decodeEntities(stripTags(block.slice(0, close))).trim();
     const body = block.slice(close);
 
     const updated = textAfter(body, '[NEW TEXT]');
@@ -126,13 +100,23 @@ async function main() {
       continue;
     }
 
+    /*
+     * 卡名與附註也要檢查。
+     *
+     * 第一版只檢查新舊文字，heading 與 note 直接放行 —— 但它們一樣是從
+     * 遠端頁面剝出來、一樣會渲染給使用者。CodeQL 指出剝標籤的地方有三處，
+     * 我只守住了其中一處。少守的那兩處才是問題。
+     */
+    assertPlainText(heading, '卡名');
     assertPlainText(updated, `${heading} 的新文字`);
     assertPlainText(printed, `${heading} 的舊文字`);
     if (updated === printed) throw new Error(`${heading} 的新舊文字一樣，解析八成錯了`);
 
     // 有些條目後面附註「只有英文版的文字不同」—— 對繁中使用者是重要資訊
     const noteMatch = body.match(/<em>\s*(Note:[\s\S]*?)<\/em>/);
-    const note = noteMatch ? decodeEntities(noteMatch[1].replace(/<[^>]+>/g, '')).trim() : null;
+    const note = noteMatch ? decodeEntities(stripTags(noteMatch[1])).trim() : null;
+
+    if (note !== null) assertPlainText(note, `${heading} 的附註`);
 
     entries.push({
       official: heading,
