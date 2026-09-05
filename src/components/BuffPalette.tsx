@@ -1,4 +1,5 @@
 'use client';
+import { HelpTip } from './HelpTip';
 
 /**
  * 戰力加成的計數器 —— 挑一個數字，拖到場上的卡片上。
@@ -42,6 +43,14 @@ export function BuffPalette({
     >
       <div className="mb-1.5 flex flex-wrap items-baseline gap-x-2">
         <h3 className="text-xs font-semibold text-ink">戰力加成</h3>
+        <HelpTip label="戰力加成的說明">
+          加成是<strong className="text-ink">你自己記的數字</strong>，本站不會替你判斷哪張卡
+          在什麼時候該有幾點 —— 那需要規則引擎。
+          <br />
+          <br />
+          同一區有兩張同名單位時，加成算在<strong className="text-ink">整疊</strong>上
+          （跟休眠一樣是模型的既有限制）。
+        </HelpTip>
         <span className="text-[0.65rem] text-ink-faint">
           {armed === null
             ? '點一下數字再點卡片，或直接把數字拖過去'
@@ -76,12 +85,6 @@ export function BuffPalette({
         ))}
       </div>
 
-      <p className="mt-1.5 text-[0.6rem] leading-relaxed text-ink-faint">
-        加成是<strong className="text-ink-dim">你自己記的數字</strong>，本站不會替你判斷
-        哪張卡在什麼時候該有幾點 —— 那需要規則引擎。
-        <br />
-        同一區有兩張同名單位時，加成算在**整疊**上（跟休眠一樣是模型的既有限制）。
-      </p>
     </section>
   );
 }

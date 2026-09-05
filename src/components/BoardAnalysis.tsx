@@ -1,4 +1,5 @@
 'use client';
+import { HelpTip } from './HelpTip';
 
 import { useMemo, useState } from 'react';
 import { cardName } from '@/lib/cards';
@@ -111,14 +112,18 @@ export function BoardAnalysis({
         </p>
       ) : (
         <section data-testid="playable-hand">
-          <h4 className="mb-1 text-[0.7rem] font-semibold text-ink">手牌現在打不打得出來</h4>
-          <p className="mb-1.5 text-[0.65rem] leading-relaxed text-ink-faint">
-            兩個獨立的檢查：<strong className="text-ink-dim">時機</strong>
-            （回合狀態允不允許，307–310）與<strong className="text-ink-dim">資源</strong>
-            （符文夠不夠，131.2、131.3、164.2）。
-            <strong className="text-ink-dim">不判斷目標或卡牌自身的其他限制</strong>
-            —— 那需要規則引擎。
-          </p>
+          <h4 className="mb-1 flex items-center gap-1.5 text-[0.7rem] font-semibold text-ink">
+            手牌現在打不打得出來
+            <HelpTip label="可打性判斷的說明">
+              兩個獨立的檢查：<strong className="text-ink">時機</strong>
+              （回合狀態允不允許，307–310）與<strong className="text-ink">資源</strong>
+              （符文夠不夠，131.2、131.3、164.2）。
+              <br />
+              <br />
+              <strong className="text-ink">不判斷目標或卡牌自身的其他限制</strong>
+              —— 那需要規則引擎。
+            </HelpTip>
+          </h4>
           <ul className="space-y-1">
             {playable.map(({ card, needed, timingOk, resourceOk, timing }) => (
               <li key={card.id} className="flex flex-wrap items-center gap-1.5 text-[0.7rem]">

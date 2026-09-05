@@ -1,4 +1,5 @@
 'use client';
+import { HelpTip } from './HelpTip';
 
 import { cardImageUrl, cardName, cardTextToPlain } from '@/lib/cards';
 import { cardText } from '@/lib/cards';
@@ -54,9 +55,9 @@ export function BattlefieldPicker({
         >
           107.2
         </span>
-        <span className="text-xs text-ink-faint">
-          1v1 場上有兩處戰場，各由一名玩家從自己的 3 張裡選一張帶進來（485.4、485.5）
-        </span>
+        <HelpTip label="戰場的說明">
+          1v1 場上有兩處戰場，各由一名玩家從自己的 3 張裡選一張帶進來（485.4、485.5）。
+        </HelpTip>
       </div>
 
       {options.length === 0 ? (

@@ -1,4 +1,5 @@
 'use client';
+import { HelpTip } from './HelpTip';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -415,12 +416,16 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
         <h1 className="text-xl font-semibold tracking-tight text-ink">對局復盤</h1>
         <p className="mt-1 text-xs text-ink-faint" data-testid="not-a-game">
           這是<strong className="text-ink-dim">研究工具，不是對戰系統</strong>
-          —— 沒有配對、沒有對手連線、沒有勝負判定。
+          —— 沒有配對、沒有對手連線、沒有勝負判定。{' '}
+          <HelpTip label="怎麼用這個工具" align="left">
+            擺出盤面看精確數字，網址即可分享。操作都在右側欄，桌子固定不動。
+          </HelpTip>
         </p>
-        <p className="mt-0.5 text-xs text-ink-dim">
-          擺出盤面看精確數字，網址即可分享。
-          <span className="text-ink-faint">操作都在右側欄，桌子固定不動。</span>
-        </p>
+        {/*
+          上面那句「研究工具，不是對戰系統」**刻意保持可見** ——
+          那是依 Riot 開發者政策講明的定位，不是操作說明，不能收進問號。
+          這一句只是操作提示，收起來換桌面空間。
+        */}
       </header>
 
       {initial.dropped > 0 && (
