@@ -26,6 +26,17 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
 
+  /*
+   * 斷言的等待時間放寬到 15 秒（預設 5 秒）。
+   *
+   * 三種引擎同時打**同一台** Next.js 伺服器，負載高的時候連
+   * 「頁面掛載完成」都可能超過五秒 —— 那不是應用程式慢，是測試環境擠。
+   * 先前偶發的紅燈每次落在不同測試上，正是這個特徵（不是某一條壞掉）。
+   *
+   * 放寬的是**耐心**，不是條件：每一條斷言檢查的東西完全沒有變。
+   */
+  expect: { timeout: 15_000 },
+
   use: {
     baseURL,
     trace: 'on-first-retry',

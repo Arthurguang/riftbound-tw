@@ -17,8 +17,17 @@ async function gotoDeck(page: Page, query = '') {
 }
 
 /** 切到某個區域分頁。 */
+/**
+ * 切到某個區域分頁。
+ *
+ * 要**等它真的被選中**再往下做 —— 只按不等的話，後面「加入牌組」那一下
+ * 可能落在還沒換掉的舊清單上，加到別張卡。三引擎並跑時負載高，
+ * 這個空隙就會被踩到。
+ */
 async function openTab(page: Page, name: string) {
-  await page.getByRole('tab', { name, exact: true }).click();
+  const tab = page.getByRole('tab', { name, exact: true });
+  await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
 }
 
 test.describe('牌組編輯器', () => {
