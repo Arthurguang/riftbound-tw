@@ -256,3 +256,52 @@ test.describe('多語系', () => {
     await expect(page.locator('body')).not.toContainText('alert(1)');
   });
 });
+
+/**
+ * 篩選狀態要撐過「點進卡片再返回」。
+ *
+ * 使用者反映：篩好條件後點一張卡看詳細，返回時篩選整個沒了。
+ * 原因是詳細頁的返回連結只帶了語言設定，把篩選丟掉。
+ */
+test.describe('返回圖鑑時保留篩選', () => {
+  test('點進卡片再按返回，篩選還在', async ({ page }) => {
+    await page.goto('/cards?type=battlefield&mark=banned', { waitUntil: 'domcontentloaded' });
+
+    // 先確認篩選確實生效了（5 張禁用戰場）
+    await expect(page.getByTestId('tile-ban')).toHaveCount(5);
+
+    await page.getByRole('link', { name: /OGN-292/ }).click();
+    await expect(page.getByTestId('errata-notice')).toBeVisible();
+
+    await page.getByRole('link', { name: /回到卡牌圖鑑/ }).click();
+
+    await expect(page).toHaveURL(/type=battlefield/);
+    await expect(page).toHaveURL(/mark=banned/);
+    await expect(page.getByTestId('tile-ban')).toHaveCount(5);
+  });
+
+  test('語言設定也一起留著 —— 兩者是獨立的兩件事', async ({ page }) => {
+    await page.goto('/cards?type=rune&lang=en', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('link').filter({ hasText: /OGN-/ }).first().click();
+    await page.getByRole('link', { name: /Back to/i }).click();
+
+    await expect(page).toHaveURL(/type=rune/);
+    await expect(page).toHaveURL(/lang=en/);
+  });
+
+  /*
+   * 網址是使用者可以任意編造的輸入，所以返回連結**不是**把參數原封不動貼回去，
+   * 而是先解析成篩選狀態（只認允許清單內的值）再重新組出來。
+   */
+  test('網址裡亂填的東西不會被貼進返回連結', async ({ page }) => {
+    await page.goto('/cards/ogn-292-298?type=battlefield&mark=nope&evil=%3Cscript%3E', {
+      waitUntil: 'domcontentloaded',
+    });
+
+    const back = page.getByRole('link', { name: /回到卡牌圖鑑/ });
+    const href = await back.getAttribute('href');
+    expect(href).toContain('type=battlefield');
+    expect(href).not.toContain('evil');
+    expect(href).not.toContain('nope');
+  });
+});

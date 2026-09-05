@@ -19,7 +19,15 @@ import {
   resolveArtLang,
 } from '@/lib/cards';
 import { BAN_LIST_VERSION, banEntriesFor } from '@/lib/ban-list';
-import { ERRATA_VERSION, errataFor, isEnglishOnly } from '@/lib/errata';
+import {
+  coinedTermsIn,
+  ERRATA_VERSION,
+  errataFor,
+  errataZh,
+  isEnglishOnly,
+  ZH_TRANSLATOR,
+} from '@/lib/errata';
+import { filtersFromParams, filtersToQueryString } from '@/lib/filters-url';
 import { SET_LABELS } from '@/lib/labels';
 import { readArtLang, readTextLang, t, DEFAULT_ART_LANG, DEFAULT_TEXT_LANG } from '@/lib/i18n';
 
@@ -71,6 +79,18 @@ export default async function CardDetailPage({ params, searchParams }: PageProps
   if (!card) notFound();
 
   const query = await searchParams;
+
+  /*
+   * searchParams 的值可能是字串或字串陣列（?type=a&type=b）。
+   * URLSearchParams 只吃字串，所以先攤平成單值，陣列一律取第一個 ——
+   * 跟 firstValue 對語言的處理一致。
+   */
+  const flatQuery: Record<string, string> = {};
+  for (const [key, value] of Object.entries(query)) {
+    const single = firstValue(value);
+    if (single !== undefined) flatQuery[key] = single;
+  }
+
   const lang = readTextLang({ lang: firstValue(query.lang) });
   const art = readArtLang({ art: firstValue(query.art) });
   const strings = t(lang);
@@ -81,6 +101,23 @@ export default async function CardDetailPage({ params, searchParams }: PageProps
   if (art !== DEFAULT_ART_LANG) langParams.set('art', art);
   const langQuery = langParams.toString();
   const withLang = (path: string) => (langQuery === '' ? path : `${path}?${langQuery}`);
+
+  /*
+   * 回圖鑑時把篩選條件帶回去。
+   *
+   * **不是**把網址參數原封不動反射回連結** —— 網址是使用者可以任意編造的輸入，
+   * 直接回貼等於讓別人決定我們頁面上的連結長什麼樣。
+   *
+   * 所以先用 filtersFromParams 解析（它只認允許清單內的值，其餘丟掉），
+   * 再用 filtersToQueryString 重新組出來。經過這一圈，出去的一定是我們認得的東西。
+   */
+  const backQuery = [
+    filtersToQueryString(filtersFromParams(new URLSearchParams(flatQuery), TAXONOMY.tags)),
+    langQuery,
+  ]
+    .filter(Boolean)
+    .join('&');
+  const backHref = backQuery === '' ? '/cards' : `/cards?${backQuery}`;
 
   const variants = getVariants(card);
   const isLandscape = card.orientation === 'landscape';
@@ -96,6 +133,12 @@ export default async function CardDetailPage({ params, searchParams }: PageProps
    * 官方公告特別說明過它在 1v1 是合理的，標成「禁用」會誤導使用者。
    */
   const errata = errataFor(card);
+  /*
+   * 中文參考翻譯只在中文介面顯示 —— 看英文介面的人要的就是官方原文，
+   * 多塞一段非官方的中文只是干擾。
+   */
+  const errataZhText = errata && lang !== 'en' ? errataZh(errata) : null;
+  const coined = errataZhText ? coinedTermsIn(errataZhText) : [];
 
   const bans = banEntriesFor(card);
   const oneVsOneBanned = bans.some((b) => b.formats.includes('constructed'));
@@ -104,7 +147,7 @@ export default async function CardDetailPage({ params, searchParams }: PageProps
   return (
     <div className="mx-auto w-full max-w-[1100px] px-4 py-8 sm:px-6">
       <Link
-        href={withLang('/cards')}
+        href={backHref}
         className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
       >
         ← {strings.backToGallery}
@@ -242,6 +285,39 @@ export default async function CardDetailPage({ params, searchParams }: PageProps
                 <p className="mt-1.5 text-[0.7rem] leading-relaxed text-amber-100/85 whitespace-pre-line">
                   {errata.updated}
                 </p>
+
+                {/*
+                  社群整理的中文參考翻譯。
+
+                  放在官方原文**下面**、而且用不同的框線與標籤區隔 ——
+                  使用者一眼要能分辨哪一段有官方依據、哪一段是我們補的。
+                  順序也是刻意的：先看到權威版本，再看到參考版本。
+                */}
+                {errataZhText && (
+                  <div
+                    className="mt-2.5 rounded border border-dashed border-amber-500/30 p-2"
+                    data-testid="errata-zh"
+                  >
+                    <p className="text-[0.65rem] font-medium text-amber-200/70">
+                      中文參考翻譯 · {ZH_TRANSLATOR}
+                    </p>
+                    <p className="mt-1 text-[0.7rem] leading-relaxed whitespace-pre-line text-ink-dim">
+                      {errataZhText}
+                    </p>
+                    {coined.length > 0 && (
+                      <p className="mt-1.5 text-[0.65rem] leading-relaxed text-ink-faint">
+                        {coined.map((term) => (
+                          <span key={term.en}>
+                            「{term.zh}」（{term.en}）是本站自訂的用詞：{term.why}
+                          </span>
+                        ))}
+                      </p>
+                    )}
+                    <p className="mt-1 text-[0.65rem] text-ink-faint">
+                      翻譯僅供參考，判定一律以上方官方英文原文為準。
+                    </p>
+                  </div>
+                )}
 
                 <details className="mt-2">
                   <summary className="cursor-pointer text-[0.7rem] text-amber-200/60 hover:text-amber-200">

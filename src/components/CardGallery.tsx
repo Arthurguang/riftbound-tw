@@ -63,7 +63,20 @@ export function CardGallery({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
     if (next !== current) router.replace(next, { scroll: false });
   }, [filters, langQuery, router]);
 
-  const cardHref = (id: string) => (langQuery === '' ? `/cards/${id}` : `/cards/${id}?${langQuery}`);
+  /**
+   * 卡片連結。
+   *
+   * 把**目前的篩選條件也帶進去** —— 詳細頁的「回到卡牌圖鑑」要靠它把使用者
+   * 送回原本篩好的畫面。先前只帶語言，所以點進一張卡再返回，
+   * 辛苦篩好的條件就全部沒了。
+   *
+   * （瀏覽器的上一頁本來就會回到篩好的網址，因為篩選是用 router.replace
+   * 寫在同一筆歷史紀錄上。壞掉的一直是頁面裡那個返回連結。）
+   */
+  const cardHref = (id: string) => {
+    const qs = [filtersToQueryString(filters), langQuery].filter(Boolean).join('&');
+    return qs === '' ? `/cards/${id}` : `/cards/${id}?${qs}`;
+  };
   const active = isFiltered(filters);
 
   return (
