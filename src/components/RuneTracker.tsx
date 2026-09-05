@@ -1,4 +1,5 @@
 'use client';
+import { HelpTip } from './HelpTip';
 
 import { cardName } from '@/lib/cards';
 import { DomainDot } from './CardBadges';
@@ -173,12 +174,22 @@ export function RuneTracker({
         })}
       </ul>
 
-      <p className="mt-1.5 text-[0.7rem] leading-relaxed text-ink-faint">
-        第 {turn} 回合照規則應該召出過 <strong className="text-ink-dim">{expected}</strong> 張
-        （315.3.b、485.7）。實際會更少 —— 回收符文取得符能後那張符文永久離場（164.2.b）。
-        <br />
-        只有<strong className="text-ink-dim">活躍</strong>的符文能消耗來產生法力（164.2.a）；
-        休眠代表「耗盡了能量」（414.1），喚醒階段才會全部變回活躍（415.3.a）。
+      {/*
+        「應召出 N 張」留在外面 —— 它是**這一局算出來的數字**，是使用者要對照的
+        資訊本身，不是說明。背後的規則解釋才收進問號裡。
+      */}
+      <p className="mt-1.5 flex items-center gap-1.5 text-[0.7rem] text-ink-faint">
+        <span>
+          第 {turn} 回合應召出 <strong className="text-ink-dim">{expected}</strong> 張
+        </span>
+        <HelpTip label="符文規則的說明">
+          第 {turn} 回合照規則應該召出過 <strong className="text-ink">{expected}</strong> 張
+          （315.3.b、485.7）。實際會更少 —— 回收符文取得符能後那張符文永久離場（164.2.b）。
+          <br />
+          <br />
+          只有<strong className="text-ink">活躍</strong>的符文能消耗來產生法力（164.2.a）；
+          休眠代表「耗盡了能量」（414.1），喚醒階段才會全部變回活躍（415.3.a）。
+        </HelpTip>
       </p>
     </section>
   );

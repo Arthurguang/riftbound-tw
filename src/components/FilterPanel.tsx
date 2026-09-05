@@ -3,7 +3,7 @@
 import { DOMAIN_LABELS, RARITY_LABELS, SET_LABELS, TYPE_LABELS } from '@/lib/labels';
 import { DomainDot } from './CardBadges';
 import { t, type TextLang } from '@/lib/i18n';
-import type { Filters } from '@/lib/search';
+import { MARKS, type Filters } from '@/lib/search';
 import type { Domain, Taxonomy } from '@/lib/types';
 
 type ToggleGroupProps<T extends string | number> = {
@@ -84,6 +84,24 @@ export function FilterPanel({
 
   return (
     <div className="space-y-4">
+      {/*
+        「特殊標記」刻意放在最上面。
+
+        它不是官方分類（卡種、領域那些是官方 API 給的），而是要另外查資料
+        才知道的事 —— 但這兩件正好是使用者最常想「只看這些」的：
+        組牌前先確認哪些不能帶、復盤時要找衍生物長什麼樣。
+        埋在一堆官方分類下面等於沒做。
+      */}
+      <ToggleGroup
+        title={strings.filterMarks}
+        options={MARKS.map((mark) => ({
+          value: mark,
+          label: mark === 'banned' ? strings.markBanned : strings.markToken,
+        }))}
+        selected={filters.marks}
+        onToggle={(v) => toggle('marks', v)}
+      />
+
       <ToggleGroup
         title={strings.filterSet}
         options={taxonomy.sets.map((set) => ({

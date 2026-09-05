@@ -1,4 +1,5 @@
 'use client';
+import { HelpTip } from './HelpTip';
 
 import { useState } from 'react';
 import { cardName } from '@/lib/cards';
@@ -73,12 +74,13 @@ export function SideboardSwap({
         >
           收合
         </button>
+        <HelpTip label="備牌規則的說明">
+          備牌在對局中不在場上，只在局間 1 換 1 換進主牌組（403.4）；
+          第一局不能用備牌（403.5）。換完後主牌組仍要符合張數要求（403.4.c）。
+        </HelpTip>
       </div>
 
-      <p className="mb-2 text-[0.7rem] leading-relaxed text-ink-faint">
-        備牌在對局中不在場上，只在局間 1 換 1 換進主牌組（403.4）；
-        第一局不能用備牌（403.5）。換完後主牌組仍要符合張數要求（403.4.c）。
-      </p>
+
 
       <div className="grid gap-2 sm:grid-cols-2">
         <div>

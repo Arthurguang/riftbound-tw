@@ -11,7 +11,9 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { ALL_CARDS } from '../../src/lib/cards';
+import { ALL_CARDS, TAXONOMY } from '../../src/lib/cards';
+import { applyFilters, buildSearchIndex, EMPTY_FILTERS, type Mark } from '../../src/lib/search';
+import { filtersFromParams, filtersToQueryString } from '../../src/lib/filters-url';
 import { BAN_LIST, BAN_LIST_VERSION, banEntriesFor, bannedEntryFor } from '../../src/lib/ban-list';
 import { checkLegality, EMPTY_DECK } from '../../src/lib/deck-rules';
 import type { Card } from '../../src/lib/types';
@@ -135,5 +137,61 @@ describe('接進牌組合法性檢查', () => {
     const ok = ALL_CARDS.find((c) => c.types.includes('battlefield') && !banEntriesFor(c).length)!;
     const result = checkLegality({ ...EMPTY_DECK, battlefields: { [ok.id]: 1 } }, byId);
     expect(result.issues.some((i) => i.rule.startsWith('禁卡表'))).toBe(false);
+  });
+});
+
+/*
+ * 圖鑑的「特殊標記」篩選。
+ *
+ * 這兩個分類跟官方分類法（卡種、領域、稀有度）不一樣 —— 那些是官方 API 直接給的，
+ * 這兩個要另外查資料才知道。所以測試除了行為，也要確認它們沒有混進 taxonomy。
+ */
+describe('特殊標記篩選', () => {
+  const index = buildSearchIndex(ALL_CARDS, TAXONOMY.tagLabels);
+  const run = (marks: Mark[]) =>
+    applyFilters(ALL_CARDS, { ...EMPTY_FILTERS, marks }, index, 'zh-TW');
+
+  it('禁卡標記只留下 1v1 構築被禁的卡', () => {
+    const result = run(['banned']);
+    expect(result.length).toBeGreaterThan(0);
+    for (const c of result) expect(bannedEntryFor(c, 'constructed')).not.toBeNull();
+    // 只在 2v2 被禁的不算 —— 那張 1v1 可以用
+    expect(result.some((c) => c.name === 'Wuju Bladesman - Starter')).toBe(false);
+  });
+
+  it('衍生物標記只留下衍生物', () => {
+    const result = run(['token']);
+    expect(result.length).toBeGreaterThan(0);
+    for (const c of result) expect(c.subtype).toBe('token');
+  });
+
+  /*
+   * 兩個標記之間是 OR 不是 AND。
+   * 沒有任何一張卡同時是禁卡又是衍生物，用 AND 會直接空白 ——
+   * 那顯然不是使用者勾兩個框想看到的結果。
+   */
+  it('勾兩個標記是聯集，不是交集', () => {
+    const both = run(['banned', 'token']);
+    expect(both.length).toBe(run(['banned']).length + run(['token']).length);
+  });
+
+  it('不勾就不篩', () => {
+    expect(run([]).length).toBe(ALL_CARDS.length);
+  });
+
+  it('標記會寫進網址，也讀得回來', () => {
+    const qs = filtersToQueryString({ ...EMPTY_FILTERS, marks: ['banned', 'token'] });
+    expect(qs).toContain('mark=banned%2Ctoken');
+    expect(filtersFromParams(new URLSearchParams(qs), []).marks).toEqual(['banned', 'token']);
+  });
+
+  it('網址上亂填的標記直接丟掉 —— 網址是使用者可以編造的輸入', () => {
+    const parsed = filtersFromParams(new URLSearchParams('mark=banned,__proto__,nope'), []);
+    expect(parsed.marks).toEqual(['banned']);
+  });
+
+  it('沒有混進官方分類法 —— 那會讓「這是官方分類」變得模糊', () => {
+    expect(TAXONOMY.types).not.toContain('banned');
+    expect(TAXONOMY.types).not.toContain('token');
   });
 });

@@ -106,6 +106,9 @@ type UiStrings = {
   filterEnergy: string;
   filterMight: string;
   filterTags: (count: number) => string;
+  filterMarks: string;
+  markBanned: string;
+  markToken: string;
 };
 
 const ZH_TW: UiStrings = {
@@ -156,6 +159,9 @@ const ZH_TW: UiStrings = {
   filterEnergy: '能量',
   filterMight: '力量',
   filterTags: (n) => `標籤（${n}）`,
+  filterMarks: '特殊標記',
+  markBanned: '賽事禁用',
+  markToken: '衍生物',
 };
 
 const ZH_CN: UiStrings = {
@@ -205,6 +211,9 @@ const ZH_CN: UiStrings = {
   filterEnergy: '费用',
   filterMight: '战力',
   filterTags: (n) => `标签（${n}）`,
+  filterMarks: '特殊标记',
+  markBanned: '赛事禁用',
+  markToken: '衍生物',
 };
 
 const EN: UiStrings = {
@@ -254,6 +263,9 @@ const EN: UiStrings = {
   filterEnergy: 'Energy',
   filterMight: 'Might',
   filterTags: (n) => `Tags (${n})`,
+  filterMarks: 'Special',
+  markBanned: 'Banned',
+  markToken: 'Token',
 };
 
 const STRINGS: Record<TextLang, UiStrings> = { 'zh-TW': ZH_TW, 'zh-CN': ZH_CN, en: EN };
