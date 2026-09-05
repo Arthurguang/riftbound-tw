@@ -188,3 +188,53 @@ test.describe('復盤的禁卡提醒', () => {
     await expect(page.getByTestId('board-ban-notice')).toHaveCount(0);
   });
 });
+
+test.describe('勘誤', () => {
+  test('有勘誤的卡會顯示更正後的官方文字', async ({ page }) => {
+    // Salvage：官方 API 給的還是勘誤前的文字，所以這張最能證明勘誤有價值
+    await page.goto('/cards/ogn-224-298', { waitUntil: 'domcontentloaded' });
+
+    const notice = page.getByTestId('errata-notice');
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText('這張卡已勘誤');
+    await expect(notice).toContainText('You may kill up to one gear.');
+    // 卡種行也要在 —— 那也是卡面文字的一部分，抓取時曾經整段被吃掉
+    await expect(notice).toContainText('[Action]');
+    await expect(notice).toContainText('2025-10-28');
+
+    const link = notice.getByRole('link', { name: '官方勘誤表' });
+    await expect(link).toHaveAttribute('rel', /noopener/);
+  });
+
+  test('原本印的文字收在摺疊裡，點得開', async ({ page }) => {
+    await page.goto('/cards/ogn-224-298', { waitUntil: 'domcontentloaded' });
+    const notice = page.getByTestId('errata-notice');
+
+    await notice.getByText('卡片上原本印的文字').click();
+    await expect(notice).toContainText('You may kill a gear.');
+  });
+
+  /*
+   * 官方註明「只有英文版的文字不同」的那幾張，措辭必須不一樣 ——
+   * 對只看繁中卡的使用者說「你的卡是舊文字」會讓人白擔心。
+   */
+  test('只有英文版不同的卡，講法要不一樣', async ({ page }) => {
+    await page.goto('/cards/ogn-259-298', { waitUntil: 'domcontentloaded' });
+    const notice = page.getByTestId('errata-notice');
+
+    await expect(notice).toContainText('只有英文版的文字不同');
+    await expect(notice).not.toContainText('含繁中版');
+  });
+
+  test('沒勘誤的卡不會出現這一塊', async ({ page }) => {
+    await page.goto('/cards/ogn-278-298', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('errata-notice')).toHaveCount(0);
+  });
+
+  test('圖鑑可以只看有勘誤的卡', async ({ page }) => {
+    await page.goto('/cards?mark=errata', { waitUntil: 'domcontentloaded' });
+    // 31 筆勘誤，涵蓋 36 張卡（同名異畫版一樣適用）
+    await expect(page.getByRole('link', { name: /OGN-224/ })).toBeVisible();
+    await expect(page.getByText('符合條件：36 張')).toBeVisible();
+  });
+});
