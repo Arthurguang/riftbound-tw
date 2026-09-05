@@ -10,7 +10,7 @@
 
 import { CARD_TYPES, DOMAINS, RARITIES, SET_IDS } from './types';
 import type { CardType, Domain, Rarity, SetId } from './types';
-import { DEFAULT_SORT, EMPTY_FILTERS, isSortId, type Filters } from './search';
+import { DEFAULT_SORT, EMPTY_FILTERS, isSortId, MARKS, type Filters, type Mark } from './search';
 
 /** 搜尋字串的長度上限，避免有人塞一段超長字串進網址。 */
 const MAX_QUERY_LENGTH = 100;
@@ -62,6 +62,7 @@ export function filtersFromParams(
     energies: readNumbers(params, 'energy'),
     mights: readNumbers(params, 'might'),
     tags: readTags(params, allowedTags),
+    marks: readList<Mark>(params, 'mark', MARKS),
     sort: isSortId(sortParam) ? sortParam : DEFAULT_SORT,
   };
 }
@@ -80,6 +81,7 @@ export function filtersToQueryString(filters: Filters): string {
   setList('energy', filters.energies);
   setList('might', filters.mights);
   setList('tag', filters.tags);
+  setList('mark', filters.marks);
   if (filters.sort !== DEFAULT_SORT) params.set('sort', filters.sort);
 
   return params.toString();

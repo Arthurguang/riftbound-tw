@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { BAN_LIST_VERSION, bannedAmong } from '@/lib/ban-list';
 import { cardName } from '@/lib/cards';
 import { DeckImport } from './DeckImport';
 import { RuneTracker } from './RuneTracker';
@@ -101,6 +102,27 @@ export function BoardSide({
 
   const remaining = useMemo(() => remainingDeck(player), [player]);
   const foreign = useMemo(() => foreignCards(player, byId), [player, byId]);
+
+  /**
+   * 這一方牌組裡的禁卡。
+   *
+   * 復盤是**練習工具**，不是賽事檢查 —— 所以只提醒，不擋任何操作。
+   * 但正因為復盤常拿來練賽前的牌組，這裡不講的話使用者可能練了整晚
+   * 才在賽場上知道有一張不能帶。
+   *
+   * 備牌也要算進去：局間換牌會把它換上場（601.1.c）。
+   */
+  const bannedInDeck = useMemo(() => {
+    const ids = [
+      ...Object.keys(player.deck.main),
+      ...Object.keys(player.deck.runes),
+      ...Object.keys(player.deck.battlefields),
+      ...Object.keys(player.deck.sideboard),
+      ...(player.deck.legendId ? [player.deck.legendId] : []),
+    ];
+    const inDeck = ids.map((id) => byId.get(id)).filter((c): c is Card => Boolean(c));
+    return bannedAmong(inDeck, 'constructed');
+  }, [player.deck, byId]);
 
   /** 這個卡池裡的所有衍生物。 */
   const tokens = useMemo(() => cards.filter((c) => c.subtype === 'token'), [cards]);
@@ -220,6 +242,28 @@ export function BoardSide({
           setJustImported(true);
         }}
       />
+
+      {bannedInDeck.length > 0 && (
+        <div
+          className="mt-2 rounded-lg border border-rose-500/40 bg-rose-500/10 p-2 text-xs"
+          data-testid="board-ban-notice"
+        >
+          <p className="font-medium text-rose-200">
+            這副牌組有 {bannedInDeck.length} 張卡在正式賽事被禁用
+          </p>
+          <ul className="mt-1 space-y-0.5 text-rose-200/75">
+            {bannedInDeck.map(({ card, entry }) => (
+              <li key={card.id}>
+                · {cardName(card, lang)}
+                {entry.official !== card.name && `（官方列為「${entry.official}」）`}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1 text-[0.7rem] text-rose-200/55">
+            復盤不受限制，照樣可以擺 · 依據 {BAN_LIST_VERSION.updated} 版禁卡表
+          </p>
+        </div>
+      )}
 
       {justImported && (
         <div

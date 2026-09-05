@@ -5,6 +5,7 @@
  * 因此沒有任何搜尋請求會送到伺服器，也就沒有伺服器端的注入風險。
  */
 
+import { bannedEntryFor } from './ban-list';
 import { cardName, cardTextToPlain } from './cards';
 import type { TextLang } from './i18n';
 import { RARITY_ORDER } from './labels';
@@ -32,6 +33,16 @@ export function isSortId(value: string): value is SortId {
   return SORT_OPTIONS.some((option) => option.id === value);
 }
 
+/**
+ * 「標記」篩選 —— 不屬於官方分類法，是我們額外標出來的兩種特殊狀態。
+ *
+ * 放在同一組是因為兩者性質一樣：都不是卡片的官方屬性（卡種、領域、稀有度那些
+ * 是官方 API 給的），而是**要另外查資料才知道**的事。禁卡要對照禁卡表，
+ * 衍生物要看 subtype。混進 taxonomy 會讓「這是官方分類」這件事變得模糊。
+ */
+export const MARKS = ['banned', 'token'] as const;
+export type Mark = (typeof MARKS)[number];
+
 export type Filters = {
   query: string;
   sets: SetId[];
@@ -41,6 +52,7 @@ export type Filters = {
   energies: number[];
   mights: number[];
   tags: string[];
+  marks: Mark[];
   sort: SortId;
 };
 
@@ -53,6 +65,7 @@ export const EMPTY_FILTERS: Filters = {
   energies: [],
   mights: [],
   tags: [],
+  marks: [],
   sort: DEFAULT_SORT,
 };
 
@@ -181,6 +194,12 @@ function sortCards(cards: Card[], sort: SortId, lang: TextLang): Card[] {
  *
  * 同一組（例如「卡種」）內的多選是 OR，不同組之間是 AND —— 這是卡牌資料庫的慣例。
  */
+/** 這張卡有沒有某個標記。 */
+export function hasMark(card: Card, mark: Mark): boolean {
+  if (mark === 'token') return card.subtype === 'token';
+  return bannedEntryFor(card, 'constructed') !== null;
+}
+
 export function applyFilters(
   cards: Card[],
   filters: Filters,
@@ -203,6 +222,11 @@ export function applyFilters(
       return false;
     }
     if (filters.tags.length > 0 && !card.tags.some((t) => filters.tags.includes(t))) return false;
+    /*
+     * 標記是 OR 而不是 AND：勾「禁卡」＋「衍生物」要看到兩者的聯集。
+     * 沒有任何一張卡同時是禁卡又是衍生物，用 AND 會直接空白，那顯然不是使用者要的。
+     */
+    if (filters.marks.length > 0 && !filters.marks.some((m) => hasMark(card, m))) return false;
     if (query !== '' && !matchesQuery(card, query, index)) return false;
     return true;
   });

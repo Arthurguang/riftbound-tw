@@ -1,5 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 
+/*
+ * 換行字元刻意用 String.fromCharCode 而不是字面寫法。
+ * 這個專案用 heredoc 產生檔案時反斜線會被吃掉，先前已經因此壞過好幾次
+ *（正則的 s 變成字面 s、換行變成真的斷行）。不寫反斜線就不會有這個問題。
+ */
+const NL = String.fromCharCode(10);
+
 /**
  * 禁卡標示的端對端驗證。
  *
@@ -109,5 +116,75 @@ test.describe('牌組編輯器的禁卡提醒', () => {
     await expect(panel).toContainText('禁卡表');
     await expect(panel).toContainText('人工維護');
     await expect(panel).not.toContainText('不包含賽制規定');
+  });
+});
+
+test.describe('圖鑑的特殊標記篩選', () => {
+  test('只看禁卡 —— 正好 5 張戰場加 3 張其他卡', async ({ page }) => {
+    await page.goto('/cards?mark=banned', { waitUntil: 'domcontentloaded' });
+    // 官方 2026-07-16 版在 Origins 裡禁了 8 張（5 戰場 + 1 法術 + 1 裝備 + 1 單位）
+    await expect(page.getByTestId('tile-ban')).toHaveCount(8);
+  });
+
+  test('只看衍生物', async ({ page }) => {
+    await page.goto('/cards?mark=token', { waitUntil: 'domcontentloaded' });
+    // Recruit ×3（三個領域）+ Sprite
+    await expect(page.getByRole('link', { name: /OGN-27[1-4]/ })).toHaveCount(4);
+    await expect(page.getByTestId('tile-ban')).toHaveCount(0);
+  });
+
+  /*
+   * 兩個都勾是聯集。沒有卡同時是禁卡又是衍生物，用交集會空白 ——
+   * 那顯然不是使用者勾兩個框想看到的。
+   */
+  test('兩個都勾是聯集，不是交集', async ({ page }) => {
+    await page.goto('/cards?mark=banned,token', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('tile-ban')).toHaveCount(8);
+    await expect(page.getByRole('link', { name: /OGN-274/ })).toBeVisible();
+  });
+
+  test('點按鈕就能篩，網址跟著變 —— 可以分享', async ({ page }) => {
+    await page.goto('/cards', { waitUntil: 'domcontentloaded' });
+    // 篩選面板預設是收合的，先展開再點
+    await page.getByRole('button', { name: '展開篩選' }).click();
+    await page.getByRole('button', { name: '賽事禁用', exact: true }).click();
+    await expect(page).toHaveURL(/[?&]mark=banned/);
+    await expect(page.getByTestId('tile-ban')).toHaveCount(8);
+  });
+});
+
+test.describe('復盤的禁卡提醒', () => {
+  test('匯入含禁卡的牌組會提醒，但不擋操作', async ({ page }) => {
+    await page.goto('/replay', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-replay-ready="true"]')).toBeAttached();
+
+    await page.locator('[data-rail-tab="you"]').click();
+    const scope = page.locator('[data-edit-side="you"]');
+    await scope.locator('[data-side-tab="deck"]').click();
+    await scope.getByRole('button', { name: /^匯入牌組/ }).click();
+    await scope.getByLabel('牌表內容').fill(['Battlefields:', '1 The Dreaming Tree'].join(NL));
+    await scope.getByRole('button', { name: '檢查' }).click();
+    await scope.getByRole('button', { name: /^匯入 1 種卡$/ }).click();
+
+    const notice = page.getByTestId('board-ban-notice');
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText('Dreaming Tree');
+    // 復盤是練習工具，提醒歸提醒，不能擋住任何操作
+    await expect(notice).toContainText('照樣可以擺');
+  });
+
+  test('沒有禁卡就不會出現提醒', async ({ page }) => {
+    await page.goto('/replay', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-replay-ready="true"]')).toBeAttached();
+
+    await page.locator('[data-rail-tab="you"]').click();
+    const scope = page.locator('[data-edit-side="you"]');
+    await scope.locator('[data-side-tab="deck"]').click();
+    await scope.getByRole('button', { name: /^匯入牌組/ }).click();
+    await scope.getByLabel('牌表內容').fill(['Battlefields:', '1 Bandle Tree'].join(NL));
+    await scope.getByRole('button', { name: '檢查' }).click();
+    await scope.getByRole('button', { name: /^匯入 1 種卡$/ }).click();
+
+    await expect(page.getByTestId('board-ban-notice')).toHaveCount(0);
   });
 });

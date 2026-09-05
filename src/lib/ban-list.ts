@@ -116,3 +116,25 @@ export function bannedEntryFor(card: Card, format: BanFormat = 'constructed'): B
 export function banEntriesFor(card: Card): BanEntry[] {
   return BAN_LIST.filter((e) => e.name === card.name);
 }
+
+/**
+ * 一組卡片裡有哪些在指定賽制被禁 —— 同名只回報一次。
+ *
+ * 牌組編輯器與復盤盤面都需要這個判斷，抽出來共用；
+ * 兩邊各寫一份的話，遲早會有一邊漏掉某個區域（備牌是最容易漏的）。
+ */
+export function bannedAmong(
+  cards: readonly Card[],
+  format: BanFormat = 'constructed',
+): { card: Card; entry: BanEntry }[] {
+  const seen = new Set<string>();
+  const out: { card: Card; entry: BanEntry }[] = [];
+  for (const card of cards) {
+    if (seen.has(card.name)) continue;
+    const entry = bannedEntryFor(card, format);
+    if (!entry) continue;
+    seen.add(card.name);
+    out.push({ card, entry });
+  }
+  return out;
+}
