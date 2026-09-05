@@ -21,6 +21,7 @@
  */
 
 import data from '@/data/errata.json';
+import zh from '@/data/errata-zh.json';
 import type { Card } from './types';
 
 export type ErrataEntry = {
@@ -57,4 +58,40 @@ export function errataFor(card: Card): ErrataEntry | null {
  */
 export function isEnglishOnly(entry: ErrataEntry): boolean {
   return entry.note !== null && entry.note.toLowerCase().includes('english');
+}
+
+/**
+ * 社群整理的中文參考翻譯。
+ *
+ * ── 為什麼跟官方資料分開放 ──────────────────────────────────────
+ *
+ * errata.json 是抓取腳本的產物，每次重跑整個覆蓋。翻譯寫進去會被沖掉，
+ * 所以放在另一個手動維護的檔案。
+ *
+ * ── 為什麼一開始不做、現在做 ────────────────────────────────────
+ *
+ * 原本刻意不翻，理由是「自己翻等於發明一段看起來很官方的敘述」。
+ * 那個顧慮沒有消失 —— 解法不是不翻，是**講清楚這不是官方的**：
+ * 介面上明確標示為社群整理，而且把「官方繁中根本沒有出現過的詞」單獨列出來。
+ *
+ * 用詞一律沿用官方繁中卡面既有的譯法（放逐／回收／摧毀／召回／增益／征服……），
+ * 那些是從卡牌資料裡實際比對出來的，不是憑印象。
+ */
+
+export const ZH_TRANSLATOR: string = zh.translator;
+
+/** 官方繁中沒出現過、由我們自訂的詞 —— 介面上要讓使用者知道。 */
+export const ZH_COINED_TERMS: readonly { en: string; zh: string; why: string }[] =
+  zh.coinedTerms;
+
+const ZH_ENTRIES = zh.entries as Record<string, string | undefined>;
+
+/** 某張卡的勘誤中文參考翻譯；沒有就回 null。 */
+export function errataZh(entry: ErrataEntry): string | null {
+  return ZH_ENTRIES[entry.name] ?? null;
+}
+
+/** 這段翻譯裡有沒有用到自訂詞 —— 有的話介面要一併說明。 */
+export function coinedTermsIn(text: string): typeof ZH_COINED_TERMS {
+  return ZH_COINED_TERMS.filter((term) => text.includes(term.zh));
 }

@@ -238,3 +238,54 @@ test.describe('勘誤', () => {
     await expect(page.getByText('符合條件：36 張')).toBeVisible();
   });
 });
+
+/**
+ * 勘誤的中文參考翻譯。
+ *
+ * 這一塊的重點是**分得清楚哪段有官方依據**。翻譯本身測不了好壞，
+ * 但「有沒有標示成非官方」「有沒有蓋過官方原文」是測得出來的。
+ */
+test.describe('勘誤的中文參考翻譯', () => {
+  test('中文介面會顯示翻譯，而且標明非官方', async ({ page }) => {
+    await page.goto('/cards/ogn-224-298', { waitUntil: 'domcontentloaded' });
+
+    const zh = page.getByTestId('errata-zh');
+    await expect(zh).toBeVisible();
+    await expect(zh).toContainText('社群整理（非官方）');
+    await expect(zh).toContainText('摧毀至多一件裝備');
+    await expect(zh).toContainText('以上方官方英文原文為準');
+  });
+
+  test('官方原文還在，沒有被翻譯取代', async ({ page }) => {
+    await page.goto('/cards/ogn-224-298', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('errata-notice')).toContainText('You may kill up to one gear.');
+  });
+
+  /*
+   * heal 在官方繁中卡面完全沒出現過，「治療」是本站自訂的詞。
+   * 用到它的地方一定要講出來，不然使用者無從分辨哪些有官方依據。
+   */
+  test('用到自訂詞時會說明', async ({ page }) => {
+    await page.goto('/cards/ogn-023-298', { waitUntil: 'domcontentloaded' });
+
+    const zh = page.getByTestId('errata-zh');
+    await expect(zh).toContainText('治療');
+    await expect(zh).toContainText('是本站自訂的用詞');
+    await expect(zh).toContainText('heal');
+  });
+
+  test('沒用到自訂詞的就不會多那段說明', async ({ page }) => {
+    await page.goto('/cards/ogn-224-298', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('errata-zh')).not.toContainText('本站自訂的用詞');
+  });
+
+  /*
+   * 英文介面不顯示中文翻譯 —— 看英文的人要的就是官方原文，
+   * 多塞一段非官方的中文只是干擾。
+   */
+  test('英文介面不顯示中文翻譯', async ({ page }) => {
+    await page.goto('/cards/ogn-224-298?lang=en', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('errata-notice')).toBeVisible();
+    await expect(page.getByTestId('errata-zh')).toHaveCount(0);
+  });
+});

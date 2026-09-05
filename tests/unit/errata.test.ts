@@ -9,7 +9,16 @@
 
 import { describe, expect, it } from 'vitest';
 import { ALL_CARDS, TAXONOMY } from '../../src/lib/cards';
-import { ERRATA, ERRATA_VERSION, errataFor, isEnglishOnly } from '../../src/lib/errata';
+import {
+  coinedTermsIn,
+  ERRATA,
+  ERRATA_VERSION,
+  errataFor,
+  errataZh,
+  isEnglishOnly,
+  ZH_COINED_TERMS,
+  ZH_TRANSLATOR,
+} from '../../src/lib/errata';
 import { applyFilters, buildSearchIndex, EMPTY_FILTERS } from '../../src/lib/search';
 import { filtersFromParams, filtersToQueryString } from '../../src/lib/filters-url';
 
@@ -123,5 +132,81 @@ describe('查詢與分類', () => {
   it('勘誤標記也寫得進網址', () => {
     const qs = filtersToQueryString({ ...EMPTY_FILTERS, marks: ['errata'] });
     expect(filtersFromParams(new URLSearchParams(qs), []).marks).toEqual(['errata']);
+  });
+});
+
+/**
+ * 社群整理的中文參考翻譯。
+ *
+ * 這份資料的風險跟一般翻譯不同：它會被當成規則來讀。所以測試的重點不是
+ * 「翻得好不好」（測不了），而是三件**可以自動驗證**的事：
+ *
+ *   1. 每一筆勘誤都有對應的翻譯，沒有漏
+ *   2. 用詞沿用官方繁中卡面的既有譯法，沒有自己另外發明
+ *   3. 真的自訂的詞（官方繁中沒出現過的）有被登記下來，介面才講得出口
+ */
+describe('中文參考翻譯', () => {
+  it('每一筆勘誤都翻到了，一筆不漏', () => {
+    for (const e of ERRATA) {
+      expect(errataZh(e), `「${e.name}」沒有中文翻譯`).toBeTruthy();
+    }
+  });
+
+  it('明確標示為非官方 —— 這是它能存在的前提', () => {
+    expect(ZH_TRANSLATOR).toContain('非官方');
+  });
+
+  /*
+   * 術語一律沿用官方繁中卡面的譯法，不自己發明。
+   * 這幾個是從卡牌資料裡實際比對出來的，寫死在這裡當回歸防線：
+   * 哪天有人「順手」把放逐改成流放、回收改成棄置，這條就會紅燈。
+   */
+  it('關鍵術語用官方繁中卡面的譯法', () => {
+    const all = ERRATA.map((e) => errataZh(e) ?? '').join('\n');
+
+    // 該出現的官方用詞
+    for (const term of ['放逐', '回收', '摧毀', '召回', '增益', '征服', '戰力', '主牌堆']) {
+      expect(all, `翻譯裡找不到官方用詞「${term}」`).toContain(term);
+    }
+
+    // 常見但**不是**官方用法的替代寫法，一個都不該出現
+    for (const wrong of ['流放', '棄牌堆', '力量值', '牌庫', '橫置']) {
+      expect(all, `出現了非官方用詞「${wrong}」`).not.toContain(wrong);
+    }
+  });
+
+  /*
+   * 自訂詞必須登記。
+   *
+   * heal 在 Origins 的官方繁中卡面完全沒有出現過（勘誤才引入的新用語），
+   * 所以「治療」是我們自己取的。介面上要講出來，使用者才知道哪些有官方依據。
+   */
+  it('自訂的詞有登記，而且真的在翻譯裡用到', () => {
+    expect(ZH_COINED_TERMS.length).toBeGreaterThan(0);
+    for (const term of ZH_COINED_TERMS) {
+      expect(term.why.length, `「${term.zh}」沒有說明為什麼要自訂`).toBeGreaterThan(10);
+      const used = ERRATA.some((e) => (errataZh(e) ?? '').includes(term.zh));
+      expect(used, `登記了「${term.zh}」卻沒有任何一筆翻譯用到它`).toBe(true);
+    }
+  });
+
+  it('查得出某一段翻譯用了哪些自訂詞', () => {
+    const armory = ERRATA.find((e) => e.name === 'Unlicensed Armory')!;
+    const zh = errataZh(armory)!;
+    expect(zh).toContain('治療');
+    expect(coinedTermsIn(zh).map((t) => t.en)).toContain('heal');
+
+    // 沒用到自訂詞的就不該回報
+    const salvage = ERRATA.find((e) => e.name === 'Salvage')!;
+    expect(coinedTermsIn(errataZh(salvage)!)).toHaveLength(0);
+  });
+
+  it('翻譯的段落數跟原文一致 —— 少一段就是漏翻', () => {
+    for (const e of ERRATA) {
+      const zh = errataZh(e)!;
+      expect(zh.split('\n').length, `「${e.name}」的段落數跟原文對不上`).toBe(
+        e.updated.split('\n').length,
+      );
+    }
   });
 });
