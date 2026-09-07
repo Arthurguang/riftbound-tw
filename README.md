@@ -147,6 +147,7 @@ tests/
 |---|---|
 | **[PROGRESS.md](PROGRESS.md)** | 開發進度、踩過的坑、每個決策的理由（時間軸） |
 | **[SECURITY.md](SECURITY.md)** | 資安威脅模型與每個防護的理由 |
+| **[SECURITY-STRATEGY.md](SECURITY-STRATEGY.md)** | 上線前的資安盤點清單、現況查證與待補缺口 |
 
 ---
 
