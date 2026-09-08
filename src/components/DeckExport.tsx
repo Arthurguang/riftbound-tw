@@ -57,6 +57,8 @@ export function DeckExport({
    * 而 document 只有在瀏覽器端才存在，所以要等掛載後才建立。
    */
   const [mounted, setMounted] = useState(false);
+  // 掛載完成旗標：伺服器端渲染時沒有瀏覽器 API，要等 hydration 結束才能用
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   const [busy, setBusy] = useState(false);

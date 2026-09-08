@@ -89,8 +89,14 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
   const [trackCollection, setTrackCollection] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
 
+  /*
+   * 掛載後才讀 localStorage —— 伺服器端沒有 localStorage，
+   * 提前讀會造成 hydration 不一致。這正是 effect 的正當用途
+   *（把 React 狀態與外部系統同步），不是會造成連鎖渲染的那種寫法。
+   */
   useEffect(() => {
     const stored = loadCollection(validIds);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCollection(stored);
     setTrackCollection(loadTracking(Object.keys(stored).length > 0));
     setReady(true);
