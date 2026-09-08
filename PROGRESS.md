@@ -2529,6 +2529,73 @@ Unlicensed Armory 開頭的 `Discard 1, [E]:` 和結尾的括號提示文字都�
 
 ---
 
+### 升級到 Next.js 16
+
+Dependabot 開了 next 15.5.24 → 16.3.4 的 PR，但 `verify` 是紅的。查下去發現三件事，
+其中第一件跟資安憲法直接相關。
+
+#### 一、Next 16 的路由跟我們的 CSP 衝突
+
+症狀：**點卡牌能力文字裡的關鍵字連結完全沒反應**，網址一動也不動。
+三個瀏覽器引擎全部一致失敗 —— 一致失敗代表是真的行為改變，不是測試不穩。
+
+用診斷測試把 console、pageerror、requestfailed、CSP 違規事件全部攔下來，看到：
+
+```
+CLICK defaultPrevented=false target=A     ← 捕獲階段
+CLICK-BUBBLE defaultPrevented=true        ← Next 攔截了點擊
+This document requires 'TrustedScriptURL' assignment. The action has been blocked.
+Failed to set the 'innerHTML' property: This document requires 'TrustedHTML' assignment.
+CSP-VIOLATION directive=require-trusted-types-for
+```
+
+Next 16 的客戶端路由**先 preventDefault，再用 innerHTML 與動態 script URL 完成導覽**，
+兩者都被本站的 `require-trusted-types-for 'script'` 擋下，於是**靜默失敗**。
+
+查證後確認：**Next.js 官方的 CSP 文件從頭到尾沒有提到 Trusted Types**，
+相關 issue（vercel/next.js#13228）從 Chrome 83 時代就開著 —— Next 並不正式支援這個指令。
+
+**影響範圍比第一眼小很多。** 額外做了導覽診斷，逐一測四種連結：
+
+| 連結 | 結果 |
+|---|---|
+| 頂部導覽列 | ✅ 正常 |
+| 圖鑑列表 → 詳細頁 | ✅ 正常 |
+| 詳細頁 → 回到圖鑑 | ✅ 正常 |
+| **詳細頁 → 辭典錨點（帶 #）** | ❌ 沒有導覽 |
+
+**只有帶錨點的跨頁連結壞掉**，而全站只有一個這種連結。
+
+依安全憲法第三條「絕不為了讓功能動而放寬 CSP」，解法是**改程式碼**：
+那個連結從 `next/link` 換成原生 `<a>`，瀏覽器自己做整頁導覽，錨點一定正確定位。
+代價只有少一次客戶端導覽，對一個跳到辭典的連結來說無所謂。
+
+**Trusted Types 完整保留。** 升級後逐項比對安全標頭，與正式站（Next 15）完全一致。
+
+#### 二、eslint-config-next 16 改成原生 flat config
+
+`eslint.config.mjs` 原本用 `FlatCompat` 把舊格式包起來。16 版本身已經是 flat config，
+再包一次會爆「Converting circular structure to JSON」。改成直接展開匯出的陣列。
+
+#### 三、新的 React Compiler 規則預設是 error
+
+`eslint-config-next` 16 把兩條規則開成 error，**兩條都不是 bug**：
+
+- `preserve-manual-memoization`（3 處）——「React Compiler 跳過最佳化」，
+  純粹是效能建議，程式行為完全正常。**降級為警告**，看得到但不擋 CI。
+- `set-state-in-effect`（5 處）—— 全部是「掛載時讀取瀏覽器專屬狀態」
+  （localStorage、hydration 旗標），那正是 effect 的正當用途。
+  **保持 error，只在這 5 處逐一豁免並寫明理由** —— 這樣以後新寫的違規還是會被擋。
+
+資安相關的 lint 規則（`no-danger` / `no-eval` / `no-script-url`）一律維持 error，
+不適用上面的理由。
+
+#### 順帶：`next lint` 在 16 被移除
+
+本專案的 lint script 本來就是直接跑 `eslint .`，不受影響。
+
+---
+
 ## 待辦事項
 
 - [ ] **Next.js 16**：等官方修好 Trusted Types 相容性再評估（追蹤 vercel/next.js#13228）
@@ -2584,3 +2651,4 @@ Unlicensed Armory 開頭的 `Discard 1, [E]:` 和結尾的括號提示文字都�
 | 2026-09-05 | 官方勘誤表（抓取腳本＋圖鑑顯示與分類） |
 | 2026-09-05 | 返回圖鑑保留篩選；勘誤加上社群中文參考翻譯 |
 | 2026-09-05 | 資安策略盤點：查出 CodeQL 必要檢查掛錯、Dependabot 漏洞警示未啟用 |
+| 2026-09-07 | 升級 Next.js 16：查出路由與 Trusted Types 衝突，改程式碼而非放寬 CSP |

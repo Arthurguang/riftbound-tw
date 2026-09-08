@@ -186,6 +186,8 @@ export function ReplayBoard({ cards }: { cards: Card[] }) {
    */
   const historyRef = useRef<BoardState[]>([]);
   const [ready, setReady] = useState(false);
+  // 掛載完成旗標，端對端測試靠它判斷頁面可以操作了
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setReady(true), []);
 
   /**

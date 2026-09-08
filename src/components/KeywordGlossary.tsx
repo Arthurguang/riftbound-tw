@@ -42,6 +42,8 @@ export function KeywordGlossary({
    * 有了明確的訊號，測試就不必靠「等一下應該好了吧」這種猜測。
    */
   const [ready, setReady] = useState(false);
+  // 掛載完成旗標，端對端測試靠它判斷頁面可以操作了
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setReady(true), []);
   const strings = RULES_STRINGS;
 

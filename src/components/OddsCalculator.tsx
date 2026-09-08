@@ -108,6 +108,8 @@ export function OddsCalculator({ cards }: { cards: Card[] }) {
    * 畫面上的機率就不會更新（這個問題實際發生過）。
    */
   const [ready, setReady] = useState(false);
+  // 掛載完成旗標，端對端測試靠它判斷頁面可以操作了
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setReady(true), []);
 
   // ── 快速計算 ──────────────────────────────────────────────────
