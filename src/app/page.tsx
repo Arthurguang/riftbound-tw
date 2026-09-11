@@ -134,7 +134,10 @@ export default async function HomePage({ searchParams }: PageProps) {
         overflow-x-clip：展示台的轉盤比欄位寬，兩側靠遮罩淡出；
         clip 只裁左右、不產生捲動區，上下的光暈照常，也不會在筆電上撐出橫向捲軸。
       */}
-      <section className="grid items-center gap-10 overflow-x-clip border-b border-surface-2 py-14 md:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] lg:py-20">
+      {/*
+        展示台放大（使用者要求）：桌機上佔右側約六成寬；平板與手機排在文字下方、用整個寬度。
+      */}
+      <section className="grid items-center gap-8 overflow-x-clip border-b border-surface-2 py-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:py-16">
         <div className="flex flex-col gap-5">
           <p className="text-xs font-bold tracking-[0.28em] text-arcane uppercase">
             {strings.siteTagline}

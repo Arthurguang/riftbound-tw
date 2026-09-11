@@ -1,25 +1,33 @@
 /**
  * 首頁傳奇展示台（3D 轉盤）的計算 —— 純函式，方便測試。
  *
- * 轉盤用「累計轉了幾步」（turn）表示，而不是「目前是第幾張」：
- * 從最後一張轉回第一張時，累計步數只是再加一，畫面就會繼續往同一個方向轉；
- * 若直接把角度設回 0，轉盤會倒轉一整圈。
+ * 轉盤用一個「目前轉到幾度」的數字表示，會一直累加（可以超過 360、也可以是負數）：
+ * 持續轉動時只要把角度往上加，畫面就一直往同一個方向轉，不會在一圈結束時倒轉回去。
+ * 第 i 張卡放在 i × (360 ÷ 張數) 度的位置；角度等於那個值時，它就在正前方。
  */
 
-/** 累計步數 → 目前正面是第幾張（往回轉成負數也對）。 */
-export function frontIndex(turn: number, count: number): number {
+/** 轉盤轉到 angle 度時，正前方是第幾張（最接近正面的那張）。 */
+export function frontFromAngle(angle: number, count: number): number {
   if (count <= 0) return 0;
-  return ((turn % count) + count) % count;
+  const index = Math.round(angle / (360 / count));
+  return ((index % count) + count) % count;
+}
+
+/** 放開拖曳時，對齊到最近的一張卡。 */
+export function snapAngle(angle: number, count: number): number {
+  if (count <= 0) return angle;
+  const step = 360 / count;
+  return Math.round(angle / step) * step;
 }
 
 /**
- * 從目前正面的 current 張轉到 target 張，走最近的方向要轉幾步。
- * 正數往下一位、負數往上一位；剛好轉半圈時往下一位。
+ * 從目前的角度轉到第 index 張：回傳目標角度，走最近的方向。
+ * （例如目前 350 度、要轉到第 0 張，目標是 360 而不是 0，才不會倒轉一整圈。）
  */
-export function shortestStep(current: number, target: number, count: number): number {
-  if (count <= 0) return 0;
-  const forward = (((target - current) % count) + count) % count;
-  return forward > count / 2 ? forward - count : forward;
+export function angleForIndex(current: number, index: number, count: number): number {
+  if (count <= 0) return current;
+  const base = index * (360 / count);
+  return base + 360 * Math.round((current - base) / 360);
 }
 
 /**

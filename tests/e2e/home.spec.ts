@@ -1,12 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 
 /**
- * 首頁的「領域徽章＋傳奇列」與區域地圖。
+ * 首頁：傳奇展示台、「領域徽章＋傳奇列」。
  *
  * 除了「點得動」，也驗證跟內容正確性有關的事：
  *   · 畫面上寫的傳奇數量，跟實際列出來的張數一致（數量不寫死）
  *   · 篩選的結果真的符合選的領域
- *   · 傳奇與區域的連結都連到真的頁面、帶正確的篩選
+ *   · 點展示台的卡，打開的就是那一位（WebKit 曾經點到背對使用者的卡）
  */
 
 const roster = (page: Page) => page.getByTestId('legend-roster');
@@ -100,8 +100,41 @@ test.describe('全站', () => {
 
 test.describe('首頁傳奇展示台', () => {
   const showcase = (page: Page) => page.getByTestId('hero-showcase');
+  const stage = (page: Page) => page.getByTestId('showcase-stage');
   const frontOf = async (page: Page) => Number(await showcase(page).getAttribute('data-front'));
   const OFFICIAL_CDN = /^https:\/\/(cmsassets\.rgpub\.io|cdn\.playloltcg\.com)\//;
+
+  /** 用頁首的「暫停背景動畫」讓展示台停住（需要精確比對位置的測試用）。 */
+  const pauseAll = async (page: Page) => {
+    await page.getByTestId('ambience-controls').getByRole('button', { name: '暫停背景動畫' }).click();
+    await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
+  };
+
+  /** 在展示台上從右往左拖 distance 像素。 */
+  const dragLeft = async (page: Page, distance: number) => {
+    const box = await stage(page).boundingBox();
+    if (!box) throw new Error('找不到展示台');
+    const y = box.y + box.height / 2;
+    const x = box.x + box.width / 2;
+    await page.mouse.move(x + distance / 2, y);
+    await page.mouse.down();
+    await page.mouse.move(x - distance / 2, y, { steps: 12 });
+    await expect(showcase(page)).toHaveAttribute('data-auto', 'dragging');
+    await page.mouse.up();
+  };
+
+  /*
+   * 點卡之前先停住轉盤：Playwright 要等元素「不再移動」才會點，持續轉動的卡永遠等不到。
+   * 真人點慢慢移動的卡沒問題，這是測試工具的限制。
+   */
+  const clickFrontCard = async (page: Page) => {
+    await pauseAll(page);
+    const front = showcase(page).locator('[data-showcase-card][data-front="true"]');
+    const label = (await front.getAttribute('aria-label')) ?? '';
+    await front.click();
+    // 回傳點的是哪一位（aria-label 是「卡名：看傳奇說明」）
+    return label.replace(/：看傳奇說明$/, '');
+  };
 
   test('展示全部傳奇（跟下方傳奇列一樣多），卡圖都來自官方 CDN', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -113,26 +146,20 @@ test.describe('首頁傳奇展示台', () => {
     for (const src of sources) expect(src).toMatch(OFFICIAL_CDN);
   });
 
-  test('會自動慢慢轉到下一位', async ({ page }) => {
+  test('持續慢慢轉動，滑鼠移上去也不會停', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showcase(page).hover();
     await expect(showcase(page)).toHaveAttribute('data-auto', 'running');
     const start = await showcase(page).getAttribute('data-front');
     await expect(showcase(page)).not.toHaveAttribute('data-front', start ?? '', { timeout: 8000 });
   });
 
-  test('滑鼠移上去就停下來，方便點選', async ({ page }) => {
+  test('按頁首的「暫停背景動畫」，展示台也一起停', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await showcase(page).hover();
-    await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
+    await pauseAll(page);
     const start = await frontOf(page);
     await page.waitForTimeout(4500);
     expect(await frontOf(page)).toBe(start);
-  });
-
-  test('按頁首的「暫停背景動畫」，展示台也一起停', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.getByTestId('ambience-controls').getByRole('button', { name: '暫停背景動畫' }).click();
-    await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
   });
 
   test('系統設定「減少動態效果」時不會自動轉', async ({ page }) => {
@@ -141,9 +168,31 @@ test.describe('首頁傳奇展示台', () => {
     await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
   });
 
+  test('可以拖曳轉到想看的傳奇，放開後對齊到一張卡', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await pauseAll(page);
+    const count = await showcase(page).locator('[data-showcase-card]').count();
+    const start = await frontOf(page);
+
+    // 拖 300 像素 ≈ 轉 90 度；16 位傳奇時剛好是 4 位
+    await dragLeft(page, 300);
+    const expected = (start + Math.round(90 / (360 / count))) % count;
+    await expect(showcase(page)).toHaveAttribute('data-front', String(expected));
+    // 拖曳不會誤開說明視窗
+    await expect(page.getByTestId('legend-dialog')).toBeHidden();
+  });
+
+  test('拖曳放開後，繼續慢慢轉', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await dragLeft(page, 200);
+    await expect(showcase(page)).toHaveAttribute('data-auto', 'running');
+    const after = await showcase(page).getAttribute('data-front');
+    await expect(showcase(page)).not.toHaveAttribute('data-front', after ?? '', { timeout: 8000 });
+  });
+
   test('上一位／下一位可以手動轉', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await showcase(page).hover();
+    await pauseAll(page);
     const count = await showcase(page).locator('[data-showcase-card]').count();
     const start = await frontOf(page);
 
@@ -153,22 +202,7 @@ test.describe('首頁傳奇展示台', () => {
     await expect(showcase(page)).toHaveAttribute('data-front', String(start));
   });
 
-  /*
-   * 點卡之前先把滑鼠移上去、等轉盤停下 —— 真人也是這樣操作的。
-   * 不這樣做的話，轉盤可能在「找到正面那張卡」和「真的點下去」之間轉了一格，
-   * 點到的是隔壁那張（WebKit 在全套同時跑時遇過）。
-   */
-  const clickFrontCard = async (page: Page) => {
-    await showcase(page).hover();
-    await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
-    const front = showcase(page).locator('[data-showcase-card][data-front="true"]');
-    const label = (await front.getAttribute('aria-label')) ?? '';
-    await front.click();
-    // 回傳點的是哪一位（aria-label 是「卡名：看傳奇說明」）
-    return label.replace(/：看傳奇說明$/, '');
-  };
-
-  test('點展示中的卡，跳出傳奇說明；按 Esc 關閉', async ({ page }) => {
+  test('點正面的卡，跳出的正是那一位的說明；按 Esc 關閉', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     const clicked = await clickFrontCard(page);
 
@@ -180,8 +214,6 @@ test.describe('首頁傳奇展示台', () => {
      */
     await expect(dialog.getByRole('heading', { level: 2 })).toHaveText(clicked);
     await expect(dialog.getByRole('link', { name: /看完整卡片頁/ })).toBeVisible();
-    // 說明視窗開著時轉盤停住，關掉之前不會自己換人
-    await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
 
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();

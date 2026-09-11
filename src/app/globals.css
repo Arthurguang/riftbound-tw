@@ -304,11 +304,11 @@ button[class*='hover:border-arcane']:hover {
 /*
  * 首頁傳奇展示台（src/components/HeroShowcase.tsx）：3D 轉盤。
  *
- * 每張卡的角度要依傳奇數量計算，由程式用 CSSOM 設定（CSP 不允許 style 屬性）；
- * 這裡只放固定不變的部分：透視、立體空間、背面隱藏、轉動的過場、兩側淡出。
+ * 每張卡的角度與轉盤的轉動由程式用 CSSOM 設定（CSP 不允許 style 屬性）；
+ * 這裡只放固定不變的部分：透視、立體空間、背面隱藏、兩側淡出、拖曳。
  */
 .showcase-stage {
-  perspective: 1100px;
+  perspective: 1500px;
 }
 .showcase-mask {
   mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
@@ -317,18 +317,22 @@ button[class*='hover:border-arcane']:hover {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
-  transition: transform 1.1s cubic-bezier(0.45, 0.05, 0.25, 1);
+  /* 轉動由程式每一格更新角度（持續轉動＋拖曳），不用 CSS 過場 */
+  will-change: transform;
 }
 .showcase-card {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 132px;
-  margin: -92px 0 0 -66px;
+  width: 180px;
+  margin: -126px 0 0 -90px;
   border-radius: 0.75rem;
   backface-visibility: hidden;
-  filter: brightness(0.6) saturate(0.85);
-  transition: filter 0.4s;
+  /* 側邊變暗用 opacity：持續轉動時不必每格重新計算濾鏡 */
+  opacity: 0.5;
+  transition:
+    opacity 0.4s,
+    box-shadow 0.4s;
   /*
    * 只有正前方那張能用滑鼠點。
    *
@@ -343,14 +347,23 @@ button[class*='hover:border-arcane']:hover {
   cursor: pointer;
 }
 .showcase-card.is-front,
-.showcase-card:hover,
 .showcase-card:focus-visible {
-  filter: brightness(1) drop-shadow(0 0 22px rgba(255, 150, 70, 0.45));
+  opacity: 1;
+  box-shadow: 0 0 40px -6px rgba(255, 150, 70, 0.55);
 }
-@media (prefers-reduced-motion: reduce) {
-  .showcase-ring {
-    transition: none;
-  }
+
+/* 可以左右拖曳轉動；手機上直向滑動仍然是捲動頁面 */
+.showcase-drag {
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.showcase-drag:active {
+  cursor: grabbing;
+}
+.showcase-card img {
+  -webkit-user-drag: none;
 }
 
 /* 傳奇說明視窗（瀏覽器內建的 <dialog>） */
