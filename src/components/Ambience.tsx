@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { BattlefieldBackdrop } from './BattlefieldBackdrop';
-import { backdropIntensity, STORAGE_KEYS } from '@/lib/ambience';
+import { backdropEnabled, backdropIntensity, STORAGE_KEYS } from '@/lib/ambience';
 import { isWebAudioSupported, startBattleMusic, type BattleMusic } from '@/lib/battle-music';
 
 /**
@@ -83,7 +83,12 @@ export function AmbienceProvider({ children }: { children: ReactNode }) {
     <AmbienceContext.Provider
       value={{ paused, togglePaused, musicOn, musicSupported, toggleMusic }}
     >
-      <BattlefieldBackdrop intensity={backdropIntensity(pathname)} paused={paused} />
+      {backdropEnabled(pathname) && (
+        <>
+          <div aria-hidden="true" className="nebula-backdrop" data-testid="nebula-backdrop" />
+          <BattlefieldBackdrop intensity={backdropIntensity(pathname)} paused={paused} />
+        </>
+      )}
       {children}
     </AmbienceContext.Provider>
   );

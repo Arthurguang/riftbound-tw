@@ -40,6 +40,22 @@ test.describe('背景動畫', () => {
     expect(intensity).toBeLessThan(1);
   });
 
+  /*
+   * 2026-09-11 實測：WebKit 每次更新畫面都會重畫整片固定背景，復盤頁的操作被拖慢 2 倍多，
+   * CI 的 WebKit 因此逾時。復盤的牌桌本來就蓋滿畫面，所以復盤頁不放背景。
+   */
+  test('對局復盤頁不放背景；換回其他頁面背景會回來', async ({ page }) => {
+    await page.goto('/replay', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-replay-ready="true"]')).toBeAttached();
+    await expect(backdrop(page)).toHaveCount(0);
+    await expect(page.getByTestId('nebula-backdrop')).toHaveCount(0);
+
+    await page.locator('header').getByRole('link', { name: '卡牌圖鑑', exact: true }).click();
+    await page.waitForURL(/\/cards$/);
+    await expect(backdrop(page)).toHaveCount(1);
+    await expect(page.getByTestId('nebula-backdrop')).toHaveCount(1);
+  });
+
   test('畫布點不到，不會擋住任何按鈕', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     const pointerEvents = await backdrop(page).evaluate((el) => getComputedStyle(el).pointerEvents);

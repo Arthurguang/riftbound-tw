@@ -238,11 +238,15 @@ body {
  * 夜空底圖：幾團星雲般的光暈，加上淡淡的符文圓環。
  *
  * 全部用 CSS 漸層畫，不是圖片 —— 不多一個檔案，也不需要放寬 CSP 的 img-src。
- * 用固定定位的偽元素而不是 background-attachment: fixed，
+ * 用固定定位的元素而不是 background-attachment: fixed，
  * 因為後者在 iOS Safari 上會失效或捲動卡頓。
+ *
+ * 由 src/components/Ambience.tsx 放進頁面（而不是 body::before），才能依頁面決定要不要放：
+ * 2026-09-11 實測，WebKit 每次更新畫面都會把整片固定背景重畫一次，
+ * 復盤頁同一段操作從 2.8 秒拖到 6.2 秒 —— 所以復盤頁不放，
+ * 其他頁面也拿掉了最耗重畫成本的「重複圓環」漸層。
  */
-body::before {
-  content: '';
+.nebula-backdrop {
   position: fixed;
   inset: 0;
   z-index: -1;
@@ -250,12 +254,7 @@ body::before {
   background-image:
     radial-gradient(ellipse 55% 45% at 12% 8%, rgba(95, 200, 230, 0.13), transparent 70%),
     radial-gradient(ellipse 50% 40% at 88% 18%, rgba(160, 95, 214, 0.16), transparent 70%),
-    radial-gradient(ellipse 60% 50% at 70% 95%, rgba(216, 178, 63, 0.07), transparent 70%),
-    repeating-radial-gradient(
-      circle at 82% 22%,
-      transparent 0 58px,
-      rgba(163, 227, 244, 0.035) 58px 59px
-    );
+    radial-gradient(ellipse 60% 50% at 70% 95%, rgba(216, 178, 63, 0.07), transparent 70%);
 }
 
 /*
@@ -287,9 +286,10 @@ body::before {
  */
 [class*='bg-surface-1'],
 [class*='bg-surface-2'] {
+  /* 陰影的模糊範圍刻意收小：大範圍模糊每次重畫都很貴（WebKit 實測，同上） */
   box-shadow:
     inset 0 1px 0 rgba(236, 234, 255, 0.06),
-    0 12px 32px -20px rgba(0, 0, 0, 0.9);
+    0 6px 14px -10px rgba(0, 0, 0, 0.85);
 }
 
 /* 可以點的卡片、連結方塊：滑過時亮起青光，取代只換框線顏色 */

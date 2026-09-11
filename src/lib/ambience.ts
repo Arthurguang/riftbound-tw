@@ -15,6 +15,17 @@
  */
 
 /**
+ * 哪些頁面放背景（夜空光暈＋戰火餘燼）。
+ *
+ * 對局復盤頁不放：牌桌蓋滿整個畫面，背景幾乎看不到；而且實測（2026-09-11）
+ * WebKit 每次更新畫面都會把整片固定背景重畫一次，復盤頁同一段操作從 2.8 秒拖到 6.2 秒，
+ * CI 的 WebKit 因此接連逾時。iPhone 上的瀏覽器全都是 WebKit。
+ */
+export function backdropEnabled(pathname: string): boolean {
+  return !(pathname === '/replay' || pathname.startsWith('/replay/'));
+}
+
+/**
  * 動畫濃淡：首頁完整呈現；其他頁面是要專心操作的工具，只留淡淡的氛圍。
  */
 export function backdropIntensity(pathname: string): number {
