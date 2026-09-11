@@ -160,9 +160,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const headerList = await headers();
   const rawLang = headerList.get('x-text-lang') ?? '';
   const lang: TextLang = isTextLang(rawLang) ? rawLang : DEFAULT_TEXT_LANG;
+  const nonce = headerList.get('x-nonce') ?? undefined;
 
   return (
     <html lang={HTML_LANG[lang]}>
+      <head>
+        {/*
+          Trusted Types 的 default 政策：讓 Next.js 換頁時能載入本站自己的程式檔，
+          其他一律照擋。必須在 Next.js 的程式之前就位，詳見檔案開頭的說明。
+        */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts -- 必須同步執行，才能保證政策比 Next.js 先就位；檔案不到 2KB，不影響載入速度 */}
+        <script src="/trusted-types-policy.js" nonce={nonce} />
+      </head>
       <body className="flex min-h-screen flex-col">
         <a
           href="#main"

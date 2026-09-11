@@ -77,6 +77,11 @@ test.describe('Content-Security-Policy', () => {
     // 圖片只允許自家網域與 Riot 官方 CDN。
     expect(csp).toContain('img-src');
     expect(csp).toContain('https://cmsassets.rgpub.io');
+
+    // Trusted Types：強制啟用，而且只准有一個名叫 default 的政策。
+    expect(csp).toContain("require-trusted-types-for 'script'");
+    expect(csp).toMatch(/trusted-types default(;|$)/);
+    expect(csp).not.toContain("'allow-duplicates'");
   });
 
   test('每次請求的 nonce 都不同，且 HTML 不被快取', async ({ request }) => {
@@ -121,6 +126,124 @@ test.describe('CSP 實際攔截能力（主動攻擊測試）', () => {
       await page.waitForLoadState('networkidle');
     }
     expect(violations, `不應有違規，實際：${violations.join(' / ')}`).toEqual([]);
+  });
+
+  /*
+   * 上面那條只測「直接打開網址」。這條測「在站內點連結換頁」。
+   *
+   * 2026-09-11 查出：升到 Next.js 16 之後，每次點導覽列換頁，
+   * Next 都會用 script.src 載入下一頁的程式，被 Trusted Types 擋下，
+   * 然後**悄悄退回整頁重新載入**。畫面最後還是換過去了，所以舊的測試全綠 ——
+   * 但每次換頁都是整頁重載，在 Safari 核心的瀏覽器上有時乾脆換不過去。
+   *
+   * 所以這裡同時檢查兩件事：
+   *   · 換頁過程沒有任何 CSP／Trusted Types 違規
+   *   · 換頁後 window 上的標記還在 —— 證明是站內換頁，不是整頁重載
+   */
+  test('站內點連結換頁：沒有違規，而且不是整頁重新載入', async ({ page }) => {
+    const violations = await collectViolations(page);
+    const errors: string[] = [];
+    page.on('console', (m) => {
+      if (m.type() === 'error') errors.push(m.text());
+    });
+
+    await page.goto('/replay');
+    await page.waitForLoadState('networkidle');
+    await page.evaluate(() => {
+      (window as unknown as { __sameDocument: boolean }).__sameDocument = true;
+    });
+
+    const nav = (name: string) => page.locator('header').getByRole('link', { name, exact: true });
+    for (const [name, path] of [
+      ['卡牌圖鑑', /\/cards$/],
+      ['規則說明', /\/rules$/],
+      ['牌組編輯器', /\/deck$/],
+      ['機率計算', /\/odds$/],
+    ] as const) {
+      await nav(name).click();
+      await page.waitForURL(path);
+    }
+
+    const sameDocument = await page.evaluate(
+      () => (window as unknown as { __sameDocument?: boolean }).__sameDocument === true,
+    );
+    expect(sameDocument, '換頁變成了整頁重新載入').toBe(true);
+    expect(violations, `不應有違規，實際：${violations.join(' / ')}`).toEqual([]);
+    expect(
+      errors.filter((e) => /Trusted|RSC payload|Content Security Policy/i.test(e)),
+      '換頁時不應出現 Trusted Types 或 CSP 錯誤',
+    ).toEqual([]);
+  });
+
+  /*
+   * 為了讓換頁能運作，本站定義了一個 Trusted Types 的 default 政策
+   * （public/trusted-types-policy.js）。這組測試確認它**只**放行本站的程式檔，
+   * 攻擊者無法利用它，也無法另外造一個政策來繞過。
+   */
+  test('Trusted Types 政策只放行本站程式檔，其他一律拒絕', async ({ page }) => {
+    await page.goto('/cards');
+
+    const result = await page.evaluate(() => {
+      const tt = (window as unknown as { trustedTypes?: { createPolicy: (n: string, o: object) => unknown } })
+        .trustedTypes;
+      if (!tt) return null;
+
+      const tryScriptSrc = (url: string) => {
+        const el = document.createElement('script');
+        try {
+          el.src = url;
+          return 'allowed';
+        } catch {
+          return 'blocked';
+        }
+      };
+      const tryCreatePolicy = (name: string) => {
+        try {
+          tt.createPolicy(name, { createHTML: (s: string) => s });
+          return 'created';
+        } catch {
+          return 'blocked';
+        }
+      };
+
+      /*
+       * 放行時必須「原字串照回」，不能改成完整網址。
+       * Next.js 的載入器用 script[src="寫進去的那串"] 找已載入的檔案，
+       * 字串一變就對不上，換頁後的畫面會永遠停在「載入中…」而且沒有任何錯誤。
+       */
+      const keepsOriginal = (() => {
+        const el = document.createElement('script');
+        try {
+          el.src = '/_next/static/chunks/example.js';
+          return el.getAttribute('src');
+        } catch {
+          return 'blocked';
+        }
+      })();
+
+      return {
+        keepsOriginal,
+        ownChunk: tryScriptSrc('/_next/static/chunks/example.js'),
+        otherSite: tryScriptSrc('https://evil.example/_next/static/x.js'),
+        sameSiteNotChunk: tryScriptSrc('/api/evil.js'),
+        dataUrl: tryScriptSrc('data:text/javascript,alert(1)'),
+        protocolRelative: tryScriptSrc('//evil.example/_next/static/x.js'),
+        attackerPolicy: tryCreatePolicy('attacker'),
+        secondDefault: tryCreatePolicy('default'),
+      };
+    });
+
+    test.skip(result === null, '這個瀏覽器不支援 Trusted Types（仍有 CSP 的第二道防線）');
+    expect(result).toEqual({
+      keepsOriginal: '/_next/static/chunks/example.js',
+      ownChunk: 'allowed',
+      otherSite: 'blocked',
+      sameSiteNotChunk: 'blocked',
+      dataUrl: 'blocked',
+      protocolRelative: 'blocked',
+      attackerPolicy: 'blocked',
+      secondDefault: 'blocked',
+    });
   });
 
   /*
