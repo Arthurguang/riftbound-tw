@@ -10,7 +10,7 @@ import {
   STORAGE_KEYS,
   type BackdropVariant,
 } from '@/lib/ambience';
-import { startBattleMusic, type BattleMusic } from '@/lib/battle-music';
+import { isWebAudioSupported, startBattleMusic, type BattleMusic } from '@/lib/battle-music';
 
 /**
  * 全站的背景氛圍：動畫＋音樂的狀態都放在這裡。
@@ -28,6 +28,8 @@ type AmbienceState = {
   paused: boolean;
   togglePaused: () => void;
   musicOn: boolean;
+  /** 瀏覽器能不能即時合成聲音；不能時音樂按鈕停用並說明原因。 */
+  musicSupported: boolean;
   toggleMusic: () => void;
 };
 
@@ -54,6 +56,8 @@ export function AmbienceProvider({ children }: { children: ReactNode }) {
   const [variant, setVariantState] = useState<BackdropVariant>('embers');
   const [paused, setPaused] = useState(false);
   const [musicOn, setMusicOn] = useState(false);
+  // 伺服器端先假設支援（按鈕照常顯示），掛載後再依瀏覽器實際情況更正
+  const [musicSupported, setMusicSupported] = useState(true);
   const music = useRef<BattleMusic | null>(null);
 
   // 掛載後才讀瀏覽器存的偏好（伺服器端沒有 localStorage）
@@ -62,6 +66,7 @@ export function AmbienceProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 掛載時讀取瀏覽器專屬狀態
     if (isBackdropVariant(storedVariant)) setVariantState(storedVariant);
     if (readStored(STORAGE_KEYS.paused) === '1') setPaused(true);
+    setMusicSupported(isWebAudioSupported());
   }, []);
 
   // 離開網站（元件卸載）時一定把聲音關掉
@@ -92,7 +97,7 @@ export function AmbienceProvider({ children }: { children: ReactNode }) {
 
   return (
     <AmbienceContext.Provider
-      value={{ variant, setVariant, paused, togglePaused, musicOn, toggleMusic }}
+      value={{ variant, setVariant, paused, togglePaused, musicOn, musicSupported, toggleMusic }}
     >
       <BattlefieldBackdrop
         variant={variant}
@@ -113,7 +118,8 @@ const VARIANT_LABEL: Record<BackdropVariant, string> = {
 export function AmbienceControls() {
   const state = useContext(AmbienceContext);
   if (!state) return null;
-  const { variant, setVariant, paused, togglePaused, musicOn, toggleMusic } = state;
+  const { variant, setVariant, paused, togglePaused, musicOn, musicSupported, toggleMusic } =
+    state;
 
   const iconButton =
     'flex h-7 min-w-7 items-center justify-center rounded-full border px-2 text-xs transition-colors';
@@ -155,9 +161,16 @@ export function AmbienceControls() {
         type="button"
         aria-label="背景音樂"
         aria-pressed={musicOn}
-        title={musicOn ? '背景音樂播放中，點一下關閉' : '播放背景音樂（程式即時合成）'}
+        disabled={!musicSupported}
+        title={
+          !musicSupported
+            ? '這個瀏覽器不支援即時合成的背景音樂'
+            : musicOn
+              ? '背景音樂播放中，點一下關閉'
+              : '播放背景音樂（程式即時合成）'
+        }
         onClick={toggleMusic}
-        className={`${iconButton} ${musicOn ? 'border-accent text-accent-soft' : 'border-line text-ink-dim hover:text-ink'}`}
+        className={`${iconButton} disabled:cursor-not-allowed disabled:opacity-40 ${musicOn ? 'border-accent text-accent-soft' : 'border-line text-ink-dim hover:text-ink'}`}
       >
         ♪{musicOn ? ' 開' : ''}
       </button>

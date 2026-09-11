@@ -167,7 +167,9 @@ test.describe('無障礙與行動版', () => {
     await expect(page.locator('main ul > li').first()).toBeVisible();
 
     let focused = '';
-    for (let i = 0; i < 10 && focused !== 'card-search'; i += 1) {
+    // 頁首依序有：跳到主要內容、站名、五個導覽連結、背景動畫與音樂的按鈕、兩個語言選單，
+    // 搜尋框大約在第 15 下 Tab。上限給寬一點 —— 這裡測的是「用鍵盤到得了」，不是精確的順序。
+    for (let i = 0; i < 25 && focused !== 'card-search'; i += 1) {
       await page.keyboard.press('Tab');
       focused = await page.evaluate(() => document.activeElement?.id ?? '');
     }

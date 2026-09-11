@@ -14,6 +14,18 @@ const controls = (page: Page) => page.getByTestId('ambience-controls');
 const musicButton = (page: Page) => controls(page).getByRole('button', { name: '背景音樂' });
 const pauseButton = (page: Page) => controls(page).getByRole('button', { name: '暫停背景動畫' });
 
+/*
+ * Windows 上的 Playwright WebKit 沒有 Web Audio（真的 Safari 有）。
+ * 需要真的發出聲音的測試在那裡跳過；「不支援時要停用並說明」另有一條測試涵蓋。
+ */
+const hasWebAudio = (page: Page) =>
+  page.evaluate(
+    () =>
+      typeof window.AudioContext === 'function' ||
+      typeof (window as unknown as { webkitAudioContext?: unknown }).webkitAudioContext === 'function',
+  );
+const NO_WEB_AUDIO = '這個測試瀏覽器沒有 Web Audio（Windows 上的 Playwright WebKit）';
+
 test.describe('背景動畫', () => {
   test('首頁有背景動畫，預設就在動，而且是完整濃度', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -68,6 +80,7 @@ test.describe('背景音樂', () => {
 
   test('按下才開始，再按一次就停', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    test.skip(!(await hasWebAudio(page)), NO_WEB_AUDIO);
     await musicButton(page).click();
     await expect(musicButton(page)).toHaveAttribute('aria-pressed', 'true');
     await musicButton(page).click();
@@ -76,6 +89,7 @@ test.describe('背景音樂', () => {
 
   test('站內換頁時音樂不會中斷', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    test.skip(!(await hasWebAudio(page)), NO_WEB_AUDIO);
     await musicButton(page).click();
     await expect(musicButton(page)).toHaveAttribute('aria-pressed', 'true');
 
@@ -86,9 +100,21 @@ test.describe('背景音樂', () => {
 
   test('重新整理後回到靜音 —— 音樂開關不會被記住', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    test.skip(!(await hasWebAudio(page)), NO_WEB_AUDIO);
     await musicButton(page).click();
     await expect(musicButton(page)).toHaveAttribute('aria-pressed', 'true');
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(musicButton(page)).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  test('瀏覽器不支援時，按鈕停用並說明原因，不會按了沒反應', async ({ page }) => {
+    await page.addInitScript(() => {
+      // 模擬一個沒有 Web Audio 的瀏覽器
+      Object.defineProperty(window, 'AudioContext', { value: undefined, configurable: true });
+      Object.defineProperty(window, 'webkitAudioContext', { value: undefined, configurable: true });
+    });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(musicButton(page)).toBeDisabled();
+    await expect(musicButton(page)).toHaveAttribute('title', /不支援/);
   });
 });

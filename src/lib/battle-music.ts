@@ -32,13 +32,33 @@ const CHORDS = [
   [-5, -1, 2],
 ];
 
-export function startBattleMusic(): BattleMusic | null {
-  const Ctx =
+function audioContextClass(): typeof AudioContext | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const candidate =
     window.AudioContext ??
     (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  return typeof candidate === 'function' ? candidate : undefined;
+}
+
+/**
+ * 這個瀏覽器能不能即時合成聲音。
+ * 幾乎所有瀏覽器都可以；不行的時候，頁首的音樂按鈕會停用並說明原因，而不是按了沒反應。
+ */
+export function isWebAudioSupported(): boolean {
+  return audioContextClass() !== undefined;
+}
+
+export function startBattleMusic(): BattleMusic | null {
+  const Ctx = audioContextClass();
   if (!Ctx) return null;
 
-  const ctx = new Ctx();
+  let ctx: AudioContext;
+  try {
+    ctx = new Ctx();
+  } catch {
+    // 有這個介面卻建立失敗（例如音訊裝置被系統封鎖）—— 當作不支援
+    return null;
+  }
   void ctx.resume();
 
   // 總音量：兩秒淡入，避免一按下去就很大聲
