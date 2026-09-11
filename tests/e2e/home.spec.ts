@@ -20,7 +20,8 @@ test.describe('首頁的傳奇與領域', () => {
     const count = await legends(page).count();
     expect(count).toBeGreaterThanOrEqual(16);
     await expect(page.getByTestId('legend-count')).toHaveText(`全部 ${count} 位`);
-    await expect(roster(page).getByRole('heading', { level: 2 })).toContainText(`${count} 位傳奇`);
+    // 標題不放數量（新系列加入傳奇時不必改），數量只看「全部 N 位」
+    await expect(roster(page).getByRole('heading', { level: 2 })).toHaveText('傳奇與六大領域');
   });
 
   test('選一個領域，只剩含有它的傳奇，並說明這個領域的風格', async ({ page }) => {

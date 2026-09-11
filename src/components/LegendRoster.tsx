@@ -29,7 +29,8 @@ export type LegendView = {
 
 type Strings = {
   eyebrow: string;
-  title: (n: number) => string;
+  /** 標題不放數量：新系列加入傳奇時不必改標題（數量顯示在徽章旁的「全部 N 位」） */
+  title: string;
   intro: string;
   filterLabel: string;
   showing: (n: number, total: number) => string;
@@ -41,7 +42,7 @@ type Strings = {
 const STRINGS: Record<TextLang, Strings> = {
   'zh-TW': {
     eyebrow: 'LEGENDS',
-    title: (n) => `${n} 位傳奇與六大領域`,
+    title: '傳奇與六大領域',
     intro:
       '每位傳奇掌握兩個領域，他的牌組只能放這兩個領域與無特性的卡（核心規則 103.1.b）。點領域徽章篩選：選一個，看哪些傳奇用它；選兩個，看這個組合有誰。',
     filterLabel: '依領域篩選傳奇',
@@ -52,7 +53,7 @@ const STRINGS: Record<TextLang, Strings> = {
   },
   'zh-CN': {
     eyebrow: 'LEGENDS',
-    title: (n) => `${n} 位传奇与六大领域`,
+    title: '传奇与六大领域',
     intro:
       '每位传奇掌握两个领域，他的卡组只能放这两个领域与无特性的卡（核心规则 103.1.b）。点领域徽章筛选：选一个，看哪些传奇用它；选两个，看这个组合有谁。',
     filterLabel: '按领域筛选传奇',
@@ -63,7 +64,7 @@ const STRINGS: Record<TextLang, Strings> = {
   },
   en: {
     eyebrow: 'LEGENDS',
-    title: (n) => `${n} Legends, six domains`,
+    title: 'Legends and the six domains',
     intro:
       'Each Legend holds two domains, and their deck may only contain cards of those domains plus colourless ones (Core Rules 103.1.b). Pick one domain to see which Legends use it, or two to see who holds that pair.',
     filterLabel: 'Filter Legends by domain',
@@ -90,7 +91,7 @@ export function LegendRoster({ lang, legends }: { lang: TextLang; legends: Legen
     <section className="flex flex-col gap-5 py-14" data-testid="legend-roster">
       <div className="flex flex-col gap-2">
         <p className="text-xs font-bold tracking-[0.28em] text-arcane">{s.eyebrow}</p>
-        <h2 className="text-3xl font-bold text-ink">{s.title(legends.length)}</h2>
+        <h2 className="text-3xl font-bold text-ink">{s.title}</h2>
         <p className="max-w-3xl text-sm leading-relaxed text-ink-dim">{s.intro}</p>
       </div>
 
