@@ -214,11 +214,16 @@ test.describe('牌組編輯器', () => {
     await page.getByLabel('開啟').check();
     await openTab(page, '符文');
 
-    // 牌組放 2 張，手上只有 1 張
+    // 牌組放 2 張，手上只有 1 張。
+    // 每一步先等畫面反映再點下一步（原因見上面「缺卡清單會算出還差幾張」的說明，
+    // 2026-09-11 這一條也在全套同時跑時漏收過最後一下點擊）。
+    const missing = page.getByTestId('deck-missing');
     await page.getByRole('button', { name: /^加入牌組/ }).first().click();
     await page.getByRole('button', { name: /^加入牌組/ }).first().click();
+    await expect(missing).toContainText('共缺 2 張');
     await page.getByRole('button', { name: /^增加擁有張數/ }).first().click();
-    await expect(page.getByTestId('deck-missing')).toContainText('共缺 1 張');
+    await expect(page.getByText(/已標記 1 種卡/)).toBeVisible();
+    await expect(missing).toContainText('共缺 1 張');
 
     const [csv] = await Promise.all([
       page.waitForEvent('download'),

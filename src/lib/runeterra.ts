@@ -85,32 +85,3 @@ export function regionOfChampion(cards: readonly Card[], champion: string): stri
   }
   return null;
 }
-
-/**
- * 首頁主視覺要展示的幾位傳奇：挑能涵蓋最多領域的組合，讓畫面帶進六種領域的顏色。
- *
- * 貪婪法：每次挑「能新增最多尚未出現領域」的傳奇，平手時取排序在前的。
- * 結果由資料決定，傳奇增加或官方調整領域時自動跟著變。
- */
-export function showcaseLegends(legends: readonly Card[], count: number): Card[] {
-  const picked: Card[] = [];
-  const covered = new Set<string>();
-  const pool = [...legends];
-
-  while (picked.length < count && pool.length > 0) {
-    let bestIndex = 0;
-    let bestGain = -1;
-    pool.forEach((card, index) => {
-      const gain = playDomains(card).filter((d) => !covered.has(d)).length;
-      if (gain > bestGain) {
-        bestGain = gain;
-        bestIndex = index;
-      }
-    });
-    const [card] = pool.splice(bestIndex, 1);
-    if (!card) break;
-    picked.push(card);
-    for (const domain of playDomains(card)) covered.add(domain);
-  }
-  return picked;
-}

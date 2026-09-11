@@ -89,6 +89,14 @@ export function AmbienceProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * 其他會動的元件（例如首頁的傳奇展示台）跟著頁首的「暫停背景動畫」一起停 ——
+ * 使用者按一次暫停，全站會動的東西都該停下來（WCAG 2.2.2）。
+ */
+export function useAmbiencePaused(): boolean {
+  return useContext(AmbienceContext)?.paused ?? false;
+}
+
 export function AmbienceControls() {
   const state = useContext(AmbienceContext);
   if (!state) return null;

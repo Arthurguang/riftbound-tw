@@ -98,22 +98,105 @@ test.describe('全站', () => {
   });
 });
 
-test.describe('首頁主視覺', () => {
-  test('桌機版有五張傳奇卡扇形展開，而且是純裝飾（螢幕報讀器略過）', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
+test.describe('首頁傳奇展示台', () => {
+  const showcase = (page: Page) => page.getByTestId('hero-showcase');
+  const frontOf = async (page: Page) => Number(await showcase(page).getAttribute('data-front'));
+  const OFFICIAL_CDN = /^https:\/\/(cmsassets\.rgpub\.io|cdn\.playloltcg\.com)\//;
+
+  test('展示全部傳奇（跟下方傳奇列一樣多），卡圖都來自官方 CDN', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const fan = page.getByTestId('hero-card-fan');
-    await expect(fan).toBeVisible();
-    await expect(fan).toHaveAttribute('aria-hidden', 'true');
-    await expect(fan.locator('img')).toHaveCount(5);
-    // 卡圖一律來自官方 CDN（跟全站同一條隱私規則）
-    for (const src of await fan.locator('img').evaluateAll((els) => els.map((e) => e.getAttribute('src') ?? ''))) {
-      expect(src).toMatch(/^https:\/\/(cmsassets\.rgpub\.io|cdn\.playloltcg\.com)\//);
-    }
+    const cards = showcase(page).locator('[data-showcase-card]');
+    await expect(cards).toHaveCount(await legends(page).count());
+    const sources = await cards
+      .locator('img')
+      .evaluateAll((els) => els.map((e) => e.getAttribute('src') ?? ''));
+    for (const src of sources) expect(src).toMatch(OFFICIAL_CDN);
+  });
+
+  test('會自動慢慢轉到下一位', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(showcase(page)).toHaveAttribute('data-auto', 'running');
+    const start = await showcase(page).getAttribute('data-front');
+    await expect(showcase(page)).not.toHaveAttribute('data-front', start ?? '', { timeout: 8000 });
+  });
+
+  test('滑鼠移上去就停下來，方便點選', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showcase(page).hover();
+    await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
+    const start = await frontOf(page);
+    await page.waitForTimeout(4500);
+    expect(await frontOf(page)).toBe(start);
+  });
+
+  test('按頁首的「暫停背景動畫」，展示台也一起停', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.getByTestId('ambience-controls').getByRole('button', { name: '暫停背景動畫' }).click();
+    await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
+  });
+
+  test('系統設定「減少動態效果」時不會自動轉', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
+  });
+
+  test('上一位／下一位可以手動轉', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await showcase(page).hover();
+    const count = await showcase(page).locator('[data-showcase-card]').count();
+    const start = await frontOf(page);
+
+    await showcase(page).getByRole('button', { name: '下一位' }).click();
+    await expect(showcase(page)).toHaveAttribute('data-front', String((start + 1) % count));
+    await showcase(page).getByRole('button', { name: '上一位' }).click();
+    await expect(showcase(page)).toHaveAttribute('data-front', String(start));
   });
 
   /*
-   * 2026-09-11：扇形卡牌旋轉後的邊角與光暈超出欄位，在 1280 寬的筆電上撐出橫向捲軸。
+   * 點卡之前先把滑鼠移上去、等轉盤停下 —— 真人也是這樣操作的。
+   * 不這樣做的話，轉盤可能在「找到正面那張卡」和「真的點下去」之間轉了一格，
+   * 點到的是隔壁那張（WebKit 在全套同時跑時遇過）。
+   */
+  const clickFrontCard = async (page: Page) => {
+    await showcase(page).hover();
+    await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
+    const front = showcase(page).locator('[data-showcase-card][data-front="true"]');
+    const label = (await front.getAttribute('aria-label')) ?? '';
+    await front.click();
+    // 回傳點的是哪一位（aria-label 是「卡名：看傳奇說明」）
+    return label.replace(/：看傳奇說明$/, '');
+  };
+
+  test('點展示中的卡，跳出傳奇說明；按 Esc 關閉', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const clicked = await clickFrontCard(page);
+
+    const dialog = page.getByTestId('legend-dialog');
+    await expect(dialog).toBeVisible();
+    /*
+     * 打開的必須是剛剛點的那一位。2026-09-11 在 WebKit 抓到：背對使用者的卡會接住點擊，
+     * 點正面的凱莎卻打開轉盤另一邊的提摩。
+     */
+    await expect(dialog.getByRole('heading', { level: 2 })).toHaveText(clicked);
+    await expect(dialog.getByRole('link', { name: /看完整卡片頁/ })).toBeVisible();
+    // 說明視窗開著時轉盤停住，關掉之前不會自己換人
+    await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+  });
+
+  test('說明視窗裡的連結會打開那張卡的完整頁面', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await clickFrontCard(page);
+    await page.getByTestId('legend-dialog').getByRole('link', { name: /看完整卡片頁/ }).click();
+    await expect(page).toHaveURL(/\/cards\/og[ns]-/);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  });
+
+  /*
+   * 2026-09-11：主視覺的卡牌與光暈超出欄位，曾在 1280 寬的筆電上撐出橫向捲軸。
    * 常見的幾種螢幕寬度都要檢查，整頁不能左右捲動。
    */
   for (const width of [1280, 1440, 1024, 390]) {

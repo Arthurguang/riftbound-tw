@@ -1,17 +1,20 @@
 import Link from 'next/link';
-import { HeroCardFan, type FanCard } from '@/components/HeroCardFan';
+import { DomainBadges } from '@/components/CardBadges';
+import { CardText } from '@/components/CardText';
+import { HeroShowcase, type ShowcaseLegend } from '@/components/HeroShowcase';
 import { LegendRoster, type LegendView } from '@/components/LegendRoster';
-import { ALL_CARDS, TAXONOMY, cardImageUrl, cardName } from '@/lib/cards';
+import {
+  ALL_CARDS,
+  TAXONOMY,
+  cardImageUrl,
+  cardName,
+  cardSubtitle,
+  cardText,
+} from '@/lib/cards';
 import { SET_LABELS, TYPE_LABELS } from '@/lib/labels';
 import { readArtLang, readTextLang, t, DEFAULT_TEXT_LANG } from '@/lib/i18n';
 import { playDomains } from '@/lib/runeterra-core';
-import {
-  allLegends,
-  championTagOf,
-  regionOfChampion,
-  showcaseLegends,
-  tagLabel,
-} from '@/lib/runeterra';
+import { allLegends, championTagOf, regionOfChampion, tagLabel } from '@/lib/runeterra';
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -55,9 +58,6 @@ const INTRO = {
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
-/** 主視覺扇形的排列：挑中的第一位放正中間，依序往兩側擺。 */
-const FAN_ORDER = [3, 1, 0, 2, 4];
-
 export default async function HomePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const lang = readTextLang({ lang: first(params.lang) });
@@ -100,10 +100,27 @@ export default async function HomePage({ searchParams }: PageProps) {
     ];
   });
 
-  const showcase = showcaseLegends(legendCards, FAN_ORDER.length);
-  const fan: FanCard[] = FAN_ORDER.flatMap((index) => {
-    const card = showcase[index];
-    return card ? [{ id: card.id, image: cardImageUrl(card, 420, art) }] : [];
+  /*
+   * 展示台的說明視窗要顯示能力文字。CardText 會用到卡牌資料，
+   * 所以在伺服器端先渲染好（details），瀏覽器只收到渲染結果。
+   */
+  const showcase: ShowcaseLegend[] = legendCards.map((card) => {
+    const champion = championTagOf(card);
+    return {
+      id: card.id,
+      name: champion ? tagLabel(champion, lang) : cardName(card, lang),
+      title: cardName(card, lang),
+      subtitle: cardSubtitle(card, lang),
+      image: cardImageUrl(card, 300, art),
+      largeImage: cardImageUrl(card, 600, art),
+      href: withLang(`/cards/${card.id}`),
+      details: (
+        <div className="space-y-3">
+          <DomainBadges domains={card.domains} lang={lang} />
+          <CardText blocks={cardText(card, lang)} lang={lang} />
+        </div>
+      ),
+    };
   });
 
   /*
@@ -114,10 +131,10 @@ export default async function HomePage({ searchParams }: PageProps) {
   return (
     <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
       {/*
-        overflow-x-clip：扇形卡牌旋轉後的邊角與後面的光暈會超出欄位，
-        在 1280 寬的筆電上撐出橫向捲軸。clip 只裁左右、不產生捲動區，上下的光暈照常。
+        overflow-x-clip：展示台的轉盤比欄位寬，兩側靠遮罩淡出；
+        clip 只裁左右、不產生捲動區，上下的光暈照常，也不會在筆電上撐出橫向捲軸。
       */}
-      <section className="grid items-center gap-10 overflow-x-clip border-b border-surface-2 py-14 md:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)] lg:py-20">
+      <section className="grid items-center gap-10 overflow-x-clip border-b border-surface-2 py-14 md:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] lg:py-20">
         <div className="flex flex-col gap-5">
           <p className="text-xs font-bold tracking-[0.28em] text-arcane uppercase">
             {strings.siteTagline}
@@ -141,7 +158,7 @@ export default async function HomePage({ searchParams }: PageProps) {
             </Link>
           </div>
         </div>
-        <HeroCardFan cards={fan} />
+        <HeroShowcase lang={lang} legends={showcase} />
       </section>
 
       <LegendRoster lang={lang} legends={legends} />
