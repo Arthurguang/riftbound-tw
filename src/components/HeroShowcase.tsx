@@ -12,6 +12,7 @@ import {
 import { useAmbiencePaused } from './Ambience';
 import { angleForIndex, frontFromAngle, ringRadius, snapAngle } from '@/lib/showcase';
 import type { TextLang } from '@/lib/i18n';
+import { useHydrated } from '@/lib/use-hydrated';
 
 /**
  * 首頁主視覺：傳奇展示台。
@@ -128,6 +129,7 @@ export function HeroShowcase({ lang, legends }: { lang: TextLang; legends: Showc
   const [openId, setOpenId] = useState<string | null>(null);
 
   const ambiencePaused = useAmbiencePaused();
+  const hydrated = useHydrated();
   const reduceMotion = useSyncExternalStore(
     subscribeReducedMotion,
     () => window.matchMedia(REDUCE_QUERY).matches,
@@ -302,6 +304,7 @@ export function HeroShowcase({ lang, legends }: { lang: TextLang; legends: Showc
         aria-roledescription="carousel"
         aria-label={s.region}
         data-testid="hero-showcase"
+        data-ready={hydrated ? 'true' : undefined}
         data-front={front}
         data-auto={motionState}
         onBlur={(event) => {

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { BattlefieldBackdrop } from './BattlefieldBackdrop';
 import { backdropEnabled, backdropIntensity, STORAGE_KEYS } from '@/lib/ambience';
 import { isWebAudioSupported, startBattleMusic, type BattleMusic } from '@/lib/battle-music';
+import { useHydrated } from '@/lib/use-hydrated';
 
 /**
  * 全站的背景氛圍：動畫＋音樂的狀態都放在這裡。
@@ -104,6 +105,7 @@ export function useAmbiencePaused(): boolean {
 
 export function AmbienceControls() {
   const state = useContext(AmbienceContext);
+  const hydrated = useHydrated();
   if (!state) return null;
   const { paused, togglePaused, musicOn, musicSupported, toggleMusic } = state;
 
@@ -111,7 +113,11 @@ export function AmbienceControls() {
     'flex h-7 min-w-7 items-center justify-center rounded-full border px-2 text-xs transition-colors';
 
   return (
-    <div className="flex items-center gap-1.5" data-testid="ambience-controls">
+    <div
+      className="flex items-center gap-1.5"
+      data-testid="ambience-controls"
+      data-ready={hydrated ? 'true' : undefined}
+    >
       <button
         type="button"
         aria-label="暫停背景動畫"
