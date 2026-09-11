@@ -2,7 +2,9 @@ import { Suspense } from 'react';
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import Link from 'next/link';
+import { AmbienceControls, AmbienceProvider } from '@/components/Ambience';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { NavLinks } from '@/components/NavLinks';
 import { HTML_LANG, isTextLang, t, DEFAULT_TEXT_LANG, type TextLang } from '@/lib/i18n';
 import './globals.css';
 
@@ -18,50 +20,69 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0b0e14',
+  themeColor: '#0e0d22',
   width: 'device-width',
   initialScale: 1,
 };
 
+/**
+ * 站徽：一個六邊形，六個角各是一個領域的顏色。
+ * 顏色寫在 SVG 的 fill 屬性上（呈現屬性，CSP 不擋），順序與首頁的領域徽章相同。
+ */
+const MARK_POINTS: ReadonlyArray<[number, number, string]> = [
+  [13, 3.5, '#e0533d'],
+  [21.23, 8.25, '#3da8c8'],
+  [21.23, 17.75, '#a05fd6'],
+  [13, 22.5, '#4fae63'],
+  [4.77, 17.75, '#e08a3d'],
+  [4.77, 8.25, '#d8b23f'],
+];
+
+function SiteMark() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+      <circle cx="13" cy="13" r="12.2" stroke="#5fc8e6" strokeOpacity="0.35" />
+      <polygon
+        points={MARK_POINTS.map(([x, y]) => `${x},${y}`).join(' ')}
+        stroke="#a3e3f4"
+        strokeOpacity="0.7"
+        strokeWidth="1.1"
+      />
+      {MARK_POINTS.map(([x, y, color]) => (
+        <circle key={color} cx={x} cy={y} r="2.1" fill={color} />
+      ))}
+    </svg>
+  );
+}
+
 function SiteHeader({ lang }: { lang: TextLang }) {
   const strings = t(lang);
   return (
-    <header className="sticky top-0 z-10 border-b border-line bg-surface/85 backdrop-blur">
+    /*
+      刻意不用毛玻璃（backdrop-blur）：頁首固定在畫面上方、底下是持續播放的背景動畫，
+      每一格都得重算整條頁首的模糊。在沒有顯示卡的環境（CI、低階手機）會把整頁拖慢，
+      2026-09-11 CI 的 WebKit 因此在復盤頁接連逾時。改用接近不透明的底色，看起來幾乎一樣。
+    */
+    <header className="sticky top-0 z-10 border-b border-line bg-surface/95">
       <nav className="mx-auto flex w-full max-w-[1400px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
-        <Link href="/" className="text-sm font-semibold tracking-tight text-ink">
-          {strings.siteName}
+        <Link href="/" className="flex items-center gap-2.5">
+          <SiteMark />
+          <span className="font-serif text-base font-bold tracking-wide text-ink">
+            {strings.siteName}
+          </span>
         </Link>
-        <Link
-          href="/cards"
-          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
-        >
-          {strings.navGallery}
-        </Link>
-        <Link
-          href="/rules"
-          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
-        >
-          {strings.navRules}
-        </Link>
-        <Link
-          href="/deck"
-          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
-        >
-          {strings.navDeck}
-        </Link>
-        <Link
-          href="/odds"
-          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
-        >
-          {strings.navOdds}
-        </Link>
-        <Link
-          href="/replay"
-          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
-        >
-          {strings.navReplay}
-        </Link>
-        <div className="ml-auto">
+        <NavLinks
+          items={[
+            { href: '/cards', label: strings.navGallery },
+            { href: '/rules', label: strings.navRules },
+            { href: '/deck', label: strings.navDeck },
+            { href: '/odds', label: strings.navOdds },
+            { href: '/replay', label: strings.navReplay },
+          ]}
+        />
+        <div className="ml-auto flex flex-wrap items-center gap-3">
+          {/* 背景動畫與音樂的開關。放在頁首而不是浮在畫面上，才不會擋住工具頁的按鈕。 */}
+          <AmbienceControls />
           {/* 語言切換要讀網址參數，因此需要一層 Suspense。 */}
           <Suspense fallback={null}>
             <LanguageSwitcher />
@@ -173,17 +194,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script src="/trusted-types-policy.js" nonce={nonce} />
       </head>
       <body className="flex min-h-screen flex-col">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface-2 focus:px-3 focus:py-2 focus:text-sm focus:text-ink"
-        >
-          {t(lang).skipToContent}
-        </a>
-        <SiteHeader lang={lang} />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <SiteFooter />
+        {/*
+          背景氛圍（動畫＋音樂）包住整頁：它在 layout 裡，站內換頁時不會重新掛載，
+          音樂不會因為換頁中斷。它本身不產生任何外框元素，不影響版面。
+        */}
+        <AmbienceProvider>
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface-2 focus:px-3 focus:py-2 focus:text-sm focus:text-ink"
+          >
+            {t(lang).skipToContent}
+          </a>
+          <SiteHeader lang={lang} />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <SiteFooter />
+        </AmbienceProvider>
       </body>
     </html>
   );

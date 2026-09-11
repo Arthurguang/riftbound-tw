@@ -7,8 +7,8 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 
-# 測試產物
-test-results/
+# 測試產物（test-results 開頭的都算：自訂 --output 的資料夾曾經被誤收進版控）
+test-results*/
 playwright-report/
 blob-report/
 .playwright/

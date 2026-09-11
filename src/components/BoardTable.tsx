@@ -462,7 +462,7 @@ export function BoardTable({
             <section
               key={zone}
               data-battlefield={index}
-              className="flex min-h-0 flex-col rounded-lg border border-accent/25 bg-accent/[0.04] p-2"
+              className="battlefield-plate flex min-h-0 flex-col rounded-lg border border-accent/40 p-2"
             >
               <div className="mb-1 flex shrink-0 items-center gap-2">
                 {/* 戰場卡本身也擺在桌上 —— 它有自己的能力，復盤時要看得到 */}
@@ -530,7 +530,7 @@ export function BoardTable({
                 </span>
               </div>
 
-              <div className="grid min-h-0 flex-1 grid-rows-2 gap-1.5">
+              <div className="grid min-h-0 flex-1 grid-rows-2 gap-1.5 [&>*:first-child]:border-b [&>*:first-child]:border-dashed [&>*:first-child]:border-accent/30 [&>*:first-child]:pb-1.5">
                 <ZoneCell
                   zone={zone}
                   label="對手的"

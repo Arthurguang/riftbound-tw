@@ -7,6 +7,7 @@ import { DeckImport } from './DeckImport';
 import { DeckLegality } from './DeckLegality';
 import { DeckExport } from './DeckExport';
 import { CardPicker } from './CardPicker';
+import { LegendIdentity } from './LegendIdentity';
 import { cardName } from '@/lib/cards';
 import {
   checkLegality,
@@ -298,16 +299,19 @@ export function DeckBuilder({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
           <section className="mb-5">
             <h3 className="mb-2 text-sm font-semibold text-ink">傳奇</h3>
             {legend ? (
-              <div className="flex items-center justify-between gap-2 rounded-lg border border-accent/40 bg-accent/5 px-3 py-2">
-                <span className="truncate text-sm text-ink">{cardName(legend, lang)}</span>
-                <button
-                  type="button"
-                  onClick={() => chooseLegend(null)}
-                  className="shrink-0 text-xs text-ink-dim hover:text-accent-soft"
-                >
-                  更換
-                </button>
-              </div>
+              <>
+                <div className="flex items-center justify-between gap-2 rounded-lg border border-accent/40 bg-accent/5 px-3 py-2">
+                  <span className="truncate text-sm text-ink">{cardName(legend, lang)}</span>
+                  <button
+                    type="button"
+                    onClick={() => chooseLegend(null)}
+                    className="shrink-0 text-xs text-ink-dim hover:text-accent-soft"
+                  >
+                    更換
+                  </button>
+                </div>
+                <LegendIdentity legend={legend} lang={lang} />
+              </>
             ) : (
               <p className="rounded-lg border border-dashed border-line px-3 py-2 text-xs text-ink-faint">
                 請先從右側選一張傳奇 —— 它決定你能使用哪些特性的卡
