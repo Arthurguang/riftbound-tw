@@ -379,17 +379,17 @@ button[class*='hover:border-arcane']:hover {
   color: var(--color-ink);
   box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.9);
 }
+/* 不用毛玻璃：遮罩底下的背景動畫還在播，模糊每一格都要重算（原因同頁首） */
 .legend-dialog::backdrop {
-  background-color: rgba(8, 7, 24, 0.72);
-  backdrop-filter: blur(4px);
+  background-color: rgba(8, 7, 24, 0.82);
 }
 
 /* 首頁主視覺後面的餘燼光暈 */
 .hero-ember-glow {
   background-image:
-    radial-gradient(ellipse 50% 45% at 50% 58%, rgba(255, 140, 60, 0.3), transparent 70%),
-    radial-gradient(ellipse 30% 28% at 50% 62%, rgba(216, 178, 63, 0.25), transparent 70%);
-  filter: blur(10px);
+    radial-gradient(ellipse 55% 50% at 50% 58%, rgba(255, 140, 60, 0.28), transparent 80%),
+    radial-gradient(ellipse 34% 32% at 50% 62%, rgba(216, 178, 63, 0.22), transparent 80%);
+  /* 漸層本身就夠柔和，不另外加 filter: blur —— 它就在旋轉的轉盤後面，模糊會一直重算 */
 }
 
 /* 鍵盤操作時的焦點框：明顯、但不干擾滑鼠使用者。 */

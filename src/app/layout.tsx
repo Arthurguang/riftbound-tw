@@ -58,7 +58,12 @@ function SiteMark() {
 function SiteHeader({ lang }: { lang: TextLang }) {
   const strings = t(lang);
   return (
-    <header className="sticky top-0 z-10 border-b border-line bg-surface/85 backdrop-blur">
+    /*
+      刻意不用毛玻璃（backdrop-blur）：頁首固定在畫面上方、底下是持續播放的背景動畫，
+      每一格都得重算整條頁首的模糊。在沒有顯示卡的環境（CI、低階手機）會把整頁拖慢，
+      2026-09-11 CI 的 WebKit 因此在復盤頁接連逾時。改用接近不透明的底色，看起來幾乎一樣。
+    */
+    <header className="sticky top-0 z-10 border-b border-line bg-surface/95">
       <nav className="mx-auto flex w-full max-w-[1400px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
           <SiteMark />
