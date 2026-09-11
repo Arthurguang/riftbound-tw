@@ -13,20 +13,25 @@
  * 符文戰場是鬥智的遊戲 —— 底色不是單調的黑，而是有層次的夜空；
  * 金色保留給最主要的按鈕（「進入圖鑑」這類），青光用在次要的強調與目前位置。
  *
- * 文字對比度（以 surface 為底）：ink ≈ 16:1、ink-dim ≈ 9:1、ink-faint ≈ 5:1，
+ * 文字對比度（以 surface 為底）：ink ≈ 16:1、ink-dim ≈ 10:1、ink-faint ≈ 6:1，
  * 都高於 WCAG AA 對一般文字要求的 4.5:1。
+ *
+ * 2026-09-11 第三輪調整（依設計研究，見 PROGRESS.md）：
+ *   · 次要文字調亮 —— 灰色小字太多時視線找不到重點，而且不好讀
+ *   · 面板一層比一層亮、框線調淡 —— 深色介面靠「越高越亮」分層次，
+ *     不靠框線（Refactoring UI：框線太多會讓畫面顯得雜亂又平面）
  */
 @theme {
   --color-ink: #eceaff;
-  --color-ink-dim: #b6b3de;
-  --color-ink-faint: #8f8cbd;
+  --color-ink-dim: #c0bde6;
+  --color-ink-faint: #9e9bca;
 
   --color-surface: #0e0d22;
-  --color-surface-1: #16153a;
-  --color-surface-2: #201e4b;
-  --color-surface-3: #2c2a61;
+  --color-surface-1: #1a1942;
+  --color-surface-2: #242250;
+  --color-surface-3: #302d68;
 
-  --color-line: #37357a;
+  --color-line: #2c2a66;
   --color-accent: #d8b23f;
   --color-accent-soft: #ecd27a;
 
@@ -264,6 +269,44 @@ body::before {
   height: 100%;
   z-index: -1;
   pointer-events: none;
+  /* 底部的火光：靜態 CSS 漸層，不佔動畫每一格的繪製時間 */
+  background-image: linear-gradient(to top, rgba(220, 90, 40, 0.12), rgba(220, 90, 40, 0) 40%);
+}
+/* 工具頁：火光更淡 */
+.battle-backdrop--dim {
+  background-image: linear-gradient(to top, rgba(220, 90, 40, 0.05), rgba(220, 90, 40, 0) 40%);
+}
+
+/*
+ * 用光影取代框線（全站）。
+ *
+ * 全站的面板幾乎都是「bg-surface-1／2 ＋ 細框線」。框線已經調淡，
+ * 這裡讓面板本身有厚度：頂端一道很細的亮邊（像光從上方打下來）＋下方柔和的陰影。
+ * 用屬性選擇器一次涵蓋所有面板（含 bg-surface-1/80 這類半透明寫法），
+ * 不必逐一修改每個元件。
+ */
+[class*='bg-surface-1'],
+[class*='bg-surface-2'] {
+  box-shadow:
+    inset 0 1px 0 rgba(236, 234, 255, 0.06),
+    0 12px 32px -20px rgba(0, 0, 0, 0.9);
+}
+
+/* 可以點的卡片、連結方塊：滑過時亮起青光，取代只換框線顏色 */
+a[class*='hover:border-arcane']:hover,
+button[class*='hover:border-arcane']:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(236, 234, 255, 0.08),
+    0 0 0 1px rgba(95, 200, 230, 0.35),
+    0 14px 36px -16px rgba(95, 200, 230, 0.45);
+}
+
+/* 首頁主視覺卡牌後面的餘燼光暈 */
+.hero-ember-glow {
+  background-image:
+    radial-gradient(ellipse 50% 45% at 50% 58%, rgba(255, 140, 60, 0.3), transparent 70%),
+    radial-gradient(ellipse 30% 28% at 50% 62%, rgba(216, 178, 63, 0.25), transparent 70%);
+  filter: blur(10px);
 }
 
 /* 鍵盤操作時的焦點框：明顯、但不干擾滑鼠使用者。 */

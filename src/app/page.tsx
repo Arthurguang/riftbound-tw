@@ -1,10 +1,17 @@
 import Link from 'next/link';
+import { HeroCardFan, type FanCard } from '@/components/HeroCardFan';
 import { LegendRoster, type LegendView } from '@/components/LegendRoster';
 import { ALL_CARDS, TAXONOMY, cardImageUrl, cardName } from '@/lib/cards';
 import { SET_LABELS, TYPE_LABELS } from '@/lib/labels';
 import { readArtLang, readTextLang, t, DEFAULT_TEXT_LANG } from '@/lib/i18n';
 import { playDomains } from '@/lib/runeterra-core';
-import { allLegends, championTagOf, regionOfChampion, tagLabel } from '@/lib/runeterra';
+import {
+  allLegends,
+  championTagOf,
+  regionOfChampion,
+  showcaseLegends,
+  tagLabel,
+} from '@/lib/runeterra';
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -48,6 +55,9 @@ const INTRO = {
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
+/** 主視覺扇形的排列：挑中的第一位放正中間，依序往兩側擺。 */
+const FAN_ORDER = [3, 1, 0, 2, 4];
+
 export default async function HomePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const lang = readTextLang({ lang: first(params.lang) });
@@ -70,7 +80,8 @@ export default async function HomePage({ searchParams }: PageProps) {
    * 傳奇的資料都在伺服器端算好，只把畫面要用的幾個欄位傳給瀏覽器 ——
    * 不把整份卡牌資料送進首頁的客戶端程式。
    */
-  const legends: LegendView[] = allLegends(ALL_CARDS).flatMap((card) => {
+  const legendCards = allLegends(ALL_CARDS);
+  const legends: LegendView[] = legendCards.flatMap((card) => {
     const [a, b] = playDomains(card);
     if (!a || !b) return [];
     const champion = championTagOf(card);
@@ -89,59 +100,75 @@ export default async function HomePage({ searchParams }: PageProps) {
     ];
   });
 
+  const showcase = showcaseLegends(legendCards, FAN_ORDER.length);
+  const fan: FanCard[] = FAN_ORDER.flatMap((index) => {
+    const card = showcase[index];
+    return card ? [{ id: card.id, image: cardImageUrl(card, 420, art) }] : [];
+  });
+
+  /*
+   * 字級只用三層（NN/g：一個畫面最多三種大小、三種對比）：
+   *   標題（h1 / 區段 h2）· 內文 · 輔助小字
+   * 統計數字刻意放大，讓它自己成為視覺重點，標籤退到輔助層。
+   */
   return (
     <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
-      <section className="flex flex-col gap-5 border-b border-surface-2 py-14 lg:py-20">
-        <p className="text-xs font-bold tracking-[0.28em] text-arcane uppercase">
-          {strings.siteTagline}
-        </p>
-        <h1 className="text-4xl leading-tight font-bold tracking-wide text-ink sm:text-6xl">
-          {strings.siteName}
-        </h1>
-        <p className="max-w-2xl text-base leading-relaxed text-ink-dim">{intro.body}</p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href={withLang('/cards')}
-            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-surface transition-colors hover:bg-accent-soft"
-          >
-            {intro.enter}
-          </Link>
-          <Link
-            href={withLang('/cards', 'type=legend')}
-            className="rounded-lg border border-line bg-surface/40 px-5 py-2.5 text-sm text-ink-dim transition-colors hover:border-arcane hover:text-ink"
-          >
-            {intro.browseLegends}
-          </Link>
+      {/*
+        overflow-x-clip：扇形卡牌旋轉後的邊角與後面的光暈會超出欄位，
+        在 1280 寬的筆電上撐出橫向捲軸。clip 只裁左右、不產生捲動區，上下的光暈照常。
+      */}
+      <section className="grid items-center gap-10 overflow-x-clip border-b border-surface-2 py-14 md:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)] lg:py-20">
+        <div className="flex flex-col gap-5">
+          <p className="text-xs font-bold tracking-[0.28em] text-arcane uppercase">
+            {strings.siteTagline}
+          </p>
+          <h1 className="text-5xl leading-tight font-bold tracking-wide text-ink sm:text-6xl">
+            {strings.siteName}
+          </h1>
+          <p className="max-w-xl text-lg leading-relaxed text-ink-dim">{intro.body}</p>
+          <div className="mt-2 flex flex-wrap gap-3">
+            <Link
+              href={withLang('/cards')}
+              className="rounded-lg bg-accent px-6 py-3 text-base font-semibold text-surface shadow-[0_0_28px_-8px_rgba(216,178,63,0.7)] transition-colors hover:bg-accent-soft"
+            >
+              {intro.enter}
+            </Link>
+            <Link
+              href={withLang('/cards', 'type=legend')}
+              className="rounded-lg bg-surface-1/80 px-6 py-3 text-base text-ink-dim transition-colors hover:bg-surface-2 hover:text-ink"
+            >
+              {intro.browseLegends}
+            </Link>
+          </div>
         </div>
+        <HeroCardFan cards={fan} />
       </section>
 
       <LegendRoster lang={lang} legends={legends} />
 
       <section className="border-t border-surface-2 py-14">
-        <h2 className="text-2xl font-bold text-ink">{intro.contents}</h2>
-        <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <h2 className="text-3xl font-bold text-ink">{intro.contents}</h2>
+        <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {TAXONOMY.sets.map((set) => (
-            <div key={set.id} className="rounded-xl border border-line bg-surface-1/80 p-4">
-              <dt className="text-xs text-ink-faint">
+            <div key={set.id} className="rounded-xl bg-surface-1/80 p-5">
+              <dt className="text-sm text-ink-faint">
                 {SET_LABELS[set.id][lang]}
-                {lang !== 'en' && (
-                  <span className="ml-1 text-ink-faint/70">{SET_LABELS[set.id].en}</span>
-                )}
+                {lang !== 'en' && <span className="ml-1">{SET_LABELS[set.id].en}</span>}
               </dt>
-              <dd className="mt-1 text-2xl font-semibold text-ink">{set.count}</dd>
+              <dd className="mt-2 text-4xl font-bold text-ink">{set.count}</dd>
             </div>
           ))}
         </dl>
 
-        <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <ul className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {typeCounts.map(({ type, count }) => (
             <li key={type}>
               <Link
                 href={withLang('/cards', `type=${type}`)}
-                className="block rounded-xl border border-line bg-surface-1/80 p-4 transition-colors hover:border-arcane"
+                className="block rounded-xl bg-surface-1/60 p-5 transition-colors hover:bg-surface-2"
               >
-                <span className="text-xs text-ink-faint">{TYPE_LABELS[type][lang]}</span>
-                <span className="mt-1 block text-xl font-semibold text-ink">{count}</span>
+                <span className="text-sm text-ink-faint">{TYPE_LABELS[type][lang]}</span>
+                <span className="mt-2 block text-3xl font-bold text-ink">{count}</span>
               </Link>
             </li>
           ))}
@@ -149,8 +176,8 @@ export default async function HomePage({ searchParams }: PageProps) {
       </section>
 
       <section className="max-w-2xl pb-6">
-        <h2 className="text-2xl font-bold text-ink">{intro.aboutTitle}</h2>
-        <div className="mt-3 space-y-3 text-sm leading-relaxed text-ink-dim">
+        <h2 className="text-3xl font-bold text-ink">{intro.aboutTitle}</h2>
+        <div className="mt-4 space-y-3 text-base leading-relaxed text-ink-dim">
           {intro.about.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}

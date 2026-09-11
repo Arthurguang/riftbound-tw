@@ -3,13 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { BattlefieldBackdrop } from './BattlefieldBackdrop';
-import {
-  BACKDROP_VARIANTS,
-  backdropIntensity,
-  isBackdropVariant,
-  STORAGE_KEYS,
-  type BackdropVariant,
-} from '@/lib/ambience';
+import { backdropIntensity, STORAGE_KEYS } from '@/lib/ambience';
 import { isWebAudioSupported, startBattleMusic, type BattleMusic } from '@/lib/battle-music';
 
 /**
@@ -23,8 +17,6 @@ import { isWebAudioSupported, startBattleMusic, type BattleMusic } from '@/lib/b
  */
 
 type AmbienceState = {
-  variant: BackdropVariant;
-  setVariant: (variant: BackdropVariant) => void;
   paused: boolean;
   togglePaused: () => void;
   musicOn: boolean;
@@ -53,29 +45,21 @@ function writeStored(key: string, value: string) {
 
 export function AmbienceProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [variant, setVariantState] = useState<BackdropVariant>('embers');
   const [paused, setPaused] = useState(false);
   const [musicOn, setMusicOn] = useState(false);
   // 伺服器端先假設支援（按鈕照常顯示），掛載後再依瀏覽器實際情況更正
   const [musicSupported, setMusicSupported] = useState(true);
   const music = useRef<BattleMusic | null>(null);
 
-  // 掛載後才讀瀏覽器存的偏好（伺服器端沒有 localStorage）
+  // 掛載後才讀瀏覽器的狀態（伺服器端沒有 localStorage，也不知道支不支援聲音）
   useEffect(() => {
-    const storedVariant = readStored(STORAGE_KEYS.variant);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 掛載時讀取瀏覽器專屬狀態
-    if (isBackdropVariant(storedVariant)) setVariantState(storedVariant);
     if (readStored(STORAGE_KEYS.paused) === '1') setPaused(true);
     setMusicSupported(isWebAudioSupported());
   }, []);
 
   // 離開網站（元件卸載）時一定把聲音關掉
   useEffect(() => () => music.current?.stop(), []);
-
-  const setVariant = (next: BackdropVariant) => {
-    setVariantState(next);
-    writeStored(STORAGE_KEYS.variant, next);
-  };
 
   const togglePaused = () => {
     const next = !paused;
@@ -97,56 +81,24 @@ export function AmbienceProvider({ children }: { children: ReactNode }) {
 
   return (
     <AmbienceContext.Provider
-      value={{ variant, setVariant, paused, togglePaused, musicOn, musicSupported, toggleMusic }}
+      value={{ paused, togglePaused, musicOn, musicSupported, toggleMusic }}
     >
-      <BattlefieldBackdrop
-        variant={variant}
-        intensity={backdropIntensity(pathname)}
-        paused={paused}
-      />
+      <BattlefieldBackdrop intensity={backdropIntensity(pathname)} paused={paused} />
       {children}
     </AmbienceContext.Provider>
   );
 }
 
-const VARIANT_LABEL: Record<BackdropVariant, string> = {
-  embers: '餘燼',
-  runes: '光痕',
-  mixed: '混合',
-};
-
 export function AmbienceControls() {
   const state = useContext(AmbienceContext);
   if (!state) return null;
-  const { variant, setVariant, paused, togglePaused, musicOn, musicSupported, toggleMusic } =
-    state;
+  const { paused, togglePaused, musicOn, musicSupported, toggleMusic } = state;
 
   const iconButton =
     'flex h-7 min-w-7 items-center justify-center rounded-full border px-2 text-xs transition-colors';
 
   return (
     <div className="flex items-center gap-1.5" data-testid="ambience-controls">
-      {/* 試看用：三種動畫風格。使用者選定之後會拿掉這一組，只留選中的那一種。 */}
-      <div
-        role="group"
-        aria-label="背景動畫風格（試看）"
-        className="flex items-center gap-0.5 rounded-full border border-line p-0.5"
-      >
-        {BACKDROP_VARIANTS.map((v) => (
-          <button
-            key={v}
-            type="button"
-            aria-pressed={variant === v}
-            data-variant={v}
-            onClick={() => setVariant(v)}
-            className={`rounded-full px-2 py-0.5 text-xs transition-colors ${
-              variant === v ? 'bg-arcane text-surface' : 'text-ink-dim hover:text-ink'
-            }`}
-          >
-            {VARIANT_LABEL[v]}
-          </button>
-        ))}
-      </div>
       <button
         type="button"
         aria-label="暫停背景動畫"

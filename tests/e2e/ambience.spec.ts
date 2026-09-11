@@ -63,12 +63,10 @@ test.describe('背景動畫', () => {
     await expect(backdrop(page)).toHaveAttribute('data-motion', 'still');
   });
 
-  test('可以切換三種動畫風格（試看）', async ({ page }) => {
+  test('試看用的風格切換已經拿掉（使用者選定了戰火餘燼）', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    for (const variant of ['runes', 'mixed', 'embers']) {
-      await controls(page).locator(`[data-variant="${variant}"]`).click();
-      await expect(backdrop(page)).toHaveAttribute('data-backdrop', variant);
-    }
+    await expect(controls(page).locator('[data-variant]')).toHaveCount(0);
+    await expect(controls(page).getByRole('button')).toHaveCount(2);
   });
 });
 

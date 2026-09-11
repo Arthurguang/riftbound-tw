@@ -97,3 +97,34 @@ test.describe('全站', () => {
     await expect(page.locator('footer')).toContainText('Legal Jibber Jabber');
   });
 });
+
+test.describe('首頁主視覺', () => {
+  test('桌機版有五張傳奇卡扇形展開，而且是純裝飾（螢幕報讀器略過）', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const fan = page.getByTestId('hero-card-fan');
+    await expect(fan).toBeVisible();
+    await expect(fan).toHaveAttribute('aria-hidden', 'true');
+    await expect(fan.locator('img')).toHaveCount(5);
+    // 卡圖一律來自官方 CDN（跟全站同一條隱私規則）
+    for (const src of await fan.locator('img').evaluateAll((els) => els.map((e) => e.getAttribute('src') ?? ''))) {
+      expect(src).toMatch(/^https:\/\/(cmsassets\.rgpub\.io|cdn\.playloltcg\.com)\//);
+    }
+  });
+
+  /*
+   * 2026-09-11：扇形卡牌旋轉後的邊角與光暈超出欄位，在 1280 寬的筆電上撐出橫向捲軸。
+   * 常見的幾種螢幕寬度都要檢查，整頁不能左右捲動。
+   */
+  for (const width of [1280, 1440, 1024, 390]) {
+    test(`${width} 寬時整頁不會出現橫向捲動`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      await expect(page.getByTestId('legend-roster')).toBeVisible();
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
+});

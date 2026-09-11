@@ -10,14 +10,9 @@
  *   → 音樂預設關閉，使用者按下才播放
  * · WCAG 2.2.2 要求超過 5 秒的動態內容能暫停；有人對畫面晃動會頭暈
  *   → 有暫停按鈕，並尊重系統的「減少動態效果」設定
+ *
+ * 風格經使用者試看三種後選定「戰火餘燼」，音樂選定「程式即時合成」。
  */
-
-export const BACKDROP_VARIANTS = ['embers', 'runes', 'mixed'] as const;
-export type BackdropVariant = (typeof BACKDROP_VARIANTS)[number];
-
-export function isBackdropVariant(value: unknown): value is BackdropVariant {
-  return typeof value === 'string' && (BACKDROP_VARIANTS as readonly string[]).includes(value);
-}
 
 /**
  * 動畫濃淡：首頁完整呈現；其他頁面是要專心操作的工具，只留淡淡的氛圍。
@@ -27,10 +22,9 @@ export function backdropIntensity(pathname: string): number {
 }
 
 /**
- * localStorage 的鍵。只存介面偏好（動畫要不要動、哪種風格），不存任何個人資料。
+ * localStorage 的鍵。只存「動畫要不要動」這一個介面偏好，不存任何個人資料。
  * 音樂開關刻意**不存** —— 每次來都從靜音開始，不做任何形式的自動播放。
  */
 export const STORAGE_KEYS = {
   paused: 'rb-backdrop-paused',
-  variant: 'rb-backdrop-variant',
 } as const;

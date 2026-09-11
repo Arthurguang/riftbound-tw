@@ -17,7 +17,12 @@ import {
   RING,
   toggleDomain,
 } from '../../src/lib/runeterra-core';
-import { allLegends, championTagOf, REGION_TAGS } from '../../src/lib/runeterra';
+import {
+  allLegends,
+  championTagOf,
+  REGION_TAGS,
+  showcaseLegends,
+} from '../../src/lib/runeterra';
 
 describe('領域的基本資料', () => {
   it('對立關係是對稱的，而且排成一列時對立的兩個剛好隔三格', () => {
@@ -120,5 +125,24 @@ describe('區域標籤', () => {
       const champion = championTagOf(legend);
       if (champion) expect(REGION_TAGS.has(champion)).toBe(false);
     }
+  });
+});
+
+describe('首頁主視覺挑的傳奇', () => {
+  const picked = showcaseLegends(allLegends(ALL_CARDS), 5);
+
+  it('挑出 5 位，不重複', () => {
+    expect(picked).toHaveLength(5);
+    expect(new Set(picked.map((c) => c.name)).size).toBe(5);
+  });
+
+  it('五張卡合起來涵蓋全部六個領域 —— 畫面帶進六種領域的顏色', () => {
+    const domains = new Set(picked.flatMap((c) => playDomains(c)));
+    expect(domains.size).toBe(6);
+  });
+
+  it('要的數量比傳奇還多時，就全部給，不會出錯', () => {
+    const legends = allLegends(ALL_CARDS);
+    expect(showcaseLegends(legends, legends.length + 5)).toHaveLength(legends.length);
   });
 });
