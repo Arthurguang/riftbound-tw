@@ -17,7 +17,7 @@ import {
   RING,
   toggleDomain,
 } from '../../src/lib/runeterra-core';
-import { allLegends, REGIONS, regionStat } from '../../src/lib/runeterra';
+import { allLegends, championTagOf, REGION_TAGS } from '../../src/lib/runeterra';
 
 describe('領域的基本資料', () => {
   it('對立關係是對稱的，而且排成一列時對立的兩個剛好隔三格', () => {
@@ -107,34 +107,18 @@ describe('領域篩選', () => {
   });
 });
 
-describe('區域資料', () => {
+/*
+ * 區域地圖已經拿掉，區域標籤只剩一個用途：分辨卡片標籤裡哪個是英雄、哪個是區域。
+ */
+describe('區域標籤', () => {
   it('每個區域標籤都真的存在於卡牌資料', () => {
-    for (const region of REGIONS) expect(TAXONOMY.tags).toContain(region.tag);
+    for (const tag of REGION_TAGS) expect(TAXONOMY.tags).toContain(tag);
   });
 
-  it('區域的卡數是從資料算出來的，而且同名卡只算一次', () => {
-    for (const region of REGIONS) {
-      const stat = regionStat(ALL_CARDS, region.tag);
-      const names = new Set(ALL_CARDS.filter((c) => c.tags.includes(region.tag)).map((c) => c.name));
-      expect(stat.count).toBe(names.size);
-      expect(stat.count).toBeGreaterThan(0);
-    }
-  });
-
-  it('英雄名單不會把區域名稱本身當成英雄', () => {
-    const regionTags = new Set(REGIONS.map((r) => r.tag));
-    for (const region of REGIONS) {
-      for (const champion of regionStat(ALL_CARDS, region.tag).champions) {
-        expect(regionTags.has(champion)).toBe(false);
-      }
-    }
-  });
-
-  it('每個區域都有三種語言的簡介', () => {
-    for (const region of REGIONS) {
-      expect(region.lore['zh-TW'].length).toBeGreaterThan(0);
-      expect(region.lore['zh-CN'].length).toBeGreaterThan(0);
-      expect(region.lore.en.length).toBeGreaterThan(0);
+  it('傳奇的英雄標籤不會被誤認成區域名稱', () => {
+    for (const legend of allLegends(ALL_CARDS)) {
+      const champion = championTagOf(legend);
+      if (champion) expect(REGION_TAGS.has(champion)).toBe(false);
     }
   });
 });

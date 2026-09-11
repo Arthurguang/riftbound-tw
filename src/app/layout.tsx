@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import Link from 'next/link';
+import { AmbienceControls, AmbienceProvider } from '@/components/Ambience';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { NavLinks } from '@/components/NavLinks';
 import { HTML_LANG, isTextLang, t, DEFAULT_TEXT_LANG, type TextLang } from '@/lib/i18n';
@@ -74,7 +75,9 @@ function SiteHeader({ lang }: { lang: TextLang }) {
             { href: '/replay', label: strings.navReplay },
           ]}
         />
-        <div className="ml-auto">
+        <div className="ml-auto flex flex-wrap items-center gap-3">
+          {/* 背景動畫與音樂的開關。放在頁首而不是浮在畫面上，才不會擋住工具頁的按鈕。 */}
+          <AmbienceControls />
           {/* 語言切換要讀網址參數，因此需要一層 Suspense。 */}
           <Suspense fallback={null}>
             <LanguageSwitcher />
@@ -186,17 +189,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script src="/trusted-types-policy.js" nonce={nonce} />
       </head>
       <body className="flex min-h-screen flex-col">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface-2 focus:px-3 focus:py-2 focus:text-sm focus:text-ink"
-        >
-          {t(lang).skipToContent}
-        </a>
-        <SiteHeader lang={lang} />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <SiteFooter />
+        {/*
+          背景氛圍（動畫＋音樂）包住整頁：它在 layout 裡，站內換頁時不會重新掛載，
+          音樂不會因為換頁中斷。它本身不產生任何外框元素，不影響版面。
+        */}
+        <AmbienceProvider>
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface-2 focus:px-3 focus:py-2 focus:text-sm focus:text-ink"
+          >
+            {t(lang).skipToContent}
+          </a>
+          <SiteHeader lang={lang} />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <SiteFooter />
+        </AmbienceProvider>
       </body>
     </html>
   );

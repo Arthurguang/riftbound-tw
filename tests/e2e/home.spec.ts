@@ -81,25 +81,6 @@ test.describe('首頁的傳奇與領域', () => {
   });
 });
 
-test.describe('首頁的區域地圖', () => {
-  test('點區域會換成它的簡介，並能連到該區域的卡', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.locator('[data-region="Demacia"]').click();
-
-    const lore = page.getByTestId('region-lore');
-    await expect(lore).toContainText('德瑪西亞');
-    await expect(lore.getByRole('link')).toHaveAttribute('href', '/cards?tag=Demacia');
-    await expect(page.locator('[data-region="Demacia"]')).toHaveAttribute('aria-pressed', 'true');
-  });
-
-  test('區域連結真的會篩出那個區域', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.locator('[data-region="Freljord"]').click();
-    await page.getByTestId('region-lore').getByRole('link').click();
-    await expect(page).toHaveURL(/tag=Freljord/);
-  });
-});
-
 test.describe('全站', () => {
   test('導覽列標出目前所在的頁面', async ({ page }) => {
     await page.goto('/cards', { waitUntil: 'domcontentloaded' });

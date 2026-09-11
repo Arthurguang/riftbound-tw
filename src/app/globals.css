@@ -253,6 +253,19 @@ body::before {
     );
 }
 
+/*
+ * 戰場背景動畫的畫布（src/components/BattlefieldBackdrop.tsx）。
+ * 固定在所有內容後面、完全點不到；列印時會被下方 @media print 的規則收起來。
+ */
+.battle-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
 /* 鍵盤操作時的焦點框：明顯、但不干擾滑鼠使用者。 */
 :focus-visible {
   outline: 2px solid var(--color-arcane-soft);

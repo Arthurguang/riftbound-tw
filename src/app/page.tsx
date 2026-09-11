@@ -1,18 +1,10 @@
 import Link from 'next/link';
 import { LegendRoster, type LegendView } from '@/components/LegendRoster';
-import { RegionAtlas, type RegionView } from '@/components/RegionAtlas';
 import { ALL_CARDS, TAXONOMY, cardImageUrl, cardName } from '@/lib/cards';
 import { SET_LABELS, TYPE_LABELS } from '@/lib/labels';
 import { readArtLang, readTextLang, t, DEFAULT_TEXT_LANG } from '@/lib/i18n';
 import { playDomains } from '@/lib/runeterra-core';
-import {
-  allLegends,
-  championTagOf,
-  REGIONS,
-  regionOfChampion,
-  regionStat,
-  tagLabel,
-} from '@/lib/runeterra';
+import { allLegends, championTagOf, regionOfChampion, tagLabel } from '@/lib/runeterra';
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -75,7 +67,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   }));
 
   /*
-   * 傳奇與區域的資料都在伺服器端算好，只把畫面要用的幾個欄位傳給瀏覽器 ——
+   * 傳奇的資料都在伺服器端算好，只把畫面要用的幾個欄位傳給瀏覽器 ——
    * 不把整份卡牌資料送進首頁的客戶端程式。
    */
   const legends: LegendView[] = allLegends(ALL_CARDS).flatMap((card) => {
@@ -96,21 +88,6 @@ export default async function HomePage({ searchParams }: PageProps) {
       },
     ];
   });
-
-  const regions: RegionView[] = REGIONS.map((region) => {
-    const stat = regionStat(ALL_CARDS, region.tag);
-    return {
-      tag: region.tag,
-      name: tagLabel(region.tag, lang),
-      subName: lang === 'en' ? null : region.tag,
-      color: region.color,
-      count: stat.count,
-      domains: stat.domains,
-      champions: stat.champions.map((c) => tagLabel(c, lang)),
-      lore: region.lore[lang],
-      href: withLang('/cards', `tag=${encodeURIComponent(region.tag)}`),
-    };
-  }).sort((x, y) => y.count - x.count);
 
   return (
     <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
@@ -139,8 +116,6 @@ export default async function HomePage({ searchParams }: PageProps) {
       </section>
 
       <LegendRoster lang={lang} legends={legends} />
-
-      <RegionAtlas lang={lang} regions={regions} />
 
       <section className="border-t border-surface-2 py-14">
         <h2 className="text-2xl font-bold text-ink">{intro.contents}</h2>
