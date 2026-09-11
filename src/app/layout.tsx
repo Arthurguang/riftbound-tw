@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { NavLinks } from '@/components/NavLinks';
 import { HTML_LANG, isTextLang, t, DEFAULT_TEXT_LANG, type TextLang } from '@/lib/i18n';
 import './globals.css';
 
@@ -23,44 +24,42 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+/** 站徽：圓環裡一個六邊形加一個六芒星 —— 就是首頁那張符文陣的縮小版。 */
+function SiteMark() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+      <circle cx="13" cy="13" r="12" stroke="#c9a227" strokeOpacity="0.55" />
+      <polygon
+        points="13,4 20.79,8.5 20.79,17.5 13,22 5.21,17.5 5.21,8.5"
+        stroke="#c9a227"
+        strokeWidth="1.2"
+      />
+      <polygon points="13,4 20.79,17.5 5.21,17.5" stroke="#e0c463" strokeOpacity="0.6" />
+      <polygon points="13,22 5.21,8.5 20.79,8.5" stroke="#e0c463" strokeOpacity="0.6" />
+    </svg>
+  );
+}
+
 function SiteHeader({ lang }: { lang: TextLang }) {
   const strings = t(lang);
   return (
     <header className="sticky top-0 z-10 border-b border-line bg-surface/85 backdrop-blur">
       <nav className="mx-auto flex w-full max-w-[1400px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
-        <Link href="/" className="text-sm font-semibold tracking-tight text-ink">
-          {strings.siteName}
+        <Link href="/" className="flex items-center gap-2.5">
+          <SiteMark />
+          <span className="font-serif text-base font-bold tracking-wide text-ink">
+            {strings.siteName}
+          </span>
         </Link>
-        <Link
-          href="/cards"
-          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
-        >
-          {strings.navGallery}
-        </Link>
-        <Link
-          href="/rules"
-          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
-        >
-          {strings.navRules}
-        </Link>
-        <Link
-          href="/deck"
-          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
-        >
-          {strings.navDeck}
-        </Link>
-        <Link
-          href="/odds"
-          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
-        >
-          {strings.navOdds}
-        </Link>
-        <Link
-          href="/replay"
-          className="text-sm text-ink-dim transition-colors hover:text-accent-soft"
-        >
-          {strings.navReplay}
-        </Link>
+        <NavLinks
+          items={[
+            { href: '/cards', label: strings.navGallery },
+            { href: '/rules', label: strings.navRules },
+            { href: '/deck', label: strings.navDeck },
+            { href: '/odds', label: strings.navOdds },
+            { href: '/replay', label: strings.navReplay },
+          ]}
+        />
         <div className="ml-auto">
           {/* 語言切換要讀網址參數，因此需要一層 Suspense。 */}
           <Suspense fallback={null}>

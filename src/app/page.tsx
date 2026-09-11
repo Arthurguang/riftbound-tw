@@ -1,7 +1,18 @@
 import Link from 'next/link';
+import { HomeWheelHero, type LegendView } from '@/components/HomeWheelHero';
+import { RegionAtlas, type RegionView } from '@/components/RegionAtlas';
 import { ALL_CARDS, TAXONOMY } from '@/lib/cards';
 import { SET_LABELS, TYPE_LABELS } from '@/lib/labels';
 import { readTextLang, t, DEFAULT_TEXT_LANG } from '@/lib/i18n';
+import { playDomains, RING, type PlayDomain } from '@/lib/runeterra-core';
+import {
+  championTagOf,
+  originLegends,
+  REGIONS,
+  regionOfChampion,
+  regionStat,
+  tagLabel,
+} from '@/lib/runeterra';
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -60,18 +71,57 @@ export default async function HomePage({ searchParams }: PageProps) {
     count: ALL_CARDS.filter((card) => card.types.includes(type)).length,
   }));
 
+  /*
+   * 陣圖與區域的資料都在伺服器端算好，只把畫面要用的幾個欄位傳給瀏覽器 ——
+   * 不把整份卡牌資料送進首頁的客戶端程式。
+   */
+  const legends: LegendView[] = originLegends(ALL_CARDS).flatMap((card) => {
+    const [a, b] = playDomains(card);
+    const champion = championTagOf(card);
+    if (!a || !b || !champion) return [];
+    const region = regionOfChampion(ALL_CARDS, champion);
+    return [
+      {
+        id: card.id,
+        name: tagLabel(champion, lang),
+        region: region ? tagLabel(region, lang) : null,
+        a,
+        b,
+        href: withLang(`/cards/${card.id}`),
+      },
+    ];
+  });
+
+  const domainHref = Object.fromEntries(
+    RING.map((domain) => [domain, withLang('/cards', `domain=${domain}`)]),
+  ) as Record<PlayDomain, string>;
+
+  const regions: RegionView[] = REGIONS.map((region) => {
+    const stat = regionStat(ALL_CARDS, region.tag);
+    return {
+      tag: region.tag,
+      name: tagLabel(region.tag, lang),
+      subName: lang === 'en' ? null : region.tag,
+      color: region.color,
+      count: stat.count,
+      domains: stat.domains,
+      champions: stat.champions.map((c) => tagLabel(c, lang)),
+      lore: region.lore[lang],
+      href: withLang('/cards', `tag=${encodeURIComponent(region.tag)}`),
+    };
+  }).sort((x, y) => y.count - x.count);
+
   return (
-    <div className="mx-auto w-full max-w-[1400px] px-4 py-16 sm:px-6">
-      <section className="max-w-2xl">
-        <p className="text-xs font-semibold tracking-[0.2em] text-accent uppercase">
+    <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6">
+      <HomeWheelHero lang={lang} legends={legends} domainHref={domainHref}>
+        <p className="text-xs font-bold tracking-[0.28em] text-accent uppercase">
           {strings.siteTagline}
         </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+        <h1 className="text-4xl leading-tight font-bold tracking-wide text-ink sm:text-5xl">
           {strings.siteName}
         </h1>
-        <p className="mt-4 text-base leading-relaxed text-ink-dim">{intro.body}</p>
-
-        <div className="mt-8 flex flex-wrap gap-3">
+        <p className="max-w-xl text-base leading-relaxed text-ink-dim">{intro.body}</p>
+        <div className="flex flex-wrap gap-3">
           <Link
             href={withLang('/cards')}
             className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-surface transition-colors hover:bg-accent-soft"
@@ -80,18 +130,18 @@ export default async function HomePage({ searchParams }: PageProps) {
           </Link>
           <Link
             href={withLang('/cards', 'type=legend')}
-            className="rounded-lg border border-line px-5 py-2.5 text-sm text-ink-dim transition-colors hover:border-surface-3 hover:text-ink"
+            className="rounded-lg border border-line px-5 py-2.5 text-sm text-ink-dim transition-colors hover:border-accent hover:text-ink"
           >
             {intro.browseLegends}
           </Link>
         </div>
-      </section>
+      </HomeWheelHero>
 
-      <section className="mt-16">
-        <h2 className="text-sm font-semibold tracking-wide text-ink-dim uppercase">
-          {intro.contents}
-        </h2>
-        <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <RegionAtlas lang={lang} regions={regions} />
+
+      <section className="border-t border-surface-2 py-14">
+        <h2 className="text-2xl font-bold text-ink">{intro.contents}</h2>
+        <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {TAXONOMY.sets.map((set) => (
             <div key={set.id} className="rounded-xl border border-line bg-surface-1 p-4">
               <dt className="text-xs text-ink-faint">
@@ -110,7 +160,7 @@ export default async function HomePage({ searchParams }: PageProps) {
             <li key={type}>
               <Link
                 href={withLang('/cards', `type=${type}`)}
-                className="block rounded-xl border border-line bg-surface-1 p-4 transition-colors hover:border-surface-3"
+                className="block rounded-xl border border-line bg-surface-1 p-4 transition-colors hover:border-accent"
               >
                 <span className="text-xs text-ink-faint">{TYPE_LABELS[type][lang]}</span>
                 <span className="mt-1 block text-xl font-semibold text-ink">{count}</span>
@@ -120,10 +170,8 @@ export default async function HomePage({ searchParams }: PageProps) {
         </ul>
       </section>
 
-      <section className="mt-16 max-w-2xl">
-        <h2 className="text-sm font-semibold tracking-wide text-ink-dim uppercase">
-          {intro.aboutTitle}
-        </h2>
+      <section className="max-w-2xl pb-6">
+        <h2 className="text-2xl font-bold text-ink">{intro.aboutTitle}</h2>
         <div className="mt-3 space-y-3 text-sm leading-relaxed text-ink-dim">
           {intro.about.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>

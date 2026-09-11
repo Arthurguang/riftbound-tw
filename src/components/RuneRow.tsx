@@ -1,10 +1,42 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { cardImageUrl, cardName } from '@/lib/cards';
+import { cardName } from '@/lib/cards';
 import { pileSize, type Pile } from '@/lib/board-state';
+import { DOMAIN_COLOR, playDomains } from '@/lib/runeterra-core';
 import type { ArtLang, TextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
+
+const COLORLESS = '#8a8f98';
+
+/**
+ * 一顆符文寶石：六角形，塗上符文所屬領域的顏色。
+ *
+ * 顏色寫在 SVG 的 color 屬性（呈現屬性，CSP 不擋），光暈由 .rune-gem 依 currentColor 畫。
+ * 休眠在實體對局是把卡打橫（414.1），所以寶石也轉 90 度 —— 尖角朝上變成平邊朝上，
+ * 加上變暗，兩個線索同時存在，不只靠顏色辨認。
+ */
+function RuneGem({ color, dormant }: { color: string; dormant: boolean }) {
+  return (
+    <svg
+      width="30"
+      height="30"
+      viewBox="0 0 26 26"
+      aria-hidden="true"
+      color={color}
+      className={`rune-gem transition-transform ${dormant ? 'rune-gem--dormant rotate-90' : ''}`}
+    >
+      <polygon
+        points="13,2 22.53,7.5 22.53,18.5 13,24 3.47,18.5 3.47,7.5"
+        fill={color}
+        fillOpacity={dormant ? 0.35 : 0.9}
+        stroke={color}
+        strokeWidth="1.5"
+      />
+      <polygon points="13,6 18.2,9 13,12 7.8,9" fill="#ffffff" fillOpacity={dormant ? 0.1 : 0.35} />
+    </svg>
+  );
+}
 
 /**
  * 場上的符文 —— 一張一張攤開。
@@ -33,7 +65,6 @@ export function RuneRow({
   dormant,
   byId,
   lang,
-  art,
   onDormantChange,
   onRemove,
 }: {
@@ -42,7 +73,8 @@ export function RuneRow({
   dormant: Pile;
   byId: Map<string, Card>;
   lang: TextLang;
-  art: ArtLang;
+  /** 符文改畫成寶石後不再顯示卡面；保留這個參數，呼叫端不必跟著改。 */
+  art?: ArtLang;
   onDormantChange: (cardId: string, count: number) => void;
   onRemove: (cardId: string) => void;
 }) {
@@ -95,6 +127,8 @@ export function RuneRow({
           {entries.flatMap(({ card, qty }) => {
             const sleeping = dormant[card.id] ?? 0;
             const name = cardName(card, lang);
+            const domain = playDomains(card)[0];
+            const color = domain ? DOMAIN_COLOR[domain] : COLORLESS;
 
             return Array.from({ length: qty }, (_, index) => {
               const isDormant = index < sleeping;
@@ -133,20 +167,9 @@ export function RuneRow({
                     if (isDormant) onDormantChange(card.id, Math.max(0, sleeping - 1));
                     onRemove(card.id);
                   }}
-                  className={`shrink-0 rounded transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
-                    isDormant ? 'opacity-80 ring-1 ring-amber-500/60' : ''
-                  }`}
+                  className="shrink-0 rounded p-0.5 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
-                  <img
-                    src={cardImageUrl(card, 120, art)}
-                    alt={name}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    /* 休眠在實體對局就是把卡打橫（414.1），所以直接轉 90 度 */
-                    className={`rounded object-cover ${
-                      isDormant ? 'h-[34px] w-[48px] rotate-90' : 'h-[48px] w-[34px]'
-                    }`}
-                  />
+                  <RuneGem color={color} dormant={isDormant} />
                 </button>
               );
             });

@@ -25,6 +25,21 @@
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans TC', 'PingFang TC',
     'Microsoft JhengHei', sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+  /*
+   * 標題用的襯線字（宋體／明體）。一樣只用系統內建字型：
+   * Windows 有新細明體，macOS／iOS 有宋體-繁，其他裝置退回瀏覽器預設的 serif。
+   */
+  --font-serif:
+    'Songti TC', 'Noto Serif TC', 'Source Han Serif TC', 'PMingLiU', 'MingLiU', 'SimSun',
+    Georgia, serif;
+}
+
+/* 符文陣圖風格：頁面標題一律用襯線字，內文維持無襯線字方便閱讀。 */
+@layer base {
+  h1,
+  h2 {
+    font-family: var(--font-serif);
+  }
 }
 
 /*
@@ -57,6 +72,64 @@
 }
 .domain-dot--colorless {
   background-color: #8a8f98;
+}
+
+/* 領域色的文字（首頁陣圖的說明面板、牌組編輯器的陣營說明）。 */
+.text-domain--fury {
+  color: #e0533d;
+}
+.text-domain--calm {
+  color: #4fae63;
+}
+.text-domain--mind {
+  color: #3da8c8;
+}
+.text-domain--body {
+  color: #e08a3d;
+}
+.text-domain--chaos {
+  color: #a05fd6;
+}
+.text-domain--order {
+  color: #d8b23f;
+}
+.text-domain--colorless {
+  color: #8a8f98;
+}
+
+/*
+ * 符文寶石的光暈：活躍的符文發光，休眠的暗下來。
+ * drop-shadow 的顏色跟著寶石本身的 currentColor —— 顏色寫在 SVG 的屬性上，
+ * 這裡只負責「亮不亮」，所以不需要每個領域各寫一份。
+ */
+.rune-gem {
+  filter: drop-shadow(0 0 5px currentColor);
+  transition:
+    filter 0.2s,
+    opacity 0.2s;
+}
+.rune-gem--dormant {
+  filter: none;
+  opacity: 0.45;
+}
+
+/*
+ * 復盤桌面的戰場：等高線紋路的底圖。
+ * 用 CSS 漸層畫，不是圖片 —— 不需要多一個檔案，也不需要放寬 CSP 的 img-src。
+ */
+.battlefield-plate {
+  background-color: rgba(201, 162, 39, 0.035);
+  background-image:
+    repeating-radial-gradient(
+      circle at 18% 30%,
+      transparent 0 22px,
+      rgba(201, 162, 39, 0.07) 22px 23px
+    ),
+    repeating-radial-gradient(
+      circle at 82% 78%,
+      transparent 0 30px,
+      rgba(201, 162, 39, 0.05) 30px 31px
+    );
 }
 
 /* 官方卡圖的兩種版式比例。 */
