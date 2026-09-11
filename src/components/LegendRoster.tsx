@@ -12,6 +12,7 @@ import {
   type PlayDomain,
 } from '@/lib/runeterra-core';
 import type { TextLang } from '@/lib/i18n';
+import { useHydrated } from '@/lib/use-hydrated';
 
 /** 伺服器端算好、傳進來的傳奇資料（只帶畫面需要的欄位，不帶整張卡）。 */
 export type LegendView = {
@@ -82,13 +83,18 @@ const STRINGS: Record<TextLang, Strings> = {
  */
 export function LegendRoster({ lang, legends }: { lang: TextLang; legends: LegendView[] }) {
   const [selected, setSelected] = useState<PlayDomain[]>([]);
+  const hydrated = useHydrated();
   const s = STRINGS[lang];
 
   const shown = legends.filter((legend) => matchesDomains(legend.domains, selected));
   const [first, second] = selected;
 
   return (
-    <section className="flex flex-col gap-5 py-14" data-testid="legend-roster">
+    <section
+      className="flex flex-col gap-5 py-14"
+      data-testid="legend-roster"
+      data-ready={hydrated ? 'true' : undefined}
+    >
       <div className="flex flex-col gap-2">
         <p className="text-xs font-bold tracking-[0.28em] text-arcane">{s.eyebrow}</p>
         <h2 className="text-3xl font-bold text-ink">{s.title}</h2>

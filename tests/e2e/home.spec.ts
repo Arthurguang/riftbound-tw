@@ -14,9 +14,34 @@ const badge = (page: Page, name: string) =>
   roster(page).getByRole('button', { name, exact: true });
 const legends = (page: Page) => roster(page).locator('[data-legend-link]');
 
+/**
+ * 點領域徽章，並等畫面反映出來（亮起或熄滅）再繼續。
+ *
+ * 2026-09-11 合併後對正式站跑測試時，連點兩個徽章漏收了第二下（畫面停在只選一個，
+ * 列出 5 位而不是 0 位）；單獨重跑 5 次都通過 —— 是測試點太快，不是功能錯。
+ * 跟牌組編輯器那兩條測試同一種修法：每一步先等畫面反映再點下一步。
+ */
+const toggleBadge = async (page: Page, name: string, pressed: boolean) => {
+  await badge(page, name).click();
+  await expect(badge(page, name)).toHaveAttribute('aria-pressed', String(pressed));
+};
+
+/**
+ * 打開首頁，等互動元件都「活過來」（hydration 完成、按鈕接上事件）再操作。
+ *
+ * 2026-09-11 對正式站跑測試時，網頁程式要從網路下載，測試在按鈕接上事件前就按了暫停、
+ * 就開始拖曳，動作被吃掉。本機伺服器太快，從來沒遇過。各元件接手後會標上 data-ready。
+ */
+const gotoHome = async (page: Page) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(roster(page)).toHaveAttribute('data-ready', 'true');
+  await expect(page.getByTestId('hero-showcase')).toHaveAttribute('data-ready', 'true');
+  await expect(page.getByTestId('ambience-controls')).toHaveAttribute('data-ready', 'true');
+};
+
 test.describe('首頁的傳奇與領域', () => {
   test('預設列出全部傳奇，而且寫的數量跟實際張數一致', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     const count = await legends(page).count();
     expect(count).toBeGreaterThanOrEqual(16);
     await expect(page.getByTestId('legend-count')).toHaveText(`全部 ${count} 位`);
@@ -25,7 +50,7 @@ test.describe('首頁的傳奇與領域', () => {
   });
 
   test('選一個領域，只剩含有它的傳奇，並說明這個領域的風格', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     await badge(page, '熾烈').click();
     await expect(badge(page, '熾烈')).toHaveAttribute('aria-pressed', 'true');
 
@@ -39,9 +64,9 @@ test.describe('首頁的傳奇與領域', () => {
   });
 
   test('選兩個領域，看到這個組合的所有傳奇（同一組可能不只一位）', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await badge(page, '熾烈').click();
-    await badge(page, '混沌').click();
+    await gotoHome(page);
+    await toggleBadge(page, '熾烈', true);
+    await toggleBadge(page, '混沌', true);
 
     await expect(legends(page)).toHaveCount(2);
     for (const d of await legends(page).evaluateAll((els) =>
@@ -52,30 +77,29 @@ test.describe('首頁的傳奇與領域', () => {
   });
 
   test('選兩個對立的領域，說明目前沒有這樣的傳奇', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await badge(page, '熾烈').click();
-    await badge(page, '翠意').click();
+    await gotoHome(page);
+    await toggleBadge(page, '熾烈', true);
+    await toggleBadge(page, '翠意', true);
 
     await expect(legends(page)).toHaveCount(0);
     await expect(page.getByTestId('legend-empty')).toContainText('目前卡池沒有');
   });
 
   test('再點一次取消選取；清除篩選回到全部', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     const total = await legends(page).count();
 
-    await badge(page, '靈光').click();
-    await badge(page, '靈光').click();
-    await expect(badge(page, '靈光')).toHaveAttribute('aria-pressed', 'false');
+    await toggleBadge(page, '靈光', true);
+    await toggleBadge(page, '靈光', false);
     await expect(legends(page)).toHaveCount(total);
 
-    await badge(page, '序理').click();
+    await toggleBadge(page, '序理', true);
     await roster(page).getByRole('button', { name: '清除篩選' }).click();
     await expect(legends(page)).toHaveCount(total);
   });
 
   test('點傳奇會打開那張卡', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     await legends(page).first().click();
     await expect(page).toHaveURL(/\/cards\/ogn-/);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -94,7 +118,7 @@ test.describe('全站', () => {
    * Riot 的同人專案政策要求明顯標示聲明 —— 改版不能把它弄丟。
    */
   test('首頁仍然保留 Riot 的同人聲明', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     await expect(page.locator('footer')).toContainText('Legal Jibber Jabber');
   });
 });
@@ -138,7 +162,7 @@ test.describe('首頁傳奇展示台', () => {
   };
 
   test('展示全部傳奇（跟下方傳奇列一樣多），卡圖都來自官方 CDN', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     const cards = showcase(page).locator('[data-showcase-card]');
     await expect(cards).toHaveCount(await legends(page).count());
     const sources = await cards
@@ -148,7 +172,7 @@ test.describe('首頁傳奇展示台', () => {
   });
 
   test('持續慢慢轉動，滑鼠移上去也不會停', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     await showcase(page).hover();
     await expect(showcase(page)).toHaveAttribute('data-auto', 'running');
     const start = await showcase(page).getAttribute('data-front');
@@ -156,7 +180,7 @@ test.describe('首頁傳奇展示台', () => {
   });
 
   test('按頁首的「暫停背景動畫」，展示台也一起停', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     await pauseAll(page);
     const start = await frontOf(page);
     await page.waitForTimeout(4500);
@@ -165,12 +189,12 @@ test.describe('首頁傳奇展示台', () => {
 
   test('系統設定「減少動態效果」時不會自動轉', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     await expect(showcase(page)).toHaveAttribute('data-auto', 'paused');
   });
 
   test('可以拖曳轉到想看的傳奇，放開後對齊到一張卡', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     await pauseAll(page);
     const count = await showcase(page).locator('[data-showcase-card]').count();
     const start = await frontOf(page);
@@ -184,7 +208,7 @@ test.describe('首頁傳奇展示台', () => {
   });
 
   test('拖曳放開後，繼續慢慢轉', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     await dragLeft(page, 200);
     await expect(showcase(page)).toHaveAttribute('data-auto', 'running');
     const after = await showcase(page).getAttribute('data-front');
@@ -192,7 +216,7 @@ test.describe('首頁傳奇展示台', () => {
   });
 
   test('上一位／下一位可以手動轉', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     await pauseAll(page);
     const count = await showcase(page).locator('[data-showcase-card]').count();
     const start = await frontOf(page);
@@ -204,7 +228,7 @@ test.describe('首頁傳奇展示台', () => {
   });
 
   test('點正面的卡，跳出的正是那一位的說明；按 Esc 關閉', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     const clicked = await clickFrontCard(page);
 
     const dialog = page.getByTestId('legend-dialog');
@@ -221,7 +245,7 @@ test.describe('首頁傳奇展示台', () => {
   });
 
   test('說明視窗裡的連結會打開那張卡的完整頁面', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await gotoHome(page);
     await clickFrontCard(page);
     await page.getByTestId('legend-dialog').getByRole('link', { name: /看完整卡片頁/ }).click();
     await expect(page).toHaveURL(/\/cards\/og[ns]-/);
@@ -235,7 +259,7 @@ test.describe('首頁傳奇展示台', () => {
   for (const width of [1280, 1440, 1024, 390]) {
     test(`${width} 寬時整頁不會出現橫向捲動`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
-      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      await gotoHome(page);
       await expect(page.getByTestId('legend-roster')).toBeVisible();
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
