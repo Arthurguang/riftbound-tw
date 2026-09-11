@@ -7,19 +7,32 @@
  * 改用系統字型堆疊，對繁體中文的顯示也更自然。
  */
 
+/*
+ * 主色調「符文夜幕」：靛紫的夜空底色，加上奧術青光。
+ *
+ * 符文戰場是鬥智的遊戲 —— 底色不是單調的黑，而是有層次的夜空；
+ * 金色保留給最主要的按鈕（「進入圖鑑」這類），青光用在次要的強調與目前位置。
+ *
+ * 文字對比度（以 surface 為底）：ink ≈ 16:1、ink-dim ≈ 9:1、ink-faint ≈ 5:1，
+ * 都高於 WCAG AA 對一般文字要求的 4.5:1。
+ */
 @theme {
-  --color-ink: #e8ecf2;
-  --color-ink-dim: #9aa4b2;
-  --color-ink-faint: #6b7684;
+  --color-ink: #eceaff;
+  --color-ink-dim: #b6b3de;
+  --color-ink-faint: #8f8cbd;
 
-  --color-surface: #0b0e14;
-  --color-surface-1: #131822;
-  --color-surface-2: #1b2130;
-  --color-surface-3: #252d3f;
+  --color-surface: #0e0d22;
+  --color-surface-1: #16153a;
+  --color-surface-2: #201e4b;
+  --color-surface-3: #2c2a61;
 
-  --color-line: #2a3346;
-  --color-accent: #c9a227;
-  --color-accent-soft: #e0c463;
+  --color-line: #37357a;
+  --color-accent: #d8b23f;
+  --color-accent-soft: #ecd27a;
+
+  /* 奧術青光：次要強調、目前所在位置、焦點框 */
+  --color-arcane: #5fc8e6;
+  --color-arcane-soft: #a3e3f4;
 
   --font-sans:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans TC', 'PingFang TC',
@@ -98,6 +111,71 @@
 }
 
 /*
+ * 領域徽章（首頁篩選傳奇、牌組編輯器的陣營）。
+ * 每個領域的 class 只設定 --badge 這個變數，外觀規則共用一份。
+ * 文字用「領域色混一點白」，確保深底上的對比度夠（混沌的紫色原色對比不足 4.5:1）。
+ */
+.domain-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.4rem;
+  min-height: 2.25rem;
+  padding: 0 0.9rem;
+  border: 1.5px solid var(--badge);
+  border-radius: 9999px;
+  background-color: color-mix(in srgb, var(--badge) 10%, transparent);
+  color: color-mix(in srgb, var(--badge) 70%, white);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    box-shadow 0.2s,
+    opacity 0.2s;
+}
+button.domain-badge {
+  cursor: pointer;
+}
+button.domain-badge:hover {
+  background-color: color-mix(in srgb, var(--badge) 24%, transparent);
+}
+.domain-badge.is-on,
+button.domain-badge.is-on:hover {
+  background-color: var(--badge);
+  color: var(--color-surface);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--badge) 55%, transparent);
+}
+.domain-badge.is-dim {
+  opacity: 0.32;
+}
+.domain-badge--sm {
+  min-width: 2.6rem;
+  min-height: 1.6rem;
+  padding: 0 0.55rem;
+  font-size: 0.75rem;
+}
+.domain-badge--fury {
+  --badge: #e0533d;
+}
+.domain-badge--calm {
+  --badge: #4fae63;
+}
+.domain-badge--mind {
+  --badge: #3da8c8;
+}
+.domain-badge--body {
+  --badge: #e08a3d;
+}
+.domain-badge--chaos {
+  --badge: #a05fd6;
+}
+.domain-badge--order {
+  --badge: #d8b23f;
+}
+
+/*
  * 符文寶石的光暈：活躍的符文發光，休眠的暗下來。
  * drop-shadow 的顏色跟著寶石本身的 currentColor —— 顏色寫在 SVG 的屬性上，
  * 這裡只負責「亮不亮」，所以不需要每個領域各寫一份。
@@ -151,9 +229,33 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/*
+ * 夜空底圖：幾團星雲般的光暈，加上淡淡的符文圓環。
+ *
+ * 全部用 CSS 漸層畫，不是圖片 —— 不多一個檔案，也不需要放寬 CSP 的 img-src。
+ * 用固定定位的偽元素而不是 background-attachment: fixed，
+ * 因為後者在 iOS Safari 上會失效或捲動卡頓。
+ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 55% 45% at 12% 8%, rgba(95, 200, 230, 0.13), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 88% 18%, rgba(160, 95, 214, 0.16), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 70% 95%, rgba(216, 178, 63, 0.07), transparent 70%),
+    repeating-radial-gradient(
+      circle at 82% 22%,
+      transparent 0 58px,
+      rgba(163, 227, 244, 0.035) 58px 59px
+    );
+}
+
 /* 鍵盤操作時的焦點框：明顯、但不干擾滑鼠使用者。 */
 :focus-visible {
-  outline: 2px solid var(--color-accent-soft);
+  outline: 2px solid var(--color-arcane-soft);
   outline-offset: 2px;
   border-radius: 3px;
 }

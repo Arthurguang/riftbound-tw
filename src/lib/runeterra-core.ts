@@ -1,20 +1,18 @@
 /**
- * 符文陣圖的核心常數 —— 可以放進瀏覽器端元件的那一半。
+ * 六大領域的核心常數與篩選邏輯 —— 可以放進瀏覽器端元件的那一半。
  *
  * ── 為什麼拆成兩個檔案 ──────────────────────────────────────────
- * 這裡只放「不需要卡牌資料」的東西：環的排列、對立關係、顏色、文字。
+ * 這裡只放「不需要卡牌資料」的東西：領域的順序、對立關係、顏色、文字、篩選。
  * 需要讀卡牌資料的統計放在 runeterra.ts。
  *
  * 分開是為了**不把整份卡牌 JSON 打包進首頁的瀏覽器程式**：
  * 客戶端元件只要一 import 到 cards.ts，幾百 KB 的卡牌資料就會跟著進去。
  *
- * ── 這個圖形從哪來 ──────────────────────────────────────────────
- * 六大領域兩兩相對（熾烈↔翠意、靈光↔摧破、混沌↔序理），這是官方設定。
- * 扣掉三組對立，六個領域兩兩配對剩下 12 種組合；起源系列（OGN）的
- * 12 位傳奇剛好一人一種、不重複。把六個領域排成一圈，12 條連線就是
- * 一個六邊形加一個六芒星。
- *
- * **環上的排列順序是本站的設計，不是官方設定** —— 只保證對立的兩個相對而立。
+ * ── 為什麼不再畫「一組一條線」 ──────────────────────────────────
+ * 第一版把十二位起源傳奇畫成十二條連線。但傳奇會一直增加，
+ * 而且試煉場的入門傳奇與起源傳奇**共用同樣的領域組合** ——
+ * 一條線對應一位傳奇的畫法撐不住。現在改成「點領域徽章篩選傳奇」，
+ * 傳奇再多也只是多幾張卡。
  */
 
 import type { TextLang } from './i18n';
@@ -23,10 +21,13 @@ import type { Card, Domain } from './types';
 /** 遊戲裡真正有意義的六個領域（去掉「無特性」）。 */
 export type PlayDomain = Exclude<Domain, 'colorless'>;
 
-/** 環上的排列：索引 i 與 i+3 一定互為對立。 */
+/**
+ * 徽章的排列順序。索引 i 與 i+3 互為對立，排成一列時對立的兩個剛好隔開三格。
+ * **這個順序是本站的設計**，不是官方設定。
+ */
 export const RING: readonly PlayDomain[] = ['fury', 'mind', 'chaos', 'calm', 'body', 'order'];
 
-/** 官方的對立關係。 */
+/** 對立的領域（色輪上相對的兩個）。 */
 export const OPPOSITE: Readonly<Record<PlayDomain, PlayDomain>> = {
   fury: 'calm',
   calm: 'fury',
@@ -48,7 +49,7 @@ export const DOMAIN_COLOR: Readonly<Record<PlayDomain, string>> = {
 
 type Tri = Readonly<Record<TextLang, string>>;
 
-/** 陣圖上用的短名稱（不帶顏色括號）。 */
+/** 徽章上用的短名稱（不帶顏色括號）。 */
 export const DOMAIN_SHORT: Readonly<Record<PlayDomain, Tri>> = {
   fury: { 'zh-TW': '熾烈', 'zh-CN': '炽烈', en: 'Fury' },
   calm: { 'zh-TW': '翠意', 'zh-CN': '翠意', en: 'Calm' },
@@ -111,13 +112,26 @@ export function pairKey(a: PlayDomain, b: PlayDomain): string {
   return [a, b].sort().join('+');
 }
 
-/** 所有不對立的領域配對 —— 應該剛好 12 組。 */
-export function nonOppositePairs(): [PlayDomain, PlayDomain][] {
-  const out: [PlayDomain, PlayDomain][] = [];
-  RING.forEach((a, i) => {
-    for (const b of RING.slice(i + 1)) {
-      if (OPPOSITE[a] !== b) out.push([a, b]);
-    }
-  });
-  return out;
+/**
+ * 點一下領域徽章之後的選取狀態。
+ *
+ *   · 點已選的 → 取消
+ *   · 點新的   → 加入；最多兩個，選第三個時換掉最早選的那個
+ *
+ * 最多兩個是因為傳奇剛好掌握兩個領域：選兩個＝看這個組合有哪些傳奇。
+ */
+export function toggleDomain(
+  selected: readonly PlayDomain[],
+  domain: PlayDomain,
+): PlayDomain[] {
+  if (selected.includes(domain)) return selected.filter((d) => d !== domain);
+  return [...selected, domain].slice(-2);
+}
+
+/** 這位傳奇的領域有沒有涵蓋所有選取的領域（沒選＝全部符合）。 */
+export function matchesDomains(
+  legendDomains: readonly PlayDomain[],
+  selected: readonly PlayDomain[],
+): boolean {
+  return selected.every((d) => legendDomains.includes(d));
 }

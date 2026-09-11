@@ -19,23 +19,37 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0b0e14',
+  themeColor: '#0e0d22',
   width: 'device-width',
   initialScale: 1,
 };
 
-/** 站徽：圓環裡一個六邊形加一個六芒星 —— 就是首頁那張符文陣的縮小版。 */
+/**
+ * 站徽：一個六邊形，六個角各是一個領域的顏色。
+ * 顏色寫在 SVG 的 fill 屬性上（呈現屬性，CSP 不擋），順序與首頁的領域徽章相同。
+ */
+const MARK_POINTS: ReadonlyArray<[number, number, string]> = [
+  [13, 3.5, '#e0533d'],
+  [21.23, 8.25, '#3da8c8'],
+  [21.23, 17.75, '#a05fd6'],
+  [13, 22.5, '#4fae63'],
+  [4.77, 17.75, '#e08a3d'],
+  [4.77, 8.25, '#d8b23f'],
+];
+
 function SiteMark() {
   return (
     <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
-      <circle cx="13" cy="13" r="12" stroke="#c9a227" strokeOpacity="0.55" />
+      <circle cx="13" cy="13" r="12.2" stroke="#5fc8e6" strokeOpacity="0.35" />
       <polygon
-        points="13,4 20.79,8.5 20.79,17.5 13,22 5.21,17.5 5.21,8.5"
-        stroke="#c9a227"
-        strokeWidth="1.2"
+        points={MARK_POINTS.map(([x, y]) => `${x},${y}`).join(' ')}
+        stroke="#a3e3f4"
+        strokeOpacity="0.7"
+        strokeWidth="1.1"
       />
-      <polygon points="13,4 20.79,17.5 5.21,17.5" stroke="#e0c463" strokeOpacity="0.6" />
-      <polygon points="13,22 5.21,8.5 20.79,8.5" stroke="#e0c463" strokeOpacity="0.6" />
+      {MARK_POINTS.map(([x, y, color]) => (
+        <circle key={color} cx={x} cy={y} r="2.1" fill={color} />
+      ))}
     </svg>
   );
 }

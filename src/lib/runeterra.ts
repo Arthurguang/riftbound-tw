@@ -174,16 +174,16 @@ function uniqueByName(cards: readonly Card[]): Card[] {
 }
 
 /**
- * 起源系列的傳奇，每位一張。
+ * 所有傳奇，每位一張（同名的異畫版只算一次）。
  *
- * 試煉場（OGS）的入門傳奇和起源的傳奇**共用同樣的領域組合**
- * （例如入門安妮和吉茵珂絲都是熾烈＋混沌），所以「十二位傳奇一人一組」
- * 只在起源系列成立 —— 陣圖只畫起源的。
+ * **數量不寫死**：新系列加入傳奇時，首頁自動跟著變。
+ * 排列：起源系列在前、試煉場在後，同系列依卡號。
  */
-export function originLegends(cards: readonly Card[]): Card[] {
+export function allLegends(cards: readonly Card[]): Card[] {
+  const setOrder = (card: Card) => (card.set === 'OGN' ? 0 : 1);
   return uniqueByName(
-    cards.filter((c) => c.set === 'OGN' && c.types.includes('legend') && playDomains(c).length === 2),
-  );
+    cards.filter((c) => c.types.includes('legend') && playDomains(c).length === 2),
+  ).sort((a, b) => setOrder(a) - setOrder(b) || a.number - b.number);
 }
 
 /** 一張英雄相關卡上的英雄標籤（不是區域的那個標籤）。 */

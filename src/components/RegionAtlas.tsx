@@ -78,7 +78,7 @@ export function RegionAtlas({ lang, regions }: { lang: TextLang; regions: Region
     <section className="flex flex-col gap-5 py-14" data-testid="region-atlas">
       <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-bold tracking-[0.28em] text-accent">{s.eyebrow}</p>
+          <p className="text-xs font-bold tracking-[0.28em] text-arcane">{s.eyebrow}</p>
           <h2 className="font-serif text-3xl font-bold text-ink">{s.title(regions.length)}</h2>
         </div>
         <p className="max-w-xl text-xs leading-relaxed text-ink-faint sm:ml-auto sm:text-right">{s.note}</p>

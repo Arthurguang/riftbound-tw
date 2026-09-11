@@ -1,58 +1,81 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /**
- * 首頁的符文陣與區域地圖。
+ * 首頁的「領域徽章＋傳奇列」與區域地圖。
  *
- * 除了「點得動」，也驗證兩件跟內容正確性有關的事：
- *   · 傳奇連結真的連到存在的卡片頁（不是示意用的假連結）
- *   · 領域與區域的連結會帶上正確的篩選條件
+ * 除了「點得動」，也驗證跟內容正確性有關的事：
+ *   · 畫面上寫的傳奇數量，跟實際列出來的張數一致（數量不寫死）
+ *   · 篩選的結果真的符合選的領域
+ *   · 傳奇與區域的連結都連到真的頁面、帶正確的篩選
  */
 
-test.describe('首頁的符文陣', () => {
-  test('六個領域、十二條連線', async ({ page }) => {
+const roster = (page: Page) => page.getByTestId('legend-roster');
+const badge = (page: Page, name: string) =>
+  roster(page).getByRole('button', { name, exact: true });
+const legends = (page: Page) => roster(page).locator('[data-legend-link]');
+
+test.describe('首頁的傳奇與領域', () => {
+  test('預設列出全部傳奇，而且寫的數量跟實際張數一致', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const wheel = page.locator('[data-rune-wheel]').first();
-    await expect(wheel.locator('[data-domain]')).toHaveCount(6);
-    await expect(wheel.locator('[data-pair]')).toHaveCount(12);
+    const count = await legends(page).count();
+    expect(count).toBeGreaterThanOrEqual(16);
+    await expect(page.getByTestId('legend-count')).toHaveText(`全部 ${count} 位`);
+    await expect(roster(page).getByRole('heading', { level: 2 })).toContainText(`${count} 位傳奇`);
   });
 
-  test('點一個領域，會列出它的四位傳奇，而且都連到真的卡片頁', async ({ page }) => {
+  test('選一個領域，只剩含有它的傳奇，並說明這個領域的風格', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.getByRole('button', { name: '熾烈', exact: true }).click();
+    await badge(page, '熾烈').click();
+    await expect(badge(page, '熾烈')).toHaveAttribute('aria-pressed', 'true');
 
-    const panel = page.getByTestId('domain-panel');
-    await expect(panel).toContainText('對立領域：翠意');
+    const domains = await legends(page).evaluateAll((els) =>
+      els.map((e) => e.getAttribute('data-domains') ?? ''),
+    );
+    expect(domains.length).toBeGreaterThan(0);
+    for (const d of domains) expect(d.split(' ')).toContain('fury');
+    // 風格描述是本站整理的，要標明
+    await expect(roster(page)).toContainText('本站整理');
+  });
 
-    const links = page.getByTestId('domain-legends').getByRole('link');
-    await expect(links).toHaveCount(4);
-    for (const href of await links.evaluateAll((els) => els.map((e) => e.getAttribute('href')))) {
-      expect(href).toMatch(/^\/cards\/ogn-/);
+  test('選兩個領域，看到這個組合的所有傳奇（同一組可能不只一位）', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await badge(page, '熾烈').click();
+    await badge(page, '混沌').click();
+
+    await expect(legends(page)).toHaveCount(2);
+    for (const d of await legends(page).evaluateAll((els) =>
+      els.map((e) => e.getAttribute('data-domains') ?? ''),
+    )) {
+      expect(d.split(' ').sort()).toEqual(['chaos', 'fury']);
     }
-
-    // 陣圖上亮起四條連線
-    await expect(page.locator('[data-rune-wheel] [data-pair][data-active="true"]')).toHaveCount(4);
   });
 
-  test('領域的「看卡」連結會帶上領域篩選', async ({ page }) => {
+  test('選兩個對立的領域，說明目前沒有這樣的傳奇', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.getByRole('button', { name: '序理', exact: true }).click();
-    const link = page.getByRole('link', { name: /看序理的卡/ });
-    await expect(link).toHaveAttribute('href', '/cards?domain=order');
+    await badge(page, '熾烈').click();
+    await badge(page, '翠意').click();
+
+    await expect(legends(page)).toHaveCount(0);
+    await expect(page.getByTestId('legend-empty')).toContainText('目前卡池沒有');
   });
 
-  test('鍵盤也能選領域', async ({ page }) => {
+  test('再點一次取消選取；清除篩選回到全部', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const node = page.getByRole('button', { name: '靈光', exact: true });
-    await node.focus();
-    await page.keyboard.press('Enter');
-    await expect(node).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByTestId('domain-panel')).toContainText('對立領域：摧破');
+    const total = await legends(page).count();
+
+    await badge(page, '靈光').click();
+    await badge(page, '靈光').click();
+    await expect(badge(page, '靈光')).toHaveAttribute('aria-pressed', 'false');
+    await expect(legends(page)).toHaveCount(total);
+
+    await badge(page, '序理').click();
+    await roster(page).getByRole('button', { name: '清除篩選' }).click();
+    await expect(legends(page)).toHaveCount(total);
   });
 
-  test('點傳奇連結會真的打開那張卡', async ({ page }) => {
+  test('點傳奇會打開那張卡', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.getByRole('button', { name: '熾烈', exact: true }).click();
-    await page.getByTestId('domain-legends').getByRole('link').first().click();
+    await legends(page).first().click();
     await expect(page).toHaveURL(/\/cards\/ogn-/);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
