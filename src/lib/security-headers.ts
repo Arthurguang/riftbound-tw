@@ -122,6 +122,15 @@ export function buildCsp(nonce: string, isDev: boolean, isSecure = true): string
      * 會擋），這一條是額外的保險，防的是「未來不小心引入」。
      */
     'require-trusted-types-for': ["'script'"],
+
+    /*
+     * 只允許建立一個名叫 default 的政策，而且不能重複建立。
+     *
+     * 那個政策（public/trusted-types-policy.js）只放行本站自己的程式分割檔，
+     * 讓 Next.js 16 換頁時能載入下一頁的程式。這一條確保就算有人設法執行了
+     * 程式，也無法另外造一個寬鬆的政策來繞過 —— 名額已經被占走了。
+     */
+    'trusted-types': ['default'],
   };
 
   const policy = Object.entries(directives)

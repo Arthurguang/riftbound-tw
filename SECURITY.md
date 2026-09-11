@@ -127,7 +127,7 @@ img-src     'self' https://cmsassets.rgpub.io https://cdn.playloltcg.com data:;
 font-src 'self';  connect-src 'self';  manifest-src 'self';  worker-src 'self';
 object-src 'none';  frame-src 'none';  media-src 'none';
 frame-ancestors 'none';  base-uri 'none';  form-action 'none';
-require-trusted-types-for 'script';
+require-trusted-types-for 'script';  trusted-types default;
 upgrade-insecure-requests
 ```
 
@@ -147,8 +147,28 @@ upgrade-insecure-requests
 加了之後變成**連寫入動作本身都被拒絕**
 （`TypeError: This document requires 'TrustedHTML' assignment`）。
 
-Safari 目前還不支援 Trusted Types，所以 CSP 的第二道防線仍然必要 ——
-測試同時涵蓋兩種情況，不依賴瀏覽器一定支援最新規格。
+Chromium 與 WebKit（Safari）都已經會執行 Trusted Types；
+不支援的瀏覽器仍有 CSP 的第二道防線 —— 測試同時涵蓋兩種情況，不依賴瀏覽器一定支援最新規格。
+
+**`trusted-types default` 與 `public/trusted-types-policy.js`**（2026-09-11 加入）——
+Next.js 16 換頁時會用 `script.src = '/_next/static/…js'` 載入下一頁的程式，
+被上一條擋下後退回整頁重載（Safari 核心上有時乾脆換不過去）。
+解法**不是拿掉 Trusted Types**，而是由 layout 以帶 nonce 的 `<script src>`
+先載入一個 `default` 政策，它：
+
+- 只定義 `createScriptURL`，只接受**同網域、`/_next/static/` 底下、`.js` 結尾**的網址，其他丟錯誤
+- **不定義** `createHTML` / `createScript` —— `innerHTML`、`eval` 類的寫入仍然全部被拒絕
+- 放行的範圍沒有比 `'strict-dynamic'` 原本允許的更寬
+
+CSP 的 `trusted-types default` 讓頁面上只能存在這一個政策、而且不能重複建立 ——
+就算有人設法執行了程式，也無法再造一個寬鬆的政策來繞過。
+`tests/e2e/security.spec.ts` 逐項驗證：本站程式檔放行；他站網址、`data:`、
+同網域但非程式檔、另建政策、重建 default 全部被拒；站內換頁零違規且不是整頁重載。
+
+**Vercel 預覽的工具列**：Vercel 會在預覽環境注入一個從 `vercel.live` 載入的工具列，
+它同樣被 Trusted Types 擋下，而且錯誤會讓整頁程式停擺。
+預覽環境的工具列應在 Vercel 專案設定中關閉（Settings → General → Vercel Toolbar → Preview：Off），
+**不放行 `vercel.live`** —— 那是第三方腳本，違反「不載入第三方腳本」的原則。
 
 ### 刻意「不」採納的建議
 

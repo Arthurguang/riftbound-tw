@@ -64,7 +64,7 @@ export const config = {
      * 另外排除預取（prefetch）請求，避免瀏覽器拿到與實際頁面不同的 nonce。
      */
     {
-      source: '/((?!_next/static|_next/image|favicon.ico|robots.txt|glyphs/).*)',
+      source: '/((?!_next/static|_next/image|favicon.ico|robots.txt|glyphs/|trusted-types-policy.js).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },
