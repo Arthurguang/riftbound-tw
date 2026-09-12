@@ -59,6 +59,18 @@ export default defineConfig({
    */
   expect: { timeout: 15_000 },
 
+  /*
+   * 單條測試的時間上限：CI 放寬到 60 秒（預設 30 秒），本機維持預設。
+   *
+   * 2026-09-12 三個引擎拆開之後，Firefox 仍有一條 `page.goto` 等滿 30 秒
+   * （`/cards/ogn-023-298`，事先產生好的靜態頁，本機毫秒等級）。
+   * GitHub 的機器只有 4 核，開瀏覽器＋第一次要頁面的尖峰就可能吃掉 30 秒。
+   *
+   * 同樣是放寬耐心，不是放寬條件：每條斷言檢查的東西完全沒有變，
+   * 真的壞掉的測試照樣會紅，只是多等一下才紅。
+   */
+  timeout: process.env.CI ? 60_000 : 30_000,
+
   use: {
     baseURL,
     trace: 'on-first-retry',
