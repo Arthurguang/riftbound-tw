@@ -9,8 +9,8 @@ import { bannedEntryFor } from './ban-list';
 import { cardName, cardTextToPlain } from './cards';
 import { errataFor } from './errata';
 import type { TextLang } from './i18n';
-import { RARITY_ORDER } from './labels';
-import type { Card, CardType, Domain, Rarity, SetId, Taxonomy } from './types';
+import { CARD_FACE_TW, KEYWORD_LABELS, RARITY_ORDER } from './labels';
+import type { Card, CardType, Domain, Keyword, Rarity, SetId, Taxonomy } from './types';
 
 /** 排序選項。label 為三語對照。 */
 export const SORT_OPTIONS = [
@@ -20,8 +20,8 @@ export const SORT_OPTIONS = [
   { id: 'name-desc', label: { 'zh-TW': '卡名（反序）', 'zh-CN': '卡名（反序）', en: 'Name (Z→A)' } },
   { id: 'energy-asc', label: { 'zh-TW': '能量（低到高）', 'zh-CN': '费用（低到高）', en: 'Energy (low→high)' } },
   { id: 'energy-desc', label: { 'zh-TW': '能量（高到低）', 'zh-CN': '费用（高到低）', en: 'Energy (high→low)' } },
-  { id: 'might-asc', label: { 'zh-TW': '力量（低到高）', 'zh-CN': '战力（低到高）', en: 'Might (low→high)' } },
-  { id: 'might-desc', label: { 'zh-TW': '力量（高到低）', 'zh-CN': '战力（高到低）', en: 'Might (high→low)' } },
+  { id: 'might-asc', label: { 'zh-TW': '戰力（低到高）', 'zh-CN': '战力（低到高）', en: 'Might (low→high)' } },
+  { id: 'might-desc', label: { 'zh-TW': '戰力（高到低）', 'zh-CN': '战力（高到低）', en: 'Might (high→low)' } },
   { id: 'rarity-asc', label: { 'zh-TW': '稀有度（低到高）', 'zh-CN': '稀有度（低到高）', en: 'Rarity (low→high)' } },
   { id: 'rarity-desc', label: { 'zh-TW': '稀有度（高到低）', 'zh-CN': '稀有度（高到低）', en: 'Rarity (high→low)' } },
 ] as const satisfies readonly { id: string; label: Record<TextLang, string> }[];
@@ -101,9 +101,36 @@ function normalize(text: string): string {
 export type SearchIndex = Map<string, string>;
 
 /**
+ * 這張卡的關鍵字，三種語言加上卡面實際印的字。
+ *
+ * 能力文字轉純文字時，關鍵字是以**英文**存進索引的（cardTextToPlain 取 token.name），
+ * 所以在這之前，打「坦克」或「壁壘」都搜不到任何卡 —— 使用者回報的第一個問題。
+ * 繁中要兩套都收：規則書寫「坦克」，卡面印「壁壘」，玩家兩種都可能打。
+ */
+function keywordTerms(card: Card): string {
+  const names = new Set<Keyword>();
+  for (const block of card.text) {
+    const tokenLists = block.kind === 'paragraph' ? [block.tokens] : block.items;
+    for (const tokens of tokenLists) {
+      for (const token of tokens) {
+        if (token.type === 'keyword') names.add(token.name);
+      }
+    }
+  }
+
+  return [...names]
+    .flatMap((name) => [
+      KEYWORD_LABELS[name]['zh-TW'],
+      KEYWORD_LABELS[name]['zh-CN'],
+      CARD_FACE_TW[name] ?? '',
+    ])
+    .join(' ');
+}
+
+/**
  * 建立搜尋索引。
  *
- * 三種語言的卡名、能力文字與標籤全部放進同一份索引 ——
+ * 三種語言的卡名、能力文字、標籤與關鍵字全部放進同一份索引 ——
  * 這樣不論介面切在哪一種語言，打「阿璃」「阿狸」「Ahri」都找得到同一張卡。
  */
 export function buildSearchIndex(cards: Card[], tagLabels: Taxonomy['tagLabels']): SearchIndex {
@@ -129,6 +156,7 @@ export function buildSearchIndex(cards: Card[], tagLabels: Taxonomy['tagLabels']
             card.zh.tw?.name ?? '',
             card.zh.tw?.subtitle ?? '',
             card.zh.tw ? cardTextToPlain(card.zh.tw.text) : '',
+            keywordTerms(card),
           ].join(' '),
         ),
       ];
