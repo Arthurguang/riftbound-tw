@@ -129,6 +129,20 @@ test.describe('全站', () => {
     await expect(footer).toContainText('Legal Jibber Jabber');
     await expect(footer).toContainText('does not endorse or sponsor this project');
     await expect(footer).toContainText("isn't endorsed by Riot Games");
+    // 聲明的開頭必須是本站的名字（Riot 的範本寫「[你的專案名稱] was created under…」）
+    await expect(footer).toContainText('Ashvigil（守夜圖鑑）');
+  });
+
+  /*
+   * 站名改成「守夜圖鑑 Ashvigil」（2026-09-12）。
+   * 遊戲名不進站名、不進網域，但**必須**留在標題裡 —— 玩家是搜「符文戰場」找過來的。
+   * 這兩件事要一起釘住：少了前者會踩到商標，少了後者沒有人找得到。
+   */
+  test('站名是守夜圖鑑，而遊戲名留在網頁標題裡', async ({ page }) => {
+    await gotoHome(page);
+    await expect(page.locator('header')).toContainText('守夜圖鑑');
+    await expect(page).toHaveTitle(/守夜圖鑑/);
+    await expect(page).toHaveTitle(/符文戰場|Riftbound/);
   });
 });
 

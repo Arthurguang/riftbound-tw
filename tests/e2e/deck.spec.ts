@@ -262,7 +262,8 @@ test.describe('牌組編輯器', () => {
     expect(text).not.toMatch(/[一-鿿]/);
     // 沒有卡號、沒有署名
     expect(text).not.toMatch(/OGN-\d/i);
-    expect(text).not.toContain('符文戰場資料庫');
+    expect(text).not.toContain('守夜圖鑑');
+    expect(text).not.toContain('Ashvigil');
     /*
      * 每一行不是「Section:」就是「數字 卡名」。
      *

@@ -8,15 +8,29 @@ import { NavLinks } from '@/components/NavLinks';
 import { HTML_LANG, isTextLang, t, DEFAULT_TEXT_LANG, type TextLang } from '@/lib/i18n';
 import './globals.css';
 
+/*
+ * 站名：守夜圖鑑 / Ashvigil。
+ *
+ * 2026-09-12 改名。原本叫「符文戰場資料庫」，但「符文戰場」是 Riot 的商標，
+ * 而 Legal Jibber Jabber 第 5 條唯一明文禁止的就是「用 Riot 商標註冊網域」。
+ * 站名本身雖然沒被禁，但既然要換網域，品牌一起換才不會兩個名字各說各話。
+ *
+ * 遊戲名改放在**標題與內文**裡（下面的 title 與 description）——
+ * 這是 Scryfall、Piltover Archive、巴哈姆特都在用的做法：
+ * 品牌放網域，遊戲名放標題，搜尋流量不會少，網域則乾淨。
+ *
+ * 「圖鑑」這個後綴是刻意選的：台灣玩家對資訊站／情報站／資料庫／圖鑑有信任感。
+ * 絕不能用「數據庫」——那是對岸用語，在台灣會被當成內容農場。
+ */
 export const metadata: Metadata = {
   title: {
-    default: '符文戰場資料庫 — Riftbound 繁體中文玩家資源',
-    template: '%s｜符文戰場資料庫',
+    default: '守夜圖鑑 Ashvigil — 符文戰場 Riftbound 繁體中文玩家資源',
+    template: '%s｜守夜圖鑑 Ashvigil',
   },
   description:
     '符文戰場（Riftbound）繁體中文玩家資源站。起源系列卡牌圖鑑，支援繁中／简中／英文三語切換、英文與简中卡面切換，以及全文搜尋與多條件篩選。',
   robots: { index: true, follow: true },
-  applicationName: '符文戰場資料庫',
+  applicationName: '守夜圖鑑 Ashvigil',
 };
 
 export const viewport: Viewport = {
@@ -102,7 +116,7 @@ function SiteFooter() {
           請勿移除。
         */}
         <p>
-          符文戰場資料庫 was created under Riot Games&apos; &ldquo;Legal Jibber Jabber&rdquo; policy
+          Ashvigil（守夜圖鑑）was created under Riot Games&apos; &ldquo;Legal Jibber Jabber&rdquo; policy
           using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.
         </p>
         {/*
@@ -110,7 +124,7 @@ function SiteFooter() {
           兩份文件各要求一段，所以兩段都放。請勿移除。
         */}
         <p>
-          符文戰場資料庫 isn&apos;t endorsed by Riot Games and doesn&apos;t reflect the views or
+          Ashvigil（守夜圖鑑）isn&apos;t endorsed by Riot Games and doesn&apos;t reflect the views or
           opinions of Riot Games or anyone officially involved in producing or managing Riot Games
           properties. Riot Games, and all associated properties are trademarks or registered
           trademarks of Riot Games, Inc.

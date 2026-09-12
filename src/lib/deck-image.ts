@@ -218,7 +218,7 @@ export async function renderDeckImage(
   ctx.fillStyle = COLORS.dim;
   ctx.font = `11px ${FONT_STACK}`;
   ctx.fillText(
-    `符文戰場資料庫 · 規則依據：${RULES_VERSION.document} ${RULES_VERSION.updated}`,
+    `守夜圖鑑 · 規則依據：${RULES_VERSION.document} ${RULES_VERSION.updated}`,
     PADDING,
     height - PADDING,
   );

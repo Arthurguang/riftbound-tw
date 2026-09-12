@@ -70,7 +70,33 @@ async function alreadyDownloaded(path) {
   }
 }
 
+/**
+ * 重試次數與每次等待時間。
+ *
+ * 2026-09-12：Vercel 上的部署失敗過一次，而同樣的程式在本機與前兩次部署都成功 ——
+ * 2256 個請求裡只要有一個被 CDN 暫時擋下（限流、連線重置），整個部署就掛掉。
+ * 「下載失敗就中止建置」的原則是對的，但它該用在**重試過仍然失敗**之後，
+ * 而不是第一次閃失就放棄。等待時間逐次加長，避免一直撞同一道限流。
+ */
+const RETRIES = 4;
+const RETRY_DELAY_MS = 1500;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function download(job) {
+  let lastError;
+  for (let attempt = 1; attempt <= RETRIES; attempt += 1) {
+    try {
+      return await downloadOnce(job);
+    } catch (error) {
+      lastError = error;
+      if (attempt < RETRIES) await sleep(RETRY_DELAY_MS * attempt);
+    }
+  }
+  throw new Error(`${lastError.message}（已重試 ${RETRIES} 次）`);
+}
+
+async function downloadOnce(job) {
   const response = await fetch(job.url);
   if (!response.ok) {
     throw new Error(`${job.card} ${job.art} ${job.width}px：HTTP ${response.status}`);
