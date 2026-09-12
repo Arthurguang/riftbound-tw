@@ -1,5 +1,5 @@
 /**
- * 領域徽章與傳奇列的測試。
+ * 流派徽章與傳奇列的測試。
  *
  * 首頁的傳奇數量與篩選結果都是從卡牌資料算出來的 —— 這裡用資料驗證，
  * 不靠記憶。哪天新系列加入傳奇，數量類的測試會先紅燈提醒，
@@ -19,7 +19,7 @@ import {
 } from '../../src/lib/runeterra-core';
 import { allLegends, championTagOf, REGION_TAGS } from '../../src/lib/runeterra';
 
-describe('領域的基本資料', () => {
+describe('流派的基本資料', () => {
   it('對立關係是對稱的，而且排成一列時對立的兩個剛好隔三格', () => {
     RING.forEach((domain, i) => {
       expect(OPPOSITE[OPPOSITE[domain]]).toBe(domain);
@@ -27,7 +27,7 @@ describe('領域的基本資料', () => {
     });
   });
 
-  it('每個領域都有三種語言的風格描述', () => {
+  it('每個流派都有三種語言的風格描述', () => {
     for (const domain of RING) {
       expect(DOMAIN_ESSENCE[domain]['zh-TW'].length).toBeGreaterThan(0);
       expect(DOMAIN_ESSENCE[domain]['zh-CN'].length).toBeGreaterThan(0);
@@ -45,7 +45,7 @@ describe('傳奇清單', () => {
   });
 
   /* 數量快照：資料變了會先紅燈，提醒看一下首頁是否需要調整說明文字。 */
-  it('目前是 16 位：起源 12 位＋試煉場 4 位', () => {
+  it('目前是 16 位：起源 12 位＋試煉之地 4 位', () => {
     expect(legends.filter((l) => l.set === 'OGN')).toHaveLength(12);
     expect(legends.filter((l) => l.set === 'OGS')).toHaveLength(4);
   });
@@ -55,15 +55,15 @@ describe('傳奇清單', () => {
     expect(legends.slice(firstStarter).every((l) => l.set === 'OGS')).toBe(true);
   });
 
-  it('每位傳奇剛好兩個領域', () => {
+  it('每位傳奇剛好兩個流派', () => {
     for (const legend of legends) expect(playDomains(legend)).toHaveLength(2);
   });
 
   /*
-   * 這條說明為什麼放棄第一版「一組領域畫一條線」的設計：
-   * 同一組領域不只一位傳奇，一條線對應不了。
+   * 這條說明為什麼放棄第一版「一組流派畫一條線」的設計：
+   * 同一組流派不只一位傳奇，一條線對應不了。
    */
-  it('有些領域組合不只一位傳奇', () => {
+  it('有些流派組合不只一位傳奇', () => {
     const keys = legends.map((l) => {
       const [a, b] = playDomains(l);
       return pairKey(a!, b!);
@@ -72,7 +72,7 @@ describe('傳奇清單', () => {
   });
 });
 
-describe('領域篩選', () => {
+describe('流派篩選', () => {
   it('點新的就加入，點已選的就取消', () => {
     expect(toggleDomain([], 'fury')).toEqual(['fury']);
     expect(toggleDomain(['fury'], 'mind')).toEqual(['fury', 'mind']);
@@ -90,14 +90,14 @@ describe('領域篩選', () => {
     expect(matchesDomains(['fury', 'mind'], ['fury', 'chaos'])).toBe(false);
   });
 
-  it('用真實資料：熾烈＋混沌有兩位傳奇（起源與試煉場各一）', () => {
+  it('用真實資料：狂怒＋渾沌有兩位傳奇（起源與試煉之地各一）', () => {
     const matched = allLegends(ALL_CARDS).filter((l) =>
       matchesDomains(playDomains(l), ['fury', 'chaos']),
     );
     expect(matched.map((l) => l.set).sort()).toEqual(['OGN', 'OGS']);
   });
 
-  it('用真實資料：對立的兩個領域目前沒有傳奇', () => {
+  it('用真實資料：對立的兩個流派目前沒有傳奇', () => {
     for (const domain of RING) {
       const matched = allLegends(ALL_CARDS).filter((l) =>
         matchesDomains(playDomains(l), [domain, OPPOSITE[domain]]),

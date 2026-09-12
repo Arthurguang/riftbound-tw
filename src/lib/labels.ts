@@ -3,11 +3,20 @@
  *
  * ── 來源說明 ──────────────────────────────────────────────────────
  * 簡中：全部取自中國大陸官方發行商的資料（Riot Games × 闪魂）。
- * 繁中：官方尚未推出繁中的線上卡牌資料，因此：
+ * 繁中：以**官方繁體中文核心規則書**為準（2026-07-16 版，playriftbound.com/zh-tw/rules-hub）。
  *        · 英雄名取自 Riot 官方 Data Dragon 的 zh_TW 語系（標籤在 taxonomy.json）
  *        · 地區名為《英雄聯盟》台服正式譯名
- *        · 卡種／稀有度／關鍵字為官方簡中的逐字轉繁
- *        · 領域在中文版卡面上是以顏色標示，因此中文一律顯示顏色
+ *
+ * ── 為什麼繁中有兩套官方用語 ──────────────────────────────────
+ * Riot 的繁中規則書是獨立翻譯的，但**繁中實體卡的文字是由官方簡中逐字轉繁**，
+ * 兩者對不上。同一個關鍵字，規則書寫「加速」，卡面印「急速」。
+ *
+ * 本站一律採規則書用語 —— 裁決以規則書為準，那才是有爭議時算數的版本。
+ * 卡面實際印的字另外收在 CARD_FACE_TW，介面上並列標示，
+ * 玩家才不會以為自己拿錯卡。這是繁中玩家目前最常問的問題。
+ *
+ * 2026-09-12 實測：官方卡牌資料端點帶 locale=zh_TW 回傳的卡名與卡圖，
+ * 與 en_US 完全相同 —— 官方線上並沒有繁中卡牌資料或繁中卡圖。
  */
 
 import type { CardType, Domain, GlyphId, Keyword, Rarity, SetId } from './types';
@@ -19,7 +28,7 @@ const tri = (tw: string, cn: string, en: string): Tri => ({ 'zh-TW': tw, 'zh-CN'
 
 export const SET_LABELS: Record<SetId, Tri> = {
   OGN: tri('起源', '起源', 'Origins'),
-  OGS: tri('試煉場', '试炼场', 'Proving Grounds'),
+  OGS: tri('試煉之地', '试炼之地', 'Proving Grounds'),
 };
 
 export const TYPE_LABELS: Record<CardType, Tri> = {
@@ -32,26 +41,56 @@ export const TYPE_LABELS: Record<CardType, Tri> = {
 };
 
 /**
- * 領域（官方稱為「符文特性」）。
+ * 流派（繁中規則書用語；簡中規則書稱「符文特性」）。
  *
- * 中文名稱取自官方簡中核心規則 134.2 —— 六大特性各有正式名稱與對應顏色：
- *   熾烈=紅 翠意=綠 靈光=藍 摧破=橙 混沌=紫 序理=黃
+ * 繁中名稱取自官方繁體中文核心規則書：狂怒＝紅、止靜＝綠、心智＝藍、
+ * 身軀＝橙、渾沌＝紫、秩序＝黃（規則書裡「流派」出現 70 次，「領域」0 次）。
+ * 簡中名稱取自官方簡中核心規則 134.2。
+ *
+ * 繁中卡面印的是另一套（熾烈／翠意／靈光／摧破／混沌／序理，簡中轉繁而來），
+ * 收在 CARD_FACE_TW，介面上並列。
  *
  * 這裡採用「正式名稱（顏色）」的寫法：正式名稱是規則書用語，
  * 顏色則是玩家在卡面上實際看到的識別方式，兩者都需要。
  *
- * 「無色」不是第七種特性 —— 官方規則 134.1 說「大多數卡牌擁有一個或多個特性」，
- * 135.2.e.6.b 提到「如果卡牌沒有特性⋯」，可見沒有特性是合法狀態。
- * 這類卡不受符文特性限制，任何牌組都能放（見 src/lib/deck-rules.ts）。
+ * 「無流派」不是第七個流派 —— 官方規則 134.1 說「大多數卡牌擁有一個或多個」，
+ * 135.2.e.6.b 提到「如果卡牌沒有流派⋯」，可見沒有流派是合法狀態。
+ * 這類卡不受流派限制，任何牌組都能放（見 src/lib/deck-rules.ts）。
  */
 export const DOMAIN_LABELS: Record<Domain, Tri> = {
-  fury: tri('熾烈（紅）', '炽烈（红）', 'Fury'),
-  calm: tri('翠意（綠）', '翠意（绿）', 'Calm'),
-  mind: tri('靈光（藍）', '灵光（蓝）', 'Mind'),
-  body: tri('摧破（橙）', '摧破（橙）', 'Body'),
-  chaos: tri('混沌（紫）', '混沌（紫）', 'Chaos'),
-  order: tri('序理（黃）', '序理（黄）', 'Order'),
-  colorless: tri('無特性', '无特性', 'Colorless'),
+  fury: tri('狂怒（紅）', '炽烈（红）', 'Fury'),
+  calm: tri('止靜（綠）', '翠意（绿）', 'Calm'),
+  mind: tri('心智（藍）', '灵光（蓝）', 'Mind'),
+  body: tri('身軀（橙）', '摧破（橙）', 'Body'),
+  chaos: tri('渾沌（紫）', '混沌（紫）', 'Chaos'),
+  order: tri('秩序（黃）', '序理（黄）', 'Order'),
+  colorless: tri('無流派', '无特性', 'Colorless'),
+};
+
+/**
+ * 繁中卡面上實際印的字（只收「跟規則書不一樣」的）。
+ *
+ * 繁中實體卡的文字是官方簡中逐字轉繁，沒有在地化；規則書則是獨立翻譯。
+ * 玩家手上拿的是卡片，查裁決看的是規則書 —— 兩邊對不上時會以為自己看錯，
+ * 所以介面上兩個都要出現，而且要講清楚哪個是哪個。
+ */
+export const CARD_FACE_TW: Partial<Record<Domain | Keyword | 'might' | 'exhaust', string>> = {
+  fury: '熾烈',
+  calm: '翠意',
+  mind: '靈光',
+  body: '摧破',
+  chaos: '混沌',
+  order: '序理',
+  Accelerate: '急速',
+  Action: '迅捷',
+  Assault: '強攻',
+  Deathknell: '絕念',
+  Legion: '鼓舞',
+  Mighty: '強力',
+  Tank: '壁壘',
+  Vision: '預知',
+  might: '力量',
+  exhaust: '橫置',
 };
 
 /**
@@ -101,26 +140,27 @@ export const RARITY_ORDER: Record<Rarity, number> = {
  * taxonomy.json 的 keywords 欄位，官方改措辭時我們會跟著更新。
  */
 export const KEYWORD_LABELS: Record<Keyword, Tri> = {
-  Accelerate: tri('急速', '急速', 'Accelerate'),
-  Action: tri('迅捷', '迅捷', 'Action'),
+  Accelerate: tri('加速', '急速', 'Accelerate'),
+  Action: tri('行動', '迅捷', 'Action'),
   Add: tri('獲得', '获得', 'Add'),
-  Assault: tri('強攻', '强攻', 'Assault'),
-  Deathknell: tri('絕念', '绝念', 'Deathknell'),
+  Assault: tri('強襲', '强攻', 'Assault'),
+  Deathknell: tri('喪鐘', '绝念', 'Deathknell'),
   Deflect: tri('法盾', '法盾', 'Deflect'),
   Ganking: tri('遊走', '游走', 'Ganking'),
+  // 「待命」是 Hidden。規則書另有「潛伏」是 Ambush —— 兩個不同的關鍵字，別對調。
   Hidden: tri('待命', '待命', 'Hidden'),
-  Legion: tri('鼓舞', '鼓舞', 'Legion'),
-  Mighty: tri('強力', '强力', 'Mighty'),
+  Legion: tri('軍團', '鼓舞', 'Legion'),
+  Mighty: tri('強大', '强力', 'Mighty'),
   Reaction: tri('反應', '反应', 'Reaction'),
   Shield: tri('堅守', '坚守', 'Shield'),
-  Tank: tri('壁壘', '壁垒', 'Tank'),
+  Tank: tri('坦克', '壁垒', 'Tank'),
   Temporary: tri('瞬息', '瞬息', 'Temporary'),
-  Vision: tri('預知', '预知', 'Vision'),
+  Vision: tri('預視', '预知', 'Vision'),
 };
 
 export const GLYPH_LABELS: Record<GlyphId, Tri> = {
-  might: tri('力量', '战力', 'Might'),
-  exhaust: tri('橫置', '横置', 'Exhaust'),
+  might: tri('戰力', '战力', 'Might'),
+  exhaust: tri('休眠', '横置', 'Exhaust'),
   energy_0: tri('0 點能量', '0 点能量', '0 Energy'),
   energy_1: tri('1 點能量', '1 点能量', '1 Energy'),
   energy_2: tri('2 點能量', '2 点能量', '2 Energy'),

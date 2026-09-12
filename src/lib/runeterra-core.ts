@@ -49,14 +49,17 @@ export const DOMAIN_COLOR: Readonly<Record<PlayDomain, string>> = {
 
 type Tri = Readonly<Record<TextLang, string>>;
 
-/** 徽章上用的短名稱（不帶顏色括號）。 */
+/**
+ * 徽章上用的短名稱（不帶顏色括號）。
+ * 繁中採官方繁體中文規則書用語；繁中卡面印的是另一套（見 labels.ts 的 CARD_FACE_TW）。
+ */
 export const DOMAIN_SHORT: Readonly<Record<PlayDomain, Tri>> = {
-  fury: { 'zh-TW': '熾烈', 'zh-CN': '炽烈', en: 'Fury' },
-  calm: { 'zh-TW': '翠意', 'zh-CN': '翠意', en: 'Calm' },
-  mind: { 'zh-TW': '靈光', 'zh-CN': '灵光', en: 'Mind' },
-  body: { 'zh-TW': '摧破', 'zh-CN': '摧破', en: 'Body' },
-  chaos: { 'zh-TW': '混沌', 'zh-CN': '混沌', en: 'Chaos' },
-  order: { 'zh-TW': '序理', 'zh-CN': '序理', en: 'Order' },
+  fury: { 'zh-TW': '狂怒', 'zh-CN': '炽烈', en: 'Fury' },
+  calm: { 'zh-TW': '止靜', 'zh-CN': '翠意', en: 'Calm' },
+  mind: { 'zh-TW': '心智', 'zh-CN': '灵光', en: 'Mind' },
+  body: { 'zh-TW': '身軀', 'zh-CN': '摧破', en: 'Body' },
+  chaos: { 'zh-TW': '渾沌', 'zh-CN': '混沌', en: 'Chaos' },
+  order: { 'zh-TW': '秩序', 'zh-CN': '序理', en: 'Order' },
 };
 
 /**

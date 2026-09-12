@@ -275,7 +275,7 @@ describe('符能特性付不付得起（規則 163.2.a）', () => {
 
   it('符文牌組沒有對應特性時，有符能費用的卡會被標出來', () => {
     const furyRune = runes.find((r) => r.domains.includes('fury'))!;
-    // 找一張有符能費用、且特性不含熾烈的卡
+    // 找一張有符能費用、且特性不含狂怒的卡
     const offending = ALL_CARDS.find(
       (c) =>
         c.power !== null &&
@@ -353,7 +353,7 @@ describe('符文的機率（規則 114、430.1、108.5.d）', () => {
     expect(odds[0]!.byTurn[0]).toBeCloseTo(1, 12);
   });
 
-  it('雙色 6/6，先手第 1 回合召 2 張，至少 1 張熾烈 = 1 − C(6,2)/C(12,2)', () => {
+  it('雙色 6/6，先手第 1 回合召 2 張，至少 1 張狂怒 = 1 − C(6,2)/C(12,2)', () => {
     const odds = runeOddsByTurn({ [fury.id]: 6, [calm.id]: 6 }, byId, true, 6);
     const furyRow = odds.find((o) => o.domain === 'fury')!;
 

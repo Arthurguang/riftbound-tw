@@ -124,7 +124,6 @@ async function main() {
   console.log(`卡圖：共 ${jobs.length} 個檔案，需要下載 ${todo.length} 個…`);
 
   let done = 0;
-  let bytes = 0;
   const failures = [];
   let next = 0;
 
@@ -132,7 +131,7 @@ async function main() {
     while (next < todo.length) {
       const job = todo[next++];
       try {
-        bytes += await download(job);
+        await download(job);
       } catch (error) {
         failures.push(error.message);
       }

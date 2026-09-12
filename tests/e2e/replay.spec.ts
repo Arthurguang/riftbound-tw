@@ -1377,7 +1377,7 @@ test.describe('直接選擇加到哪一區', () => {
 });
 
 test.describe('回合狀態（規則 307–310）', () => {
-  /** Cleave 有 [迅捷]、Shakedown 有 [反應]、Blazing Scorcher 兩者皆無。 */
+  /** Cleave 有 [行動]、Shakedown 有 [反應]、Blazing Scorcher 兩者皆無。 */
   const TIMING_DECK = [
     '【主牌組】',
     '3 Cleave',
@@ -1435,7 +1435,7 @@ test.describe('回合狀態（規則 307–310）', () => {
     await expect(hand.getByText('時機不可')).toHaveCount(0);
   });
 
-  test('法術對決：沒有迅捷或反應的卡打不出來（308.1.a）', async ({ page }) => {
+  test('法術對決：沒有行動或反應的卡打不出來（308.1.a）', async ({ page }) => {
     await gotoReplay(page);
     await setUpHand(page);
     await openRail(page, 'turn');

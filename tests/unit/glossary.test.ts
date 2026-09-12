@@ -20,9 +20,30 @@ describe('關鍵字搜尋', () => {
     expect(filterKeywords(keywords, '   ')).toHaveLength(15);
   });
 
-  it('三種語言的名稱都找得到同一個關鍵字', () => {
-    for (const term of ['Tank', 'tank', '壁壘', '壁垒']) {
+  /*
+   * 同一個關鍵字有四種寫法都要找得到：
+   *   Tank（英文）· 坦克（官方繁中規則書）· 壁壘（繁中卡面實際印的）· 壁垒（官方簡中）
+   *
+   * 「壁壘」那一項最重要：繁中卡的文字是簡轉繁，跟規則書不一樣，
+   * 玩家是看著手上的卡打字的。只認規則書用語，等於讓他搜不到自己手上那張卡。
+   */
+  it('四種寫法都找得到同一個關鍵字（含卡面上實際印的字）', () => {
+    for (const term of ['Tank', 'tank', '坦克', '壁壘', '壁垒']) {
       expect(filterKeywords(keywords, term), `搜尋「${term}」`).toContain('Tank');
+    }
+  });
+
+  it('其他規則書與卡面用語不同的關鍵字，兩種寫法也都找得到', () => {
+    const pairs: ReadonlyArray<[string, string, string]> = [
+      ['Accelerate', '加速', '急速'],
+      ['Assault', '強襲', '強攻'],
+      ['Deathknell', '喪鐘', '絕念'],
+      ['Legion', '軍團', '鼓舞'],
+      ['Vision', '預視', '預知'],
+    ];
+    for (const [name, rulebook, cardFace] of pairs) {
+      expect(filterKeywords(keywords, rulebook), `規則書用語「${rulebook}」`).toContain(name);
+      expect(filterKeywords(keywords, cardFace), `卡面用語「${cardFace}」`).toContain(name);
     }
   });
 

@@ -107,9 +107,9 @@ export default async function RulesPage({ searchParams }: PageProps) {
         <p className="mt-1 max-w-2xl text-xs leading-relaxed text-ink-faint">{s.linksNote[lang]}</p>
         <ul className="mt-4 space-y-2">
           {OFFICIAL_LINKS.map((link) => (
-            <li key={link.href}>
+            <li key={link.href.en}>
               <a
-                href={link.href}
+                href={link.href[lang]}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block rounded-lg border border-line bg-surface-1 px-4 py-3 transition-colors hover:border-accent"
