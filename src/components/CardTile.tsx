@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { cardImageAlt, cardImageUrl, cardName, cardSubtitle, resolveArtLang } from '@/lib/cards';
 import { bannedEntryFor } from '@/lib/ban-list';
+import { rememberGalleryScroll } from '@/lib/gallery-scroll';
 import { DomainDot } from './CardBadges';
 import type { ArtLang, TextLang } from '@/lib/i18n';
 import type { Card } from '@/lib/types';
@@ -45,6 +46,8 @@ export function CardTile({
   return (
     <Link
       href={href}
+      // 記住現在捲到哪，等一下按「回到卡牌圖鑑」才回得到原位
+      onClick={rememberGalleryScroll}
       className="group block rounded-lg outline-offset-4 transition-transform duration-150 hover:-translate-y-1"
     >
       <div

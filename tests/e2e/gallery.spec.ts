@@ -46,7 +46,7 @@ test.describe('卡牌圖鑑', () => {
     await expect(page.locator('main ul > li').first()).toBeVisible();
   });
 
-  test('多條件篩選：卡種 + 領域', async ({ page }) => {
+  test('多條件篩選：卡種 + 流派', async ({ page }) => {
     await page.goto('/cards');
     await page.getByRole('button', { name: '展開篩選' }).click();
 
@@ -55,8 +55,8 @@ test.describe('卡牌圖鑑', () => {
     expect(unitsOnly).toBeGreaterThan(0);
     expect(unitsOnly).toBeLessThan(376);
 
-    // 篩選鈕顯示官方特性名稱加顏色（核心規則 134.2），例如「翠意（綠）」。
-    await page.getByRole('button', { name: '翠意（綠）', exact: true }).click();
+    // 篩選鈕顯示官方特性名稱加顏色（核心規則 134.2），例如「止靜（綠）」。
+    await page.getByRole('button', { name: '止靜（綠）', exact: true }).click();
     const unitsAndCalm = await page.locator('main ul > li').count();
     expect(unitsAndCalm).toBeGreaterThan(0);
     expect(unitsAndCalm).toBeLessThan(unitsOnly);
@@ -101,6 +101,46 @@ test.describe('卡牌圖鑑', () => {
     await typeSearch(page, 'zzzzzzzz');
     await expect(page.getByText('找不到符合條件的卡牌')).toBeVisible();
   });
+});
+
+/*
+ * 2026-09-12 使用者回報：捲到很下面、點進一張卡、按「回到卡牌圖鑑」，
+ * 結果被丟回頁面最上面，又要重新捲一次找剛才看到哪。翻 376 張卡時這會一直發生。
+ *
+ * 「回到卡牌圖鑑」是連結（前往新頁面）而不是瀏覽器的上一頁，
+ * 所以瀏覽器不會自己還原位置 —— 位置是點卡片當下記下來的。
+ */
+test('從卡片頁回到圖鑑時，停在原本捲到的位置', async ({ page }) => {
+  await page.goto('/cards', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('main ul > li').first()).toBeVisible();
+
+  // 全站是平滑捲動（動畫），所以捲完要等它停下來再讀位置，不能讀完就算。
+  await page.evaluate(() => window.scrollTo(0, 2600));
+  await expect
+    .poll(async () => page.evaluate(() => Math.round(window.scrollY)), {
+      message: '應該真的捲下去了',
+    })
+    .toBeGreaterThan(1500);
+  const before = await page.evaluate(() => Math.round(window.scrollY));
+
+  // 點一張「目前就看得到」的卡：讓 Playwright 自己捲過去會改變位置，測不到重點。
+  await page.evaluate(() => {
+    const link = [...document.querySelectorAll('main ul > li a')].find((el) => {
+      const box = el.getBoundingClientRect();
+      return box.top > 0 && box.bottom < window.innerHeight;
+    });
+    (link as HTMLElement | undefined)?.click();
+  });
+  await page.waitForURL(/\/cards\/[a-z0-9-]+/);
+
+  await page.getByRole('link', { name: /回到卡牌圖鑑/ }).click();
+  await page.waitForURL(/\/cards(\?|$)/);
+
+  await expect
+    .poll(async () => page.evaluate(() => Math.round(window.scrollY)), {
+      message: '應該回到離開前的位置附近',
+    })
+    .toBeGreaterThan(before - 200);
 });
 
 test.describe('單卡詳細頁', () => {

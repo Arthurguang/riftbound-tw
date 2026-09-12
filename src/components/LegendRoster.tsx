@@ -43,14 +43,14 @@ type Strings = {
 const STRINGS: Record<TextLang, Strings> = {
   'zh-TW': {
     eyebrow: 'LEGENDS',
-    title: '傳奇與六大領域',
+    title: '傳奇與六大流派',
     intro:
-      '每位傳奇掌握兩個領域，他的牌組只能放這兩個領域與無特性的卡（核心規則 103.1.b）。點領域徽章篩選：選一個，看哪些傳奇用它；選兩個，看這個組合有誰。',
-    filterLabel: '依領域篩選傳奇',
+      '每位傳奇掌握兩個流派，他的牌組只能放這兩個流派與無流派的卡（核心規則 103.1.b）。點流派徽章篩選：選一個，看哪些傳奇用它；選兩個，看這個組合有誰。',
+    filterLabel: '依流派篩選傳奇',
     showing: (n, total) => (n === total ? `全部 ${total} 位` : `${n} / ${total} 位`),
     clear: '清除篩選',
     none: (a, b) => `目前卡池沒有同時掌握${a}與${b}的傳奇。`,
-    essenceNote: '領域風格為本站整理，不是官方文案。',
+    essenceNote: '流派風格為本站整理，不是官方文案。',
   },
   'zh-CN': {
     eyebrow: 'LEGENDS',

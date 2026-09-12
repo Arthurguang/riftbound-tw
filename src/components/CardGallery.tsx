@@ -14,6 +14,7 @@ import {
 } from '@/lib/search';
 import type { Filters } from '@/lib/search';
 import { filtersFromParams, filtersToQueryString } from '@/lib/filters-url';
+import { consumeGalleryScroll } from '@/lib/gallery-scroll';
 import { DEFAULT_ART_LANG, DEFAULT_TEXT_LANG, readArtLang, readTextLang, t } from '@/lib/i18n';
 import type { Card, Taxonomy } from '@/lib/types';
 
@@ -38,6 +39,23 @@ export function CardGallery({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
     filtersFromParams(new URLSearchParams(searchParams.toString()), taxonomy.tags),
   );
   const [showFilters, setShowFilters] = useState(false);
+
+  /*
+   * 從卡片詳細頁回來時，捲回離開前的位置。
+   *
+   * 「回到卡牌圖鑑」是一個連結（前往新頁面），不是瀏覽器的上一頁，
+   * 所以瀏覽器不會幫忙還原捲動位置 —— 使用者每次都被丟回最上面，
+   * 翻 376 張卡時要一直重捲。位置在點卡片的當下就存好了（見 CardTile）。
+   *
+   * 卡片格子的高度由 CSS 的長寬比固定，不受圖片載入影響，
+   * 所以掛載當下的頁面高度就是最終高度，直接捲就會準。
+   */
+  useEffect(() => {
+    const y = consumeGalleryScroll();
+    // 全站設了平滑捲動，這裡要 instant —— 還原位置應該是「本來就在那裡」，
+    // 不是讓使用者看著畫面自己捲下去。
+    if (y !== null) window.scrollTo({ top: y, behavior: 'instant' });
+  }, []);
 
   // 搜尋索引包含三種語言的卡名與能力文字，只算一次。
   const index = useMemo(() => buildSearchIndex(cards, taxonomy.tagLabels), [cards, taxonomy]);

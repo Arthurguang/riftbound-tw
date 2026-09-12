@@ -312,7 +312,7 @@ export function toSectionedText(deck: Deck, byId: Map<string, Card>): string {
 // ─── CSV ─────────────────────────────────────────────────────────
 
 const CSV_HEADERS: Record<TextLang, string[]> = {
-  'zh-TW': ['區域', '張數', '卡名', '英文卡名', '卡號', '卡種', '領域', '能量', '力量'],
+  'zh-TW': ['區域', '張數', '卡名', '英文卡名', '卡號', '卡種', '流派', '能量', '戰力'],
   'zh-CN': ['区域', '张数', '卡名', '英文卡名', '卡号', '类型', '颜色', '费用', '战力'],
   en: ['Zone', 'Qty', 'Name', 'English Name', 'Code', 'Type', 'Domain', 'Energy', 'Might'],
 };

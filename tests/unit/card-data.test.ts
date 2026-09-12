@@ -16,7 +16,7 @@ import type { Card } from '../../src/lib/types';
 const list = cards as unknown as Record<string, unknown>[];
 
 describe('卡牌資料完整性', () => {
-  it('Origins 主系列 352 張、試煉場 24 張', () => {
+  it('Origins 主系列 352 張、試煉之地 24 張', () => {
     expect(list.filter((c) => c.set === 'OGN')).toHaveLength(352);
     expect(list.filter((c) => c.set === 'OGS')).toHaveLength(24);
     expect(list).toHaveLength(376);

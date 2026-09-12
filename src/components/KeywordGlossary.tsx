@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { GlossaryText } from './GlossaryText';
-import { KEYWORD_LABELS } from '@/lib/labels';
+import { CARD_FACE_TW, KEYWORD_LABELS } from '@/lib/labels';
 import { filterKeywords } from '@/lib/glossary';
 import { RULES_STRINGS } from '@/lib/rules-content';
 import type { Taxonomy } from '@/lib/types';
@@ -89,6 +89,15 @@ export function KeywordGlossary({
                     {KEYWORD_LABELS[name][lang]}
                   </span>
                   {lang !== 'en' && <span className="text-xs text-ink-faint">{name}</span>}
+                  {/*
+                    繁中卡面印的字跟官方繁中規則書不一樣（卡面是簡轉繁，規則書另外翻譯）。
+                    玩家手上拿的是卡片，所以兩個都要看得到，否則會以為自己拿錯卡或查錯字。
+                  */}
+                  {lang === 'zh-TW' && CARD_FACE_TW[name] && (
+                    <span className="rounded border border-line px-1.5 py-0.5 text-[0.65rem] text-ink-faint">
+                      卡面印「{CARD_FACE_TW[name]}」
+                    </span>
+                  )}
                 </dt>
                 <dd className="mt-1.5 text-sm leading-relaxed text-ink">
                   {official ? (

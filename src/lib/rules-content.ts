@@ -23,25 +23,57 @@ import type { TextLang } from './i18n';
 type Tri = Record<TextLang, string>;
 const tri = (tw: string, cn: string, en: string): Tri => ({ 'zh-TW': tw, 'zh-CN': cn, en });
 
-/** 官方規則文件連結。 */
+/**
+ * 官方規則文件連結。
+ *
+ * 連結本身也分語言：2026-09-12 查證發現官方**有繁體中文版規則書**
+ * （playriftbound.com/zh-tw/rules-hub 提供），而本站原本一律連英文版。
+ * 繁中介面連繁中規則書，才不會叫看中文的人去讀英文。
+ */
 export const OFFICIAL_LINKS = [
   {
-    href: 'https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/e9ac8e3d33e0f78cef296f5945aba7bc1313b086.pdf',
-    label: tri('完整規則書 Core Rules（PDF）', '完整规则书 Core Rules（PDF）', 'Core Rules (PDF)'),
-    note: tri('官方唯一具權威性的規則文件', '官方唯一具权威性的规则文件', 'The authoritative rules document'),
+    href: tri(
+      'https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/82df52deb34deaa53747ddb7881c57692f163d41.pdf',
+      'https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/e9ac8e3d33e0f78cef296f5945aba7bc1313b086.pdf',
+      'https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/e9ac8e3d33e0f78cef296f5945aba7bc1313b086.pdf',
+    ),
+    // 標籤保留英文檔名 Core Rules：官方文件本身叫這個名字，玩家在別處看到的也是它。
+    label: tri(
+      '完整規則書 Core Rules（繁體中文 PDF）',
+      '完整规则书 Core Rules（PDF）',
+      'Core Rules (PDF)',
+    ),
+    note: tri(
+      '官方唯一具權威性的規則文件 —— 本站的繁中用語以它為準',
+      '官方唯一具权威性的规则文件（官方目前只有英文版）',
+      'The authoritative rules document',
+    ),
   },
   {
-    href: 'https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/503da65669ced10598d62925a6f6bc15111af726.pdf',
-    label: tri('賽事規則 Tournament Rules（PDF）', '赛事规则 Tournament Rules（PDF）', 'Tournament Rules (PDF)'),
+    href: tri(
+      'https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/4825661ba0991c09f17c3959c7bf41f08560b5f9.pdf',
+      'https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/503da65669ced10598d62925a6f6bc15111af726.pdf',
+      'https://cmsassets.rgpub.io/sanity/files/dsfx7636/news_live/503da65669ced10598d62925a6f6bc15111af726.pdf',
+    ),
+    label: tri('賽事規則（繁體中文 PDF）', '赛事规则 Tournament Rules（PDF）', 'Tournament Rules (PDF)'),
     note: tri('參加官方賽事前必讀', '参加官方赛事前必读', 'Required reading before official events'),
   },
   {
-    href: 'https://playriftbound.com/en-us/rules-hub/',
+    href: tri(
+      'https://playriftbound.com/zh-tw/rules-hub/',
+      'https://playriftbound.com/en-us/rules-hub/',
+      'https://playriftbound.com/en-us/rules-hub/',
+    ),
     label: tri('官方規則中心 Rules Hub', '官方规则中心 Rules Hub', 'Official Rules Hub'),
     note: tri('規則更新、勘誤與裁定都在這裡', '规则更新、勘误与裁定都在这里', 'Updates, errata, and rulings'),
   },
   {
-    href: 'https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/',
+    // 勘誤頁沒有繁中版（2026-09-12 實測 zh-tw 網址回 404），三種語言都連英文版。
+    href: tri(
+      'https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/',
+      'https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/',
+      'https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/',
+    ),
     label: tri('起源系列卡牌勘誤', '起源系列卡牌勘误', 'Origins Card Errata'),
     note: tri('少數卡牌的實際文字與印刷不同', '少数卡牌的实际文字与印刷不同', 'A few cards differ from their printing'),
   },
@@ -134,7 +166,7 @@ export const BASICS: { text: Tri; source: Tri }[] = [
   },
   {
     text: tri(
-      '牌組以一張「傳奇」為核心，傳奇決定你能使用哪些領域（顏色）的卡。',
+      '牌組以一張「傳奇」為核心，傳奇決定你能使用哪些流派（顏色）的卡。',
       '卡组以一张「传奇」为核心，传奇决定你能使用哪些领域（颜色）的卡。',
       'A deck is built around a Legend, which determines the domains (colors) you may use.',
     ),

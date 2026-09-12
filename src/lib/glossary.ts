@@ -8,7 +8,7 @@
  * 端對端測試則專心驗證「畫面有沒有正確反應」。
  */
 
-import { KEYWORD_LABELS } from './labels';
+import { CARD_FACE_TW, KEYWORD_LABELS } from './labels';
 import { KEYWORDS, type Keyword, type Taxonomy } from './types';
 
 /**
@@ -26,10 +26,18 @@ export function filterKeywords(
 
   return KEYWORDS.filter((name) => {
     const entry = keywords[name];
+    /*
+     * 卡面上印的字也要找得到。
+     *
+     * 繁中實體卡的用語是官方簡中逐字轉繁，跟官方繁中規則書不一樣 ——
+     * 卡面印「壁壘」，規則書寫「坦克」。玩家是看著手上的卡打字的，
+     * 只認規則書用語等於讓他搜不到自己手上那張卡（見 labels.ts 的 CARD_FACE_TW）。
+     */
     const haystack = [
       name,
       KEYWORD_LABELS[name]['zh-TW'],
       KEYWORD_LABELS[name]['zh-CN'],
+      CARD_FACE_TW[name] ?? '',
       entry?.en ?? '',
       entry?.cn ?? '',
       entry?.tw ?? '',

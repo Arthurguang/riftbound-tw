@@ -128,7 +128,7 @@ test.describe('圖鑑的特殊標記篩選', () => {
 
   test('只看衍生物', async ({ page }) => {
     await page.goto('/cards?mark=token', { waitUntil: 'domcontentloaded' });
-    // Recruit ×3（三個領域）+ Sprite
+    // Recruit ×3（三個流派）+ Sprite
     await expect(page.getByRole('link', { name: /OGN-27[1-4]/ })).toHaveCount(4);
     await expect(page.getByTestId('tile-ban')).toHaveCount(0);
   });

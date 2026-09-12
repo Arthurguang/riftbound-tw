@@ -1,11 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 
 /**
- * 首頁：傳奇展示台、「領域徽章＋傳奇列」。
+ * 首頁：傳奇展示台、「流派徽章＋傳奇列」。
  *
  * 除了「點得動」，也驗證跟內容正確性有關的事：
  *   · 畫面上寫的傳奇數量，跟實際列出來的張數一致（數量不寫死）
- *   · 篩選的結果真的符合選的領域
+ *   · 篩選的結果真的符合選的流派
  *   · 點展示台的卡，打開的就是那一位（WebKit 曾經點到背對使用者的卡）
  */
 
@@ -15,7 +15,7 @@ const badge = (page: Page, name: string) =>
 const legends = (page: Page) => roster(page).locator('[data-legend-link]');
 
 /**
- * 點領域徽章，並等畫面反映出來（亮起或熄滅）再繼續。
+ * 點流派徽章，並等畫面反映出來（亮起或熄滅）再繼續。
  *
  * 2026-09-11 合併後對正式站跑測試時，連點兩個徽章漏收了第二下（畫面停在只選一個，
  * 列出 5 位而不是 0 位）；單獨重跑 5 次都通過 —— 是測試點太快，不是功能錯。
@@ -39,20 +39,20 @@ const gotoHome = async (page: Page) => {
   await expect(page.getByTestId('ambience-controls')).toHaveAttribute('data-ready', 'true');
 };
 
-test.describe('首頁的傳奇與領域', () => {
+test.describe('首頁的傳奇與流派', () => {
   test('預設列出全部傳奇，而且寫的數量跟實際張數一致', async ({ page }) => {
     await gotoHome(page);
     const count = await legends(page).count();
     expect(count).toBeGreaterThanOrEqual(16);
     await expect(page.getByTestId('legend-count')).toHaveText(`全部 ${count} 位`);
     // 標題不放數量（新系列加入傳奇時不必改），數量只看「全部 N 位」
-    await expect(roster(page).getByRole('heading', { level: 2 })).toHaveText('傳奇與六大領域');
+    await expect(roster(page).getByRole('heading', { level: 2 })).toHaveText('傳奇與六大流派');
   });
 
-  test('選一個領域，只剩含有它的傳奇，並說明這個領域的風格', async ({ page }) => {
+  test('選一個流派，只剩含有它的傳奇，並說明這個流派的風格', async ({ page }) => {
     await gotoHome(page);
-    await badge(page, '熾烈').click();
-    await expect(badge(page, '熾烈')).toHaveAttribute('aria-pressed', 'true');
+    await badge(page, '狂怒').click();
+    await expect(badge(page, '狂怒')).toHaveAttribute('aria-pressed', 'true');
 
     const domains = await legends(page).evaluateAll((els) =>
       els.map((e) => e.getAttribute('data-domains') ?? ''),
@@ -63,10 +63,10 @@ test.describe('首頁的傳奇與領域', () => {
     await expect(roster(page)).toContainText('本站整理');
   });
 
-  test('選兩個領域，看到這個組合的所有傳奇（同一組可能不只一位）', async ({ page }) => {
+  test('選兩個流派，看到這個組合的所有傳奇（同一組可能不只一位）', async ({ page }) => {
     await gotoHome(page);
-    await toggleBadge(page, '熾烈', true);
-    await toggleBadge(page, '混沌', true);
+    await toggleBadge(page, '狂怒', true);
+    await toggleBadge(page, '渾沌', true);
 
     await expect(legends(page)).toHaveCount(2);
     for (const d of await legends(page).evaluateAll((els) =>
@@ -76,10 +76,10 @@ test.describe('首頁的傳奇與領域', () => {
     }
   });
 
-  test('選兩個對立的領域，說明目前沒有這樣的傳奇', async ({ page }) => {
+  test('選兩個對立的流派，說明目前沒有這樣的傳奇', async ({ page }) => {
     await gotoHome(page);
-    await toggleBadge(page, '熾烈', true);
-    await toggleBadge(page, '翠意', true);
+    await toggleBadge(page, '狂怒', true);
+    await toggleBadge(page, '止靜', true);
 
     await expect(legends(page)).toHaveCount(0);
     await expect(page.getByTestId('legend-empty')).toContainText('目前卡池沒有');
@@ -89,11 +89,11 @@ test.describe('首頁的傳奇與領域', () => {
     await gotoHome(page);
     const total = await legends(page).count();
 
-    await toggleBadge(page, '靈光', true);
-    await toggleBadge(page, '靈光', false);
+    await toggleBadge(page, '心智', true);
+    await toggleBadge(page, '心智', false);
     await expect(legends(page)).toHaveCount(total);
 
-    await toggleBadge(page, '序理', true);
+    await toggleBadge(page, '秩序', true);
     await roster(page).getByRole('button', { name: '清除篩選' }).click();
     await expect(legends(page)).toHaveCount(total);
   });
