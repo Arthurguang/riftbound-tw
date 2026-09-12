@@ -117,9 +117,18 @@ test.describe('全站', () => {
   /*
    * Riot 的同人專案政策要求明顯標示聲明 —— 改版不能把它弄丟。
    */
-  test('首頁仍然保留 Riot 的同人聲明', async ({ page }) => {
+  /*
+   * Riot 有兩份文件各自要求一段聲明，字句不一樣，所以兩段都要在：
+   *   · Legal Jibber Jabber 第 6 條（同人專案政策）
+   *   · 開發者政策 policies/general
+   * 這是申請註冊前的必要條件，改版時很容易被當成「重複的法律文字」刪掉。
+   */
+  test('首頁頁尾同時保留 Riot 兩份文件各自要求的聲明', async ({ page }) => {
     await gotoHome(page);
-    await expect(page.locator('footer')).toContainText('Legal Jibber Jabber');
+    const footer = page.locator('footer');
+    await expect(footer).toContainText('Legal Jibber Jabber');
+    await expect(footer).toContainText('does not endorse or sponsor this project');
+    await expect(footer).toContainText("isn't endorsed by Riot Games");
   });
 });
 

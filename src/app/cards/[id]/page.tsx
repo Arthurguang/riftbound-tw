@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { CardText } from '@/components/CardText';
+import { OfficialCardText } from '@/components/OfficialCardText';
 import { DomainBadges, RarityBadge, StatPill, TypeBadges } from '@/components/CardBadges';
 import {
   ALL_CARDS,
@@ -262,6 +263,7 @@ export default async function CardDetailPage({ params, searchParams }: PageProps
               {strings.abilityText}
             </h2>
             <CardText blocks={cardText(card, lang)} lang={lang} />
+            <OfficialCardText card={card} lang={lang} />
 
             {/*
               勘誤。
