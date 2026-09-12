@@ -10,12 +10,10 @@ const nextConfig: NextConfig = {
   // 正式環境不輸出 source map，避免原始碼與內部路徑外洩。
   productionBrowserSourceMaps: false,
 
-  // 卡圖只允許來自 Riot 官方 CDN。
-  // 這裡限制的是 Next.js 圖片最佳化能代理的來源，等於多一道白名單。
+  // 卡圖自 2026-09-12 起由本站代管，頁面不再載入任何外部圖片。
+  // 白名單清空 = Next.js 的圖片最佳化端點不能被拿來代理任何外部網址。
   images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'cmsassets.rgpub.io', pathname: '/sanity/images/**' },
-    ],
+    remotePatterns: [],
   },
 
   async headers() {

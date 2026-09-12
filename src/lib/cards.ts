@@ -103,24 +103,30 @@ export function resolveArtLang(card: Card, art: ArtLang): ArtLang {
 }
 
 /**
- * 產生卡圖的縮圖網址。
+ * 卡圖存下來的三種寬度（由 scripts/download-card-images.mjs 在建置前下載）。
+ * 要改這裡的話，腳本裡的 WIDTHS 也要一起改。
+ */
+const STORED_WIDTHS = [160, 420, 900] as const;
+
+/** 挑「不小於需求」的最小一個：縮小不會糊，放大會。 */
+function storedWidth(width: number): number {
+  return STORED_WIDTHS.find((stored) => stored >= width) ?? 900;
+}
+
+/**
+ * 產生卡圖網址 —— 指向本站，不是官方 CDN。
  *
- * 兩個官方 CDN 都支援即時轉檔，但語法不同：
- *   英文（Riot Sanity）    ?w=420&fm=webp&q=78          744×1039 PNG → 約 30KB WebP
- *   簡中（Tencent COS）    ?imageMogr2/thumbnail/420x/  約 200KB PNG → 約 37KB WebP
+ * 2026-09-12 改為自行代管（原本是直接給瀏覽器官方 CDN 的網址）：
+ *   1. 官方改網址不會讓全站卡圖一起破
+ *   2. 使用者的瀏覽器不再連到第三方伺服器
+ *   3. CSP 的 img-src 因此收斂成只有 'self'，白名單少兩個外部網域
+ *   4. 畫布不再被跨網域污染（牌組圖以後要放卡圖才有可能）
  *
- * 網域已在建置階段驗證過必須是官方 CDN，這裡只是加上參數。
+ * 素材來源仍然是官方 —— Riot 政策要求如此，我們只是改由本站轉發。
+ * 詳細頁的「開啟原圖」仍然連到官方網址（見 cardImageOriginal），那是引用出處。
  */
 export function cardImageUrl(card: Card, width: number, art: ArtLang = 'en'): string {
-  if (resolveArtLang(card, art) === 'zh-CN') {
-    // Tencent COS 的處理參數不是標準查詢字串，必須直接接在網址後面。
-    return `${card.zh.cn!.image}?imageMogr2/thumbnail/${width}x/format/webp/quality/80`;
-  }
-  const url = new URL(card.image.url);
-  url.searchParams.set('w', String(width));
-  url.searchParams.set('fm', 'webp');
-  url.searchParams.set('q', '78');
-  return url.toString();
+  return `/cards/${resolveArtLang(card, art)}/${card.id}-${storedWidth(width)}.webp`;
 }
 
 /** 原始尺寸的官方卡圖網址（詳細頁的「開啟原圖」用）。 */

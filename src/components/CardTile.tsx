@@ -9,9 +9,11 @@ import type { Card } from '@/lib/types';
  * 圖鑑列表中的單張卡片。
  *
  * 圖片刻意使用原生 <img> 而非 next/image：
- *   1. 兩個官方 CDN 都支援即時轉檔，不需要再經過一層最佳化代理。
- *   2. 少一層代理 = 少一個攻擊面，也不會把使用者的請求繞經我們的伺服器。
- *   3. referrerPolicy="no-referrer" 讓 CDN 拿不到使用者從哪一頁點過來的。
+ *   1. 卡圖已在建置階段下載成三種寬度的 WebP（scripts/download-card-images.mjs），
+ *      檔案就是最終要送出去的樣子，不需要再經過一層最佳化代理。
+ *   2. 少一層代理 = 少一個攻擊面，也少一個可能超出方案額度的服務。
+ *   3. referrerPolicy="no-referrer" 保留 —— 圖片改為同網域後已無外洩對象，
+ *      但留著不花成本，將來若有人改回外部網址也仍然安全。
  */
 export function CardTile({
   card,

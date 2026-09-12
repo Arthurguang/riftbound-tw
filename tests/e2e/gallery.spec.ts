@@ -1,5 +1,4 @@
 import { expect, test, type Page } from '@playwright/test';
-import { expectOfficialUrl } from './url-assert';
 
 /**
  * 在搜尋框輸入文字。
@@ -245,10 +244,10 @@ test.describe('多語系', () => {
    */
   test('切換卡面語言會換成简中卡圖', async ({ page }) => {
     await page.goto('/cards/ogn-056-298?art=en', { waitUntil: 'domcontentloaded' });
-    await expectOfficialUrl(page.locator('article img').first(), 'src', 'cmsassets.rgpub.io');
+    await expect(page.locator('article img').first()).toHaveAttribute('src', /^\/cards\/en\//);
 
     await page.goto('/cards/ogn-056-298?art=zh-CN', { waitUntil: 'domcontentloaded' });
-    await expectOfficialUrl(page.locator('article img').first(), 'src', 'cdn.playloltcg.com');
+    await expect(page.locator('article img').first()).toHaveAttribute('src', /^\/cards\/zh-CN\//);
   });
 
   test('繁中能力文字會誠實標示為簡轉繁', async ({ page }) => {

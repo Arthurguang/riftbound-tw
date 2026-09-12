@@ -20,3 +20,7 @@ blob-report/
 # 系統檔
 .DS_Store
 Thumbs.db
+
+# 卡圖在建置時下載（scripts/download-card-images.mjs），不進版控：
+# git 會永久保留每一版二進位檔，倉庫只會愈來愈肥且刪不掉。
+public/cards/
