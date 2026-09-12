@@ -105,6 +105,16 @@ function SiteFooter() {
           符文戰場資料庫 was created under Riot Games&apos; &ldquo;Legal Jibber Jabber&rdquo; policy
           using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.
         </p>
+        {/*
+          Riot 開發者政策（policies/general）另外要求一段**字句不同**的聲明。
+          兩份文件各要求一段，所以兩段都放。請勿移除。
+        */}
+        <p>
+          符文戰場資料庫 isn&apos;t endorsed by Riot Games and doesn&apos;t reflect the views or
+          opinions of Riot Games or anyone officially involved in producing or managing Riot Games
+          properties. Riot Games, and all associated properties are trademarks or registered
+          trademarks of Riot Games, Inc.
+        </p>
         <p>
           本站為非商業同人專案，與 Riot Games 無隸屬關係，不代表官方立場。
           卡牌圖片與資料版權屬 Riot Games 所有。

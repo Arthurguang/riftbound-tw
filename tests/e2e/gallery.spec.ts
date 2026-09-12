@@ -116,6 +116,22 @@ test.describe('單卡詳細頁', () => {
     await expect(page.locator('img[src="/glyphs/might.svg"]').first()).toBeVisible();
   });
 
+  /*
+   * Riot 的 Riftbound 開發者政策：自己做的翻譯只能**與官方英文原文並列**，不能取代它。
+   * 本站的繁中能力文字是由官方簡中轉換而來（我們做的，不是官方繁中版），
+   * 所以只要介面不是英文，官方英文原文就必須一起出現。
+   */
+  test('中文介面的能力文字一定附上官方英文原文；英文介面不重複一次', async ({ page }) => {
+    await page.goto('/cards/ogn-056-298?lang=zh-TW');
+    await expect(page.getByTestId('card-text-en')).toContainText(/[A-Za-z]{3,}/);
+
+    await page.goto('/cards/ogn-056-298?lang=zh-CN');
+    await expect(page.getByTestId('card-text-en')).toContainText(/[A-Za-z]{3,}/);
+
+    await page.goto('/cards/ogn-056-298?lang=en');
+    await expect(page.getByTestId('card-text-en')).toHaveCount(0);
+  });
+
   test('能力文字裡的符號以圖示呈現，而不是原始的 :rb_xxx: 字串', async ({ page }) => {
     await page.goto('/cards/ogn-056-298');
     await expect(page.locator('body')).not.toContainText(':rb_might:');

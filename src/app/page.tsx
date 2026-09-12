@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { DomainBadges } from '@/components/CardBadges';
 import { CardText } from '@/components/CardText';
+import { OfficialCardText } from '@/components/OfficialCardText';
 import { HeroShowcase, type ShowcaseLegend } from '@/components/HeroShowcase';
 import { LegendRoster, type LegendView } from '@/components/LegendRoster';
 import {
@@ -118,6 +119,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         <div className="space-y-3">
           <DomainBadges domains={card.domains} lang={lang} />
           <CardText blocks={cardText(card, lang)} lang={lang} />
+          <OfficialCardText card={card} lang={lang} />
         </div>
       ),
     };
