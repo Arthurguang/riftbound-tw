@@ -87,7 +87,9 @@ describe('分區英文牌表', () => {
 
   it('不含卡號、署名、收藏標記 —— 那些會被對方當成卡片', () => {
     expect(text).not.toContain(unit.code);
-    expect(text).not.toContain('符文戰場資料庫');
+    // 站名的中英文都不該出現 —— 英文名是拉丁字母，中日韓字元那條規則抓不到它
+    expect(text).not.toContain('守夜圖鑑');
+    expect(text).not.toContain('Ashvigil');
     expect(text).not.toContain('缺');
     expect(text).not.toMatch(/^—/m);
   });

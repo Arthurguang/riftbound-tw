@@ -228,7 +228,7 @@ export function toPlainText(
     lines.push('');
   }
 
-  lines.push(`— 由符文戰場資料庫產生 · 規則依據：${RULES_VERSION.document} ${RULES_VERSION.updated}`);
+  lines.push(`— 由守夜圖鑑產生 · 規則依據：${RULES_VERSION.document} ${RULES_VERSION.updated}`);
   return lines.join('\n');
 }
 

@@ -402,7 +402,7 @@ export function DeckExport({
           </div>
         )}
 
-            <p className="print-footer">符文戰場資料庫 · 本頁由瀏覽器列印功能產生</p>
+            <p className="print-footer">守夜圖鑑 · 本頁由瀏覽器列印功能產生</p>
           </div>,
           document.body,
         )}

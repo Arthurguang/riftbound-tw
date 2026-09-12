@@ -113,8 +113,8 @@ type UiStrings = {
 };
 
 const ZH_TW: UiStrings = {
-  siteName: '符文戰場資料庫',
-  siteTagline: 'Riftbound · 繁體中文玩家資源',
+  siteName: '守夜圖鑑',
+  siteTagline: '符文戰場 Riftbound · 繁體中文玩家資源',
   navGallery: '卡牌圖鑑',
   navRules: '規則說明',
   navDeck: '牌組編輯器',
@@ -167,8 +167,8 @@ const ZH_TW: UiStrings = {
 };
 
 const ZH_CN: UiStrings = {
-  siteName: '符文战场资料库',
-  siteTagline: 'Riftbound · 玩家资源',
+  siteName: '守夜图鉴',
+  siteTagline: '符文战场 Riftbound · 玩家资源',
   navGallery: '卡牌图鉴',
   navRules: '规则说明',
   navDeck: '卡组编辑器',
@@ -220,8 +220,8 @@ const ZH_CN: UiStrings = {
 };
 
 const EN: UiStrings = {
-  siteName: 'Riftbound Card Database',
-  siteTagline: 'Riftbound · Player Resource',
+  siteName: 'Ashvigil',
+  siteTagline: 'Riftbound · Traditional Chinese Player Resource',
   navGallery: 'Card Gallery',
   navRules: 'Rules',
   navDeck: 'Deck Builder',
