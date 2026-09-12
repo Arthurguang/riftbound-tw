@@ -6,7 +6,9 @@
   "scripts": {
     "fetch:cards": "node scripts/fetch-cards.mjs",
     "fetch:errata": "node scripts/fetch-errata.mjs",
+    "predev": "node scripts/download-card-images.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/download-card-images.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

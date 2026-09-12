@@ -93,7 +93,14 @@ export function buildCsp(nonce: string, isDev: boolean, isSecure = true): string
     'style-src': isDev ? ["'self'", "'unsafe-inline'"] : ["'self'", `'nonce-${nonce}'`],
 
     // 卡圖來自 Riot 官方 CDN；符號圖示則放在自己網域。
-    'img-src': ["'self'", IMAGE_CDN, IMAGE_CDN_CN, 'data:'],
+    /*
+     * 2026-09-12 起卡圖改為自行代管（scripts/download-card-images.mjs），
+     * 頁面上不再載入任何外部圖片 —— 兩個官方 CDN 的白名單因此拿掉。
+     * 白名單愈短，被拿來夾帶東西的空間愈小。
+     *
+     * 詳細頁的「開啟原圖」連結仍指向官方網址，但那是換頁不是載圖，不受 img-src 管。
+     */
+    'img-src': ["'self'", 'data:'],
 
     'font-src': ["'self'"],
 

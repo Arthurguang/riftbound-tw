@@ -45,6 +45,14 @@ jobs:
       - name: 單元測試（含解析器紅隊測試）
         run: npm test
 
+      # 卡圖在建置前自動下載（2256 檔、約 97MB，見 scripts/download-card-images.mjs）。
+      # 快取起來：只有卡牌資料或下載腳本變動時才重抓，平常的 CI 完全不受影響。
+      - name: 卡圖快取
+        uses: actions/cache@v6
+        with:
+          path: public/cards
+          key: card-images-${{ hashFiles('src/data/cards.origins.json', 'scripts/download-card-images.mjs') }}
+
       - name: 建置
         run: npm run build
 
@@ -73,6 +81,14 @@ jobs:
 
       - name: 安裝依賴
         run: npm ci
+
+      # 卡圖在建置前自動下載（2256 檔、約 97MB，見 scripts/download-card-images.mjs）。
+      # 快取起來：只有卡牌資料或下載腳本變動時才重抓，平常的 CI 完全不受影響。
+      - name: 卡圖快取
+        uses: actions/cache@v6
+        with:
+          path: public/cards
+          key: card-images-${{ hashFiles('src/data/cards.origins.json', 'scripts/download-card-images.mjs') }}
 
       - name: 建置
         run: npm run build

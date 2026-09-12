@@ -10,6 +10,8 @@ import { describe, expect, it } from 'vitest';
 import cards from '../../src/data/cards.origins.json';
 import taxonomy from '../../src/data/taxonomy.json';
 import { CARD_TYPES, DOMAINS, GLYPH_IDS, KEYWORDS, RARITIES, SET_IDS } from '../../src/lib/types';
+import { cardImageUrl } from '../../src/lib/cards';
+import type { Card } from '../../src/lib/types';
 
 const list = cards as unknown as Record<string, unknown>[];
 
@@ -34,6 +36,22 @@ describe('卡牌資料完整性', () => {
       for (const domain of card.domains as string[]) expect(DOMAINS).toContain(domain);
       expect(['portrait', 'landscape']).toContain(card.orientation);
     }
+  });
+
+  /*
+   * 上面驗的是「資料裡記的來源」，下面驗的是「網頁實際要圖的地方」。
+   * 兩件事要分開：Riot 政策要求素材來自官方（上面那條），
+   * 而本站把它下載下來自己提供（下面這條），兩者都要成立。
+   */
+  it('網頁要圖的網址指向本站，並挑不小於需求的最小尺寸', () => {
+    const card = list[0] as unknown as Card;
+    expect(cardImageUrl(card, 60)).toBe(`/cards/en/${card.id}-160.webp`);
+    expect(cardImageUrl(card, 160)).toBe(`/cards/en/${card.id}-160.webp`);
+    expect(cardImageUrl(card, 300)).toBe(`/cards/en/${card.id}-420.webp`);
+    expect(cardImageUrl(card, 420)).toBe(`/cards/en/${card.id}-420.webp`);
+    expect(cardImageUrl(card, 900)).toBe(`/cards/en/${card.id}-900.webp`);
+    // 超過最大尺寸時退到最大的那一張，不會產生不存在的檔名
+    expect(cardImageUrl(card, 5000)).toBe(`/cards/en/${card.id}-900.webp`);
   });
 
   it('卡圖網址一律是官方 CDN 的 https 位址', () => {

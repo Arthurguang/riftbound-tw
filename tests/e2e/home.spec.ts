@@ -136,7 +136,8 @@ test.describe('首頁傳奇展示台', () => {
   const showcase = (page: Page) => page.getByTestId('hero-showcase');
   const stage = (page: Page) => page.getByTestId('showcase-stage');
   const frontOf = async (page: Page) => Number(await showcase(page).getAttribute('data-front'));
-  const OFFICIAL_CDN = /^https:\/\/(cmsassets\.rgpub\.io|cdn\.playloltcg\.com)\//;
+  /** 卡圖由本站代管（2026-09-12 起），網址是相對路徑，不是外部 CDN。 */
+  const SELF_HOSTED = /^\/cards\/(en|zh-CN)\//;
 
   /** 用頁首的「暫停背景動畫」讓展示台停住（需要精確比對位置的測試用）。 */
   const pauseAll = async (page: Page) => {
@@ -170,14 +171,14 @@ test.describe('首頁傳奇展示台', () => {
     return label.replace(/：看傳奇說明$/, '');
   };
 
-  test('展示全部傳奇（跟下方傳奇列一樣多），卡圖都來自官方 CDN', async ({ page }) => {
+  test('展示全部傳奇（跟下方傳奇列一樣多），卡圖都由本站提供', async ({ page }) => {
     await gotoHome(page);
     const cards = showcase(page).locator('[data-showcase-card]');
     await expect(cards).toHaveCount(await legends(page).count());
     const sources = await cards
       .locator('img')
       .evaluateAll((els) => els.map((e) => e.getAttribute('src') ?? ''));
-    for (const src of sources) expect(src).toMatch(OFFICIAL_CDN);
+    for (const src of sources) expect(src).toMatch(SELF_HOSTED);
   });
 
   test('持續慢慢轉動，滑鼠移上去也不會停', async ({ page }) => {

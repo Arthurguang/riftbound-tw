@@ -74,9 +74,14 @@ test.describe('Content-Security-Policy', () => {
     expect(csp).toContain("'strict-dynamic'");
     expect(csp).toMatch(/'nonce-[a-f0-9]{32}'/);
 
-    // 圖片只允許自家網域與 Riot 官方 CDN。
-    expect(csp).toContain('img-src');
-    expect(csp).toContain('https://cmsassets.rgpub.io');
+    /*
+     * 圖片只允許自家網域。
+     * 卡圖自 2026-09-12 起由本站代管，頁面不再載入任何外部圖片，
+     * 所以連官方 CDN 都不該出現在白名單上 —— 白名單只該變短，不該悄悄變長。
+     */
+    expect(csp).toMatch(/img-src 'self' data:(;|$)/);
+    expect(csp).not.toContain('cmsassets.rgpub.io');
+    expect(csp).not.toContain('cdn.playloltcg.com');
 
     // Trusted Types：強制啟用，而且只准有一個名叫 default 的政策。
     expect(csp).toContain("require-trusted-types-for 'script'");
@@ -456,7 +461,7 @@ test.describe('模擬真實 XSS（把腳本塞進網頁原始碼）', () => {
 });
 
 test.describe('隱私', () => {
-  test('除了官方卡圖 CDN 之外，不對任何第三方發出請求', async ({ page }, testInfo) => {
+  test('完全不對任何第三方發出請求', async ({ page }, testInfo) => {
     // 「自己的網域」要從 baseURL 推導，這樣本機與線上網站都能用同一份測試。
     const ownHost = new URL(testInfo.project.use.baseURL!).hostname;
 
@@ -484,11 +489,13 @@ test.describe('隱私', () => {
       await page.waitForTimeout(1200);
     }
 
-    // 只允許這兩個官方 CDN：Riot 全球官方，以及中國大陸官方發行商。
-    // 特別注意：本站不引用任何第三方社群站台的圖片。
-    for (const host of thirdParty) {
-      expect(['cmsassets.rgpub.io', 'cdn.playloltcg.com']).toContain(host);
-    }
+    /*
+     * 一個第三方都不能有。
+     *
+     * 這條原本允許兩個官方卡圖 CDN；2026-09-12 卡圖改為本站代管後收緊成零 ——
+     * 使用者瀏覽本站時，瀏覽器只跟本站說話，不必信任任何別人的伺服器。
+     */
+    expect([...thirdParty]).toEqual([]);
   });
 
   test('不設定任何 cookie', async ({ page, context }) => {
@@ -497,9 +504,17 @@ test.describe('隱私', () => {
     expect(await context.cookies()).toEqual([]);
   });
 
-  test('卡圖請求帶 no-referrer，不洩漏使用者瀏覽路徑', async ({ page }) => {
-    await page.goto('/cards');
-    const policies = await page.locator('img[src*="cmsassets"]').first().getAttribute('referrerpolicy');
-    expect(policies).toBe('no-referrer');
+  /*
+   * 原本這條驗的是「卡圖請求帶 no-referrer」—— 因為圖在別人的伺服器上，
+   * 要避免把使用者從哪一頁點過來洩漏給對方。
+   * 卡圖改為本站代管後，根本沒有對方可洩漏，改成直接驗證「圖來自本站」。
+   */
+  test('卡圖由本站提供，瀏覽器不必連到任何外部伺服器', async ({ page }) => {
+    await page.goto('/cards', { waitUntil: 'domcontentloaded' });
+    // 圖鑑列表的卡片是 <li>（<article> 是單卡詳細頁）
+    await expect(page.locator('main ul > li img').first()).toHaveAttribute(
+      'src',
+      /^\/cards\/(en|zh-CN)\//,
+    );
   });
 });

@@ -923,8 +923,8 @@ test.describe('卡片檢視面板', () => {
     const panel = await inspect(page, 'you', 'hand', '烈焰灼魂者');
     await expect(panel).toContainText('烈焰灼魂者');
     await expect(panel).toContainText('你的手牌');
-    // 大圖來自官方卡圖 CDN
-    await expect(panel.locator('img')).toHaveAttribute('src', /rgpub.io|playloltcg/);
+    // 大圖由本站提供（卡圖自 2026-09-12 起自行代管）
+    await expect(panel.locator('img')).toHaveAttribute('src', /^\/cards\/(en|zh-CN)\//);
   });
 
   test('檢視面板可以把卡搬到別的區域', async ({ page }) => {
