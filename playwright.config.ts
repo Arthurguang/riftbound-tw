@@ -36,8 +36,14 @@ export default defineConfig({
    * 6 個 worker 是實測出來的：總時間從 1.4 分變成 2.0 分，慢了四成，
    * 但完整套件連跑三次全綠。多花 36 秒換掉「每次都要猜這次紅燈是不是真的」，
    * 這筆交易很划算 —— 會說謊的測試比慢的測試貴得多。
+   *
+   * 2026-09-12：CI 改成 3 個。那裡的機器只有 4 核（本機 24 核），
+   * 6 個 worker 加上單執行緒的 next 伺服器等於超賣，反而互相排隊 ——
+   * 改版加了每頁的背景繪圖之後更明顯：每條測試的平均時間從 0.86 秒變成 1.05 秒，
+   * 還讓 WebKit 出現「等元素靜止卻等不到」的偶發紅燈（本機連跑 10 次重現不了）。
+   * 留 1 核給伺服器，剩下 3 核跑測試。
    */
-  workers: 6,
+  workers: process.env.CI ? 3 : 6,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
