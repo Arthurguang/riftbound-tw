@@ -17,7 +17,8 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  # 靜態檢查、單元測試與建置。跑得快，先擋掉明顯的錯誤。
+  checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -47,18 +48,63 @@ jobs:
       - name: 建置
         run: npm run build
 
-      - name: 安裝 Playwright 瀏覽器
-        run: npx playwright install --with-deps chromium firefox webkit
+  # 三種瀏覽器引擎各用一台機器跑，不再擠同一台。
+  #
+  # 原本三個引擎共用一台 4 核機器，還要餵一台單執行緒的 next 伺服器，
+  # 端對端測試要 13 分鐘，而且 WebKit 偶爾等不到元素靜止就逾時
+  # （同一條測試在本機 24 核連跑 10 次全過，重現不了）。
+  # 拆開之後每台機器只跑一個引擎，不互相搶資源；三台同時跑，總時間看最慢的那一個。
+  #
+  # fail-fast: false —— 一個引擎失敗時，另外兩個照樣跑完，
+  # 才知道是「只有 Safari 壞」還是「三個都壞」。
+  e2e:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v7
 
-      - name: 端對端測試（三種瀏覽器引擎：Chromium / Firefox / WebKit）
-        run: npx playwright test
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: 安裝依賴
+        run: npm ci
+
+      - name: 建置
+        run: npm run build
+
+      - name: 安裝 Playwright 瀏覽器（${{ matrix.browser }}）
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: 端對端測試（${{ matrix.browser }}）
+        run: npx playwright test --project=${{ matrix.browser }}
 
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
           retention-days: 7
+
+  # 這個工作本身不做事，只彙整上面每個工作的結果。
+  #
+  # main 的分支保護指定「verify 通過才能合併」，所以這個名字必須留著：
+  # 上面任何一個工作失敗（或被取消），這裡就跟著失敗，合併一樣會被擋下來。
+  verify:
+    runs-on: ubuntu-latest
+    needs: [checks, e2e]
+    if: always()
+    steps:
+      - name: 確認前面每個工作都成功
+        run: |
+          echo "checks=${{ needs.checks.result }}"
+          echo "e2e=${{ needs.e2e.result }}"
+          test "${{ needs.checks.result }}" = "success"
+          test "${{ needs.e2e.result }}" = "success"
 
   audit:
     runs-on: ubuntu-latest
