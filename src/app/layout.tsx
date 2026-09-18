@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AmbienceControls, AmbienceProvider } from '@/components/Ambience';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { NavLinks } from '@/components/NavLinks';
+import { SITE_ORIGIN } from '@/lib/site';
 import { HTML_LANG, isTextLang, t, DEFAULT_TEXT_LANG, type TextLang } from '@/lib/i18n';
 import './globals.css';
 
@@ -23,6 +24,8 @@ import './globals.css';
  * 絕不能用「數據庫」——那是對岸用語，在台灣會被當成內容農場。
  */
 export const metadata: Metadata = {
+  // 分享預覽等需要完整網址的地方，一律以正式網域為準。
+  metadataBase: new URL(SITE_ORIGIN),
   title: {
     default: '守夜圖鑑 Ashvigil — 符文戰場 Riftbound 繁體中文玩家資源',
     template: '%s｜守夜圖鑑 Ashvigil',

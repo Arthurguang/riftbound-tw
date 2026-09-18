@@ -344,7 +344,7 @@ WebKit 會把 `http://localhost` 的子資源也升級成 `https://`（Chromium 
 測試可以直接指向線上網站：
 
 ```bash
-E2E_BASE_URL=https://riftbound-tw-sigma.vercel.app npx playwright test
+E2E_BASE_URL=https://www.ashvigil.com npx playwright test
 ```
 
 ---

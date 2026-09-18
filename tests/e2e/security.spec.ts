@@ -518,3 +518,51 @@ test.describe('隱私', () => {
     );
   });
 });
+
+/*
+ * 舊網址轉新網域（設定在 next.config.ts，原因見 src/lib/site.ts）。
+ *
+ * 測試時沒辦法真的連到舊網址，但轉址規則只看 Host 標頭，
+ * 所以帶著舊網址的 Host 打本機伺服器，就能驗證規則本身。
+ */
+test.describe('舊網址轉址', () => {
+  const legacy = { host: 'riftbound-tw-sigma.vercel.app' };
+
+  test('舊網址永久轉到新網域，路徑與語言參數原樣保留', async ({ request }) => {
+    const response = await request.get('/cards/ogn-001-298?lang=en', {
+      headers: legacy,
+      maxRedirects: 0,
+    });
+    expect(response.status()).toBe(308);
+    expect(response.headers()['location']).toBe(
+      'https://www.ashvigil.com/cards/ogn-001-298?lang=en',
+    );
+  });
+
+  test('首頁與靜態檔也一起轉', async ({ request }) => {
+    for (const [path, target] of [
+      // 根路徑轉出去沒有結尾斜線，瀏覽器視為同一個網址
+      ['/', 'https://www.ashvigil.com'],
+      ['/robots.txt', 'https://www.ashvigil.com/robots.txt'],
+    ]) {
+      const response = await request.get(path!, { headers: legacy, maxRedirects: 0 });
+      expect(response.status(), path).toBe(308);
+      expect(response.headers()['location'], path).toBe(target);
+    }
+  });
+
+  /*
+   * 轉址回應本身不帶我們的安全標頭（next.config 的 headers() 不套用到 redirects()）。
+   * 這沒關係：308 沒有頁面內容可以被嵌入或注入，而 Vercel 的邊緣伺服器
+   * 會自己替轉址加上 HSTS（2026-09-18 實測 ashvigil.com → www 的 308 就有）。
+   *
+   * 真正要防的是反過來：新網域自己被轉走，會變成無限轉址、整站打不開。
+   */
+  test('新網域本身不會被轉走', async ({ request }) => {
+    const response = await request.get('/', {
+      headers: { host: 'www.ashvigil.com' },
+      maxRedirects: 0,
+    });
+    expect(response.status()).toBe(200);
+  });
+});
