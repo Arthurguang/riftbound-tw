@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { AmbienceControls, AmbienceProvider } from '@/components/Ambience';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { NavLinks } from '@/components/NavLinks';
-import { SITE_ORIGIN } from '@/lib/site';
+import { CONTACT_URL, SITE_ORIGIN } from '@/lib/site';
 import { HTML_LANG, isTextLang, t, DEFAULT_TEXT_LANG, type TextLang } from '@/lib/i18n';
 import './globals.css';
 
@@ -136,6 +136,27 @@ function SiteFooter() {
           本站為非商業同人專案，與 Riot Games 無隸屬關係，不代表官方立場。
           卡牌圖片與資料版權屬 Riot Games 所有。
         </p>
+
+        {/*
+          Riot 審核開發者申請時要能看到使用條款與隱私權政策（developer.riotgames.com/docs/faqs）。
+          中英並列：審核人員讀英文，使用者讀中文。
+        */}
+        <nav aria-label="法律與聯絡" className="flex flex-wrap gap-x-4 gap-y-1" data-testid="legal-links">
+          <Link href="/terms" className="underline underline-offset-2 hover:text-accent-soft">
+            使用條款 Terms of Service
+          </Link>
+          <Link href="/privacy" className="underline underline-offset-2 hover:text-accent-soft">
+            隱私權政策 Privacy Policy
+          </Link>
+          <a
+            href={CONTACT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-accent-soft"
+          >
+            聯絡我們 Contact（GitHub Issues）
+          </a>
+        </nav>
 
         <div className="space-y-1 border-t border-line pt-3">
           <p className="font-medium text-ink-dim">資料來源</p>

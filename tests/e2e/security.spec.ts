@@ -28,6 +28,8 @@ const PAGES = [
   '/deck',
   '/odds',
   '/replay',
+  '/terms',
+  '/privacy',
 ];
 
 test.describe('安全標頭', () => {
