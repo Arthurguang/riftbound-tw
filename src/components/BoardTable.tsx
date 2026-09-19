@@ -3,6 +3,7 @@
 import { cardImageUrl, cardName } from '@/lib/cards';
 import { BoardZonePanel } from './BoardZonePanel';
 import { CardBackPile } from './BoardCard';
+import { StackedPile } from './StackedPile';
 import { RuneRow } from './RuneRow';
 import { drawCards, summonRunes } from '@/lib/board-actions';
 import type { Selection } from './CardInspector';
@@ -17,7 +18,9 @@ import {
   setBuff,
   setDormant,
   setInPile,
+  setScore,
   splitBaseByRunes,
+  VICTORY_SCORE,
   wakeAll,
   type BoardState,
   type BoardZone,
@@ -318,6 +321,7 @@ function PlayerBand({
           className="flex w-[76px] shrink-0 flex-col rounded-lg border border-line bg-surface-1 p-1.5"
           data-zone="legend"
           data-owner={isOpponent ? 'opponent' : 'you'}
+          data-legend-dormant={player.legendDormant ? 'true' : 'false'}
         >
           <h4
             className="mb-1 shrink-0 whitespace-nowrap text-xs font-semibold text-ink"
@@ -326,6 +330,7 @@ function PlayerBand({
             傳奇 <span className="font-mono text-[0.6rem] font-normal text-ink-faint">103.2.a</span>
           </h4>
           {legend ? (
+            <>
             <button
               type="button"
               onClick={() =>
@@ -354,9 +359,34 @@ function PlayerBand({
                 alt={cardName(legend, lang)}
                 loading="lazy"
                 referrerPolicy="no-referrer"
-                className="h-[68px] w-[48px] rounded object-cover"
+                className={`h-[68px] w-[48px] rounded object-cover transition-transform ${
+                  player.legendDormant ? 'rotate-90 opacity-80' : ''
+                }`}
               />
             </button>
+            {/*
+             * 傳奇也有活躍／休眠（107.4.c 它是遊戲物體）。
+             * 很多傳奇的技能以休眠為費用，一回合只能用一次 —— 用過就打橫。
+             * 跟場上的卡一樣用轉 90 度表示，喚醒階段一起變回來（415.3.a）。
+             */}
+            <button
+              type="button"
+              onClick={() => onChange({ ...player, legendDormant: !player.legendDormant })}
+              aria-pressed={player.legendDormant}
+              aria-label={`${isOpponent ? '對手' : '你'}的傳奇：${
+                player.legendDormant ? '休眠中，點一下喚醒' : '活躍中，點一下設為休眠'
+              }`}
+              title="傳奇的技能用過之後設為休眠（打橫）；下一個喚醒階段會自動變回活躍（415.3.a）"
+              data-testid="legend-dormant-toggle"
+              className={`mt-1.5 rounded border px-1 py-0.5 text-[0.6rem] ${
+                player.legendDormant
+                  ? 'border-amber-500/60 bg-amber-500/15 text-amber-300'
+                  : 'border-line text-ink-dim hover:border-accent hover:text-accent-soft'
+              }`}
+            >
+              {player.legendDormant ? '休眠中' : '活躍'}
+            </button>
+            </>
           ) : (
             <p className="rounded border border-dashed border-line px-1 py-3 text-center text-[0.65rem] text-ink-faint">
               未指定
@@ -389,14 +419,64 @@ function PlayerBand({
           />
         </div>
 
-        {cell('discard', '廢牌堆', 'w-[110px] shrink-0 overflow-auto')}
-        {cell('exile', '放逐', 'w-[100px] shrink-0 overflow-auto')}
+        {/* 廢牌堆與放逐區：桌上各一疊，點開照進入順序檢視（見 StackedPile） */}
+        {(['discard', 'exile'] as const).map((zone) => (
+          <StackedPile
+            key={zone}
+            zone={zone}
+            player={player}
+            side={isOpponent ? 'opponent' : 'you'}
+            byId={byId}
+            lang={lang}
+            art={art}
+            onChange={onChange}
+            onInspect={(cardId) =>
+              onSelect({ side: isOpponent ? 'opponent' : 'you', zone, cardId })
+            }
+            selected={
+              selection?.zone === zone && selection.side === (isOpponent ? 'opponent' : 'you')
+            }
+          />
+        ))}
 
         <div className="flex w-[120px] shrink-0 flex-col justify-center gap-1 rounded-lg border border-line bg-surface/40 px-2 py-1">
           <span className="text-xs font-semibold text-ink">{label}</span>
           <span className="text-[0.65rem] leading-tight text-ink-dim" data-testid="side-summary">
             手牌 {handSize(player)}　牌堆 {remaining.mainSize}　活躍符文 {runes}
           </span>
+          {/*
+           * 分數由使用者手動加減：據守、征服、卡牌效果都會得分，
+           * 判斷「這時候該不該得分」需要規則引擎，本站不做。
+           * 同樣不判定勝負 —— 只顯示勝利分數當作參考。
+           */}
+          <div
+            className="flex items-center gap-1"
+            data-testid="score"
+            data-score={player.score}
+            title={`分數（勝利分數預設 ${VICTORY_SCORE} 分；分數不會低於 0）`}
+          >
+            <button
+              type="button"
+              onClick={() => onChange(setScore(player, player.score - 1))}
+              disabled={player.score <= 0}
+              aria-label={`${isOpponent ? '對手' : '你'}的分數減 1`}
+              className="h-5 w-5 rounded border border-line text-xs leading-none text-ink-dim hover:border-accent hover:text-accent-soft disabled:opacity-30"
+            >
+              −
+            </button>
+            <span className="min-w-[3.2rem] text-center text-xs text-ink">
+              <strong className="text-base">{player.score}</strong>
+              <span className="text-[0.6rem] text-ink-faint"> / {VICTORY_SCORE} 分</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => onChange(setScore(player, player.score + 1))}
+              aria-label={`${isOpponent ? '對手' : '你'}的分數加 1`}
+              className="h-5 w-5 rounded border border-line text-xs leading-none text-ink-dim hover:border-accent hover:text-accent-soft"
+            >
+              +
+            </button>
+          </div>
           <button
             type="button"
             onClick={() => onChange(wakeAll(player))}
