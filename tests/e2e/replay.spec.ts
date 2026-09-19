@@ -116,20 +116,21 @@ const cardIn = (page: Page, side: 'you' | 'opponent', zone: string, name: string
   });
 
 /**
- * 廢牌堆最上面是哪張、總共幾張。
+ * 廢牌堆／放逐區最上面是哪張、總共幾張。
  *
- * 廢牌堆在桌上收成一疊（內容要點開視窗才看得到），所以不能用 cardIn 找攤開的卡片磚 ——
+ * 這兩區在桌上收成一疊（內容要點開視窗才看得到），所以不能用 cardIn 找攤開的卡片磚 ——
  * 視窗關著時裡面的按鈕不在可及樹上。改看那一疊本身：張數與最上面那張的卡圖。
  */
-async function expectDiscardTop(
+async function expectPileTop(
   page: Page,
   side: 'you' | 'opponent',
+  zone: 'discard' | 'exile',
   name: string,
   count: number,
 ) {
-  const discard = zoneOf(page, side, 'discard');
-  await expect(discard.getByTestId('discard-count')).toHaveText(String(count));
-  await expect(discard.getByTestId('discard-stack').getByRole('img', { name })).toBeVisible();
+  const pile = zoneOf(page, side, zone);
+  await expect(pile.getByTestId('pile-count')).toHaveText(String(count));
+  await expect(pile.getByTestId('pile-stack').getByRole('img', { name })).toBeVisible();
 }
 
 /**
@@ -687,7 +688,7 @@ test.describe('在盤面上直接搬卡', () => {
     await hand.locator('[data-card]').first().click();
     await hand.getByTestId('zone-move-bar').getByRole('button', { name: '放逐區', exact: true }).click();
 
-    await expect(cardIn(page, 'you', 'exile', '烈焰灼魂者')).toHaveCount(1);
+    await expectPileTop(page, 'you', 'exile', '烈焰灼魂者', 1);
     await expect(cardIn(page, 'you', 'hand', '烈焰灼魂者')).toHaveCount(0);
   });
 
@@ -953,7 +954,7 @@ test.describe('卡片檢視面板', () => {
     const panel = await inspect(page, 'you', 'hand', '烈焰灼魂者');
     await panel.getByRole('button', { name: '廢牌堆', exact: true }).click();
 
-    await expectDiscardTop(page, 'you', '烈焰灼魂者', 1);
+    await expectPileTop(page, 'you', 'discard', '烈焰灼魂者', 1);
     await expect(cardIn(page, 'you', 'hand', '烈焰灼魂者')).toHaveCount(0);
   });
 
@@ -1003,7 +1004,7 @@ test.describe('對局復盤', () => {
     const panel = await inspect(page, 'you', 'hand', '烈焰灼魂者');
     await panel.getByRole('button', { name: '廢牌堆', exact: true }).click();
 
-    await expectDiscardTop(page, 'you', '烈焰灼魂者', 1);
+    await expectPileTop(page, 'you', 'discard', '烈焰灼魂者', 1);
     // 搬動不影響牌堆總數
     await expect(sideOf(page, 'you').getByTestId('side-summary')).toContainText('牌堆 5');
   });
@@ -1879,17 +1880,17 @@ test.describe('廢牌堆收成一疊、照進入順序', () => {
     await handToDiscard(page, '劈砍');
 
     const discard = zoneOf(page, 'you', 'discard');
-    await expect(discard.getByTestId('discard-count')).toHaveText('2');
+    await expect(discard.getByTestId('pile-count')).toHaveText('2');
     // 桌上只放一疊，不攤開
-    await expect(discard.getByTestId('discard-stack')).toBeVisible();
-    await expect(discard.getByTestId('discard-dialog')).not.toBeVisible();
+    await expect(discard.getByTestId('pile-stack')).toBeVisible();
+    await expect(discard.getByTestId('pile-dialog')).not.toBeVisible();
 
-    await discard.getByTestId('discard-stack').click();
-    const dialog = discard.getByTestId('discard-dialog');
+    await discard.getByTestId('pile-stack').click();
+    const dialog = discard.getByTestId('pile-dialog');
     await expect(dialog).toBeVisible();
-    await expect(dialog).toContainText('108.2.c');
+    await expect(dialog).toContainText('108.2');
 
-    const items = dialog.getByTestId('discard-list').getByRole('button');
+    const items = dialog.getByTestId('pile-list').getByRole('button');
     await expect(items).toHaveCount(2);
     // 可及名稱裡的全形空白會被瀏覽器正規化成一般空白，所以用 \s 比對
     await expect(items.nth(0)).toHaveAccessibleName(/劈砍\s第 2 張進入（最上面）/);
@@ -1906,21 +1907,95 @@ test.describe('廢牌堆收成一疊、照進入順序', () => {
     await handToDiscard(page, '劈砍');
 
     const discard = zoneOf(page, 'you', 'discard');
-    await discard.getByTestId('discard-stack').click();
-    const dialog = discard.getByTestId('discard-dialog');
+    await discard.getByTestId('pile-stack').click();
+    const dialog = discard.getByTestId('pile-dialog');
 
     // 拿走比較早進去的那張（不是最上面的）
     await dialog.getByRole('button', { name: /烈焰灼魂者\s第 1 張進入/ }).click();
-    await dialog.getByTestId('discard-actions').getByRole('button', { name: '手牌', exact: true }).click();
+    await dialog.getByTestId('pile-actions').getByRole('button', { name: '手牌', exact: true }).click();
 
     await expect(cardIn(page, 'you', 'hand', '烈焰灼魂者')).toHaveCount(1);
-    await expect(discard.getByTestId('discard-count')).toHaveText('1');
-    const items = dialog.getByTestId('discard-list').getByRole('button');
+    await expect(discard.getByTestId('pile-count')).toHaveText('1');
+    const items = dialog.getByTestId('pile-list').getByRole('button');
     await expect(items).toHaveCount(1);
     await expect(items.nth(0)).toHaveAccessibleName(/劈砍\s第 1 張進入（最上面）/);
 
     // Esc 關閉視窗（瀏覽器內建的 dialog 行為）
     await page.keyboard.press('Escape');
     await expect(dialog).not.toBeVisible();
+  });
+});
+
+test.describe('放逐區比照廢牌堆', () => {
+  /** 把手牌裡的某張卡用搬移列送進放逐區。 */
+  async function handToExile(page: Page, name: string) {
+    const hand = zoneOf(page, 'you', 'hand');
+    await cardIn(page, 'you', 'hand', name).first().click();
+    await hand.getByTestId('zone-move-bar').getByRole('button', { name: '放逐區', exact: true }).click();
+  }
+
+  test('收成一疊，點開照進入順序，可以把指定那張移回手牌', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    const add = await editOf(page, 'you');
+    await add.getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await add.getByRole('button', { name: '劈砍', exact: true }).click();
+
+    await handToExile(page, '烈焰灼魂者');
+    await handToExile(page, '劈砍');
+
+    const exile = zoneOf(page, 'you', 'exile');
+    await expectPileTop(page, 'you', 'exile', '劈砍', 2);
+    await expect(exile.getByTestId('pile-dialog')).not.toBeVisible();
+
+    await exile.getByTestId('pile-stack').click();
+    const dialog = exile.getByTestId('pile-dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText('放逐區');
+    await expect(dialog).toContainText('108.6');
+
+    const items = dialog.getByTestId('pile-list').getByRole('button');
+    await expect(items).toHaveCount(2);
+    await expect(items.nth(0)).toHaveAccessibleName(/劈砍\s第 2 張進入（最上面）/);
+    await expect(items.nth(1)).toHaveAccessibleName(/烈焰灼魂者\s第 1 張進入/);
+
+    await items.nth(1).click();
+    await dialog.getByTestId('pile-actions').getByRole('button', { name: '手牌', exact: true }).click();
+    await expect(cardIn(page, 'you', 'hand', '烈焰灼魂者')).toHaveCount(1);
+    await expect(exile.getByTestId('pile-count')).toHaveText('1');
+  });
+
+  test('廢牌堆的卡可以直接放逐，放逐區的卡也能回廢牌堆', async ({ page }) => {
+    await gotoReplay(page);
+    await importDeck(page, 'you', SMALL_DECK);
+    await (await editOf(page, 'you')).getByRole('button', { name: '烈焰灼魂者', exact: true }).click();
+    await handToDiscard(page, '烈焰灼魂者');
+
+    const discard = zoneOf(page, 'you', 'discard');
+    await discard.getByTestId('pile-stack').click();
+    const discardDialog = discard.getByTestId('pile-dialog');
+    await discardDialog.getByTestId('pile-list').getByRole('button').first().click();
+    await discardDialog
+      .getByTestId('pile-actions')
+      .getByRole('button', { name: '放逐區', exact: true })
+      .click();
+    await page.keyboard.press('Escape');
+
+    await expect(discard.getByTestId('pile-count')).toHaveText('0');
+    await expectPileTop(page, 'you', 'exile', '烈焰灼魂者', 1);
+
+    // 反方向：放逐區 → 廢牌堆
+    const exile = zoneOf(page, 'you', 'exile');
+    await exile.getByTestId('pile-stack').click();
+    const exileDialog = exile.getByTestId('pile-dialog');
+    await exileDialog.getByTestId('pile-list').getByRole('button').first().click();
+    await exileDialog
+      .getByTestId('pile-actions')
+      .getByRole('button', { name: '廢牌堆', exact: true })
+      .click();
+    await page.keyboard.press('Escape');
+
+    await expect(exile.getByTestId('pile-count')).toHaveText('0');
+    await expectPileTop(page, 'you', 'discard', '烈焰灼魂者', 1);
   });
 });

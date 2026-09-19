@@ -119,6 +119,7 @@ export function startGame(
     discard: {},
     discardOrder: [],
     exile: {},
+    exileOrder: [],
     dormant: { base: {}, bf0: {}, bf1: {} },
     legendDormant: false,
     // 重新開一局，分數歸零

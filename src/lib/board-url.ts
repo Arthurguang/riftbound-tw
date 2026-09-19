@@ -12,9 +12,9 @@ import { decodeDeck, encodeDeck, shortCode } from './deck-url';
 import {
   EMPTY_BOARD,
   EMPTY_PLAYER,
-  MAX_DISCARD_ORDER,
+  MAX_PILE_ORDER,
   MAX_SCORE,
-  orderedDiscard,
+  orderedPile,
   type BoardState,
   type Pile,
   type PlayerBoard,
@@ -29,7 +29,7 @@ import type { Card } from './types';
  * b3：一方再多一段英雄區域（108.3）
  * b4：加上回合玩家與回合狀態（307–310）
  * b5：一方再多三段休眠狀態（414、415）
- * b6：一方再多三段：廢牌堆進入順序、傳奇休眠、分數
+ * b6：一方再多四段：廢牌堆進入順序、傳奇休眠、分數、放逐區進入順序
  *
  * 舊連結仍然要能開 —— 分享出去的復盤連結不能突然失效。
  */
@@ -88,7 +88,7 @@ function decodeOrder(encoded: string, index: Map<string, Card>): { order: string
   const order: string[] = [];
   let dropped = 0;
   if (encoded === '') return { order, dropped };
-  for (const part of encoded.split('.').slice(0, MAX_DISCARD_ORDER)) {
+  for (const part of encoded.split('.').slice(0, MAX_PILE_ORDER)) {
     const card = /^[a-z0-9*]+$/.test(part) ? index.get(part) : undefined;
     if (card) order.push(card.id);
     else dropped += 1;
@@ -149,9 +149,10 @@ function encodePlayer(player: PlayerBoard, cards: Card[], byId: Map<string, Card
     encodePile(player.buffs.bf0, byId),
     encodePile(player.buffs.bf1, byId),
     // b6：廢牌堆順序（先調和過，網址裡不會出現跟張數對不上的順序）、傳奇休眠、分數
-    encodeOrder(orderedDiscard(player), byId),
+    encodeOrder(orderedPile(player, 'discard'), byId),
     player.legendDormant ? '1' : '',
     player.score > 0 ? String(Math.min(MAX_SCORE, player.score)) : '',
+    encodeOrder(orderedPile(player, 'exile'), byId),
   ].join(PLAYER_SEP);
 }
 
@@ -179,6 +180,7 @@ function decodePlayer(
     orderRaw = '',
     legendDormantRaw = '',
     scoreRaw = '',
+    exileOrderRaw = '',
   ] = encoded.split(PLAYER_SEP);
 
   const deck = decodeDeck(deckRaw, index);
@@ -197,6 +199,7 @@ function decodePlayer(
   const dormantBf1 = decodePile(dormantBf1Raw, index);
 
   const order = decodeOrder(orderRaw, index);
+  const exileOrder = decodeOrder(exileOrderRaw, index);
   // 只認純數字：Number() 會把 "0x5"、"1e1" 之類也當成數字
   const score = /^\d{1,2}$/.test(scoreRaw) ? Math.min(MAX_SCORE, Number(scoreRaw)) : 0;
 
@@ -228,6 +231,7 @@ function decodePlayer(
       discard: discard.pile,
       discardOrder: order.order,
       exile: exile.pile,
+      exileOrder: exileOrder.order,
       legendDormant: legendDormantRaw === '1',
       score,
     },
@@ -246,7 +250,8 @@ function decodePlayer(
       dormantBase.dropped +
       dormantBf0.dropped +
       dormantBf1.dropped +
-      order.dropped,
+      order.dropped +
+      exileOrder.dropped,
   };
 }
 

@@ -3,7 +3,7 @@
 import { cardImageUrl, cardName } from '@/lib/cards';
 import { BoardZonePanel } from './BoardZonePanel';
 import { CardBackPile } from './BoardCard';
-import { DiscardPile } from './DiscardPile';
+import { StackedPile } from './StackedPile';
 import { RuneRow } from './RuneRow';
 import { drawCards, summonRunes } from '@/lib/board-actions';
 import type { Selection } from './CardInspector';
@@ -419,22 +419,25 @@ function PlayerBand({
           />
         </div>
 
-        <DiscardPile
-          player={player}
-          side={isOpponent ? 'opponent' : 'you'}
-          byId={byId}
-          lang={lang}
-          art={art}
-          onChange={onChange}
-          onInspect={(cardId) =>
-            onSelect({ side: isOpponent ? 'opponent' : 'you', zone: 'discard', cardId })
-          }
-          selected={
-            selection?.zone === 'discard' &&
-            selection.side === (isOpponent ? 'opponent' : 'you')
-          }
-        />
-        {cell('exile', '放逐', 'w-[100px] shrink-0 overflow-auto')}
+        {/* 廢牌堆與放逐區：桌上各一疊，點開照進入順序檢視（見 StackedPile） */}
+        {(['discard', 'exile'] as const).map((zone) => (
+          <StackedPile
+            key={zone}
+            zone={zone}
+            player={player}
+            side={isOpponent ? 'opponent' : 'you'}
+            byId={byId}
+            lang={lang}
+            art={art}
+            onChange={onChange}
+            onInspect={(cardId) =>
+              onSelect({ side: isOpponent ? 'opponent' : 'you', zone, cardId })
+            }
+            selected={
+              selection?.zone === zone && selection.side === (isOpponent ? 'opponent' : 'you')
+            }
+          />
+        ))}
 
         <div className="flex w-[120px] shrink-0 flex-col justify-center gap-1 rounded-lg border border-line bg-surface/40 px-2 py-1">
           <span className="text-xs font-semibold text-ink">{label}</span>
