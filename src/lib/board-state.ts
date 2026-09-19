@@ -165,8 +165,34 @@ export type PlayerBoard = {
   buffs: Record<InPlayZone, Pile>;
 
   discard: Pile;
+  /**
+   * 廢牌堆的**進入順序**（最早進去的在最前面、最後進去的在最後面）。
+   *
+   * ⚠️ 官方規則 108.2.c 明寫廢牌堆「無排序，可以重新整理」—— 順序在規則上沒有意義。
+   * 記下它是為了**復盤回顧**：看得出這一局是先死了哪張、後打掉哪張。
+   * 介面上要講明這一點，不能讓人以為規則要求照順序。
+   *
+   * 張數仍以 discard 為準，這份只負責順序。兩份不一致時（例如從加卡面板
+   * 直接加進廢牌堆）由 orderedDiscard 調和，不會讓畫面跟實際張數對不上。
+   */
+  discardOrder: string[];
   /** 放逐區域（108.6）。 */
   exile: Pile;
+  /**
+   * 傳奇是否處於休眠。
+   *
+   * 傳奇區域的英雄傳奇是遊戲物體（107.4.c），有活躍與休眠之分 ——
+   * 許多傳奇的技能以「休眠」為費用（例如 [T]：…），一回合只能用一次。
+   * 喚醒階段跟其他物體一起變回活躍（415.3.a）。
+   */
+  legendDormant: boolean;
+  /**
+   * 這一方目前的分數。
+   *
+   * 由使用者手動加減 —— 據守、征服、卡牌效果都會得分，判斷該不該得分需要規則引擎。
+   * 規則：分數不能低於 0（勝利一節），所以下限是 0。
+   */
+  score: number;
 };
 
 export type BoardState = {
@@ -208,7 +234,10 @@ export const EMPTY_PLAYER: PlayerBoard = {
   dormant: { base: {}, bf0: {}, bf1: {} },
   buffs: { base: {}, bf0: {}, bf1: {} },
   discard: {},
+  discardOrder: [],
   exile: {},
+  legendDormant: false,
+  score: 0,
 };
 
 export const EMPTY_BOARD: BoardState = {
@@ -246,11 +275,86 @@ export function moveCard(
   const available = player[from][cardId] ?? 0;
   if (available <= 0) return player;
 
+  // 從廢牌堆拿走的是最上面那一張同名卡（最後進去的）
+  let order = orderedDiscard(player);
+  if (from === 'discard') {
+    const at = order.lastIndexOf(cardId);
+    if (at >= 0) order = [...order.slice(0, at), ...order.slice(at + 1)];
+  }
+  // 進廢牌堆一律放最上面，不管從哪一區來
+  if (to === 'discard') order = [...order, cardId];
+
   return {
     ...player,
     [from]: setInPile(player[from], cardId, available - 1),
     [to]: setInPile(player[to], cardId, (player[to][cardId] ?? 0) + 1),
+    discardOrder: order,
   };
+}
+
+// ─── 廢牌堆的進入順序 ─────────────────────────────────────────────
+
+/** 順序清單的長度上限，防網址被塞爆。廢牌堆實際上不可能超過一副牌。 */
+export const MAX_DISCARD_ORDER = 200;
+
+/**
+ * 廢牌堆照進入順序排好（最早的在前、最上面的在最後）。
+ *
+ * 張數以 discard 為準：順序清單裡多出來的同名卡從**上面**拿掉，
+ * 少了的補在最上面（依卡片 id 排，結果才固定）。
+ * 這樣不管盤面是從哪條路變成現在這樣，畫面上的張數都跟實際一致。
+ */
+export function orderedDiscard(player: PlayerBoard): string[] {
+  const left: Pile = { ...player.discard };
+  const kept: string[] = [];
+  for (const cardId of player.discardOrder.slice(0, MAX_DISCARD_ORDER)) {
+    if ((left[cardId] ?? 0) <= 0) continue;
+    left[cardId] = (left[cardId] ?? 0) - 1;
+    kept.push(cardId);
+  }
+  for (const cardId of Object.keys(left).sort()) {
+    for (let i = 0; i < (left[cardId] ?? 0); i += 1) kept.push(cardId);
+  }
+  return kept;
+}
+
+/**
+ * 把廢牌堆裡**指定位置**的那一張搬到別區。
+ *
+ * 跟 moveCard 的差別：同名卡有好幾張時，拿走的是使用者點的那一張，
+ * 而不是最上面那張 —— 這樣剩下的順序才跟使用者看到的一致。
+ */
+export function moveFromDiscard(
+  player: PlayerBoard,
+  index: number,
+  to: BoardZone | 'deck',
+): PlayerBoard {
+  const order = orderedDiscard(player);
+  const cardId = order[index];
+  if (cardId === undefined || to === 'discard') return player;
+
+  const next: PlayerBoard = {
+    ...player,
+    discard: setInPile(player.discard, cardId, (player.discard[cardId] ?? 0) - 1),
+    discardOrder: [...order.slice(0, index), ...order.slice(index + 1)],
+  };
+  // 'deck' = 放回牌堆：從盤面拿掉，剩餘牌堆的計算自然會把它算回去
+  if (to === 'deck') return next;
+  return { ...next, [to]: setInPile(next[to], cardId, (next[to][cardId] ?? 0) + 1) };
+}
+
+// ─── 分數 ────────────────────────────────────────────────────────
+
+/** 預設的勝利分數（官方規則「勝利」一節：勝利分數預設為 8 分）。 */
+export const VICTORY_SCORE = 8;
+
+/** 分數上限。只是防呆，實際對局不會到這麼多。 */
+export const MAX_SCORE = 99;
+
+/** 設定分數。不能低於 0（官方規則：玩家的分數無法低於 0 分）。 */
+export function setScore(player: PlayerBoard, score: number): PlayerBoard {
+  const next = Math.max(0, Math.min(MAX_SCORE, Math.round(score)));
+  return next === player.score ? player : { ...player, score: next };
 }
 
 // ─── 剩餘牌堆 ────────────────────────────────────────────────────
@@ -627,7 +731,8 @@ export function setDormant(
  * 這是每個回合開始都會發生的事，所以做成一個按鈕。
  */
 export function wakeAll(player: PlayerBoard): PlayerBoard {
-  return { ...player, dormant: { base: {}, bf0: {}, bf1: {} } };
+  // 傳奇也是非法術遊戲物體（107.4.c），一起喚醒
+  return { ...player, dormant: { base: {}, bf0: {}, bf1: {} }, legendDormant: false };
 }
 
 /**

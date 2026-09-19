@@ -19,6 +19,7 @@
  */
 
 import {
+  moveCard,
   remainingDeck,
   setInPile,
   wakeAll,
@@ -116,8 +117,12 @@ export function startGame(
     bf0: {},
     bf1: {},
     discard: {},
+    discardOrder: [],
     exile: {},
     dormant: { base: {}, bf0: {}, bf1: {} },
+    legendDormant: false,
+    // 重新開一局，分數歸零
+    score: 0,
     // 103.2.a.1：遊戲開始時選定英雄置於英雄區域
     champion: player.deck.championId ? setInPile({}, player.deck.championId, 1) : {},
   };
@@ -293,14 +298,8 @@ export function discardFrom(
   zone: 'hand' | 'base' | 'bf0' | 'bf1',
   cardId: string,
 ): PlayerBoard {
-  const available = player[zone][cardId] ?? 0;
-  if (available <= 0) return player;
-
-  return {
-    ...player,
-    [zone]: setInPile(player[zone], cardId, available - 1),
-    discard: setInPile(player.discard, cardId, (player.discard[cardId] ?? 0) + 1),
-  };
+  // 放在廢牌堆最上面（進入順序見 PlayerBoard.discardOrder）
+  return moveCard(player, zone, 'discard', cardId);
 }
 
 /** 手牌裡可以拿去調度的卡（給介面列選項用）。 */

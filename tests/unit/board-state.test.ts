@@ -267,8 +267,14 @@ describe('盤面的網址編碼', () => {
     onThePlay: false,
     activePlayer: 'you' as const,
     phase: { duel: false, chain: false },
-    you: player({ hand: { [unit.id]: 2 }, base: { [rune.id]: 6 }, discard: { [other.id]: 1 } }),
-    opponent: player({ unknownHand: 5, discard: { [unit.id]: 2 } }),
+    // 廢牌堆的順序要跟張數一致 —— 網址裡寫的是調和過的順序
+    you: player({
+      hand: { [unit.id]: 2 },
+      base: { [rune.id]: 6 },
+      discard: { [other.id]: 1 },
+      discardOrder: [other.id],
+    }),
+    opponent: player({ unknownHand: 5, discard: { [unit.id]: 2 }, discardOrder: [unit.id, unit.id] }),
   };
 
   it('編碼後再解碼會得到同一個盤面', () => {
