@@ -3399,13 +3399,10 @@ ICANN 規定新註冊的網域要在 15 天內驗證聯絡人信箱，否則網�
 - [ ] **工具頁的文字層次**：第四輪只在首頁收斂字級、全站調亮次要文字；圖鑑／牌組／復盤若要逐頁整理字級是較大的工程，視使用者回饋再做
 - [x] ~~**Vercel 預覽工具列**：在 Vercel 專案設定關閉預覽環境的 Vercel Toolbar~~ —— 2026-09-11 使用者已關閉（Pre-Production Deployments：Off；見問題 60）
 - [x] ~~**Next.js 16**：等官方修好 Trusted Types 相容性再評估~~ —— 已升級；換頁問題以限定範圍的 default 政策解決（問題 60）
-- [ ] **送出 Riot 開發者註冊**（使用者本人操作，不可代勞）：`developer.riotgames.com` → Register Product →
-      選 Production（不可選 Personal，政策把小眾用途列為不核准）；申請文字草稿與 `riot.txt` 驗證由我協助（問題 62、68）
-      —— 條款與隱私權頁面已於 2026-09-19 補上
-- [x] ~~**卡圖自行代管**~~ —— 2026-09-12 完成（問題 63）：建置時下載三種尺寸，CSP 的 img-src 收成只有 `'self'`
-- [x] ~~**網域含 Riot 商標**~~ —— 2026-09-12 站名改為「守夜圖鑑 Ashvigil」（問題 65）
-- [x] ~~**註冊並綁定 ashvigil.com**~~ —— 2026-09-15 使用者在 Porkbun 註冊，DNS／DNSSEC 設定完成；舊網址轉址（問題 66）
-- [x] ~~**網域的備忘與提醒**~~ —— 2026-09-18 使用者完成：Google 日曆（到期前 60／30／7 天每年重複、信用卡到期前 1 個月）、Bitwarden 安全筆記「ashvigil.com 網域資訊」、紙本摘要
+- [x] ~~**送出 Riot 開發者註冊**~~ —— 2026-09-21 使用者送出（App ID 883133，Game Focus：Riftbound，未辦賽事）；
+      驗證碼已放在 `public/riot.txt`，等 Riot 審核（問題 62、68）
+- [ ] **等 Riot 審核結果**：審核期間網站與 `riot.txt` 都不能下線；超過三週可在 support-developer.riotgames.com 或申請頁的 product message 詢問；
+      通過後卡牌資料改用 `riftbound-content-v1`，且新增功能要再送審
 - [ ] **ESLint 10 / TypeScript 7**：等 `eslint-config-next` 與 `typescript-eslint` 支援
 - [ ] `Add` 關鍵字缺官方說明（已在介面標示，等官方在後續系列補上）
 - [ ] 繁中能力文字目前是簡轉繁，官方若推出繁中資料應改用官方版
