@@ -51,3 +51,28 @@ test.describe('使用條款與隱私權政策', () => {
     await expect(page.locator('time')).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}$/);
   });
 });
+
+/*
+ * Riot 開發者申請的網域驗證檔。
+ *
+ * 2026-09-21 送出申請（App ID 883133）後，Riot 給了一串驗證碼，
+ * 要放在網站根目錄的 riot.txt，內容**只能有那串碼**。
+ * 這個檔在審核有結果之前不能消失 —— 有開發者因為審核當下網站讀不到而被拒，
+ * 重新排隊又等了半年。所以用測試釘住：檔案在、內容乾淨、任何人都讀得到。
+ */
+test.describe('Riot 網域驗證檔', () => {
+  const CODE = '87a09f29-f7ef-4ba0-b52c-12ad5142088f';
+
+  test('/riot.txt 讀得到，而且裡面只有驗證碼', async ({ request }) => {
+    const response = await request.get('/riot.txt');
+    expect(response.status()).toBe(200);
+    // 前後不能有空白或其他內容，Riot 的說明特別強調這一點
+    expect(await response.text()).toBe(CODE);
+  });
+
+  test('不需要登入或任何條件就讀得到', async ({ page }) => {
+    const response = await page.goto('/riot.txt');
+    expect(response?.status()).toBe(200);
+    expect(response?.headers()['content-type']).toMatch(/^text\/plain/);
+  });
+});
