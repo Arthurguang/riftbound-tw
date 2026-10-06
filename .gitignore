@@ -24,3 +24,18 @@ Thumbs.db
 # 卡圖在建置時下載（scripts/download-card-images.mjs），不進版控：
 # git 會永久保留每一版二進位檔，倉庫只會愈來愈肥且刪不掉。
 public/cards/
+
+# 任何形式的備用碼、救援碼、金鑰 —— 絕對不進版控。
+#
+# 2026-10-06 的事故：recovery-codes.txt（6 組兩步驟驗證備用碼）
+# 在 2026-08-29 的 commit 567dbcc 被帶進版控，在公開儲存庫上公開了 38 天。
+# 本專案的原則是「只記錄東西放在哪，不記錄內容」（見 SECURITY-STRATEGY.md），
+# 備用碼的正確位置是紙本與密碼管理器，不是專案資料夾。
+# scripts/check-forbidden-apis.mjs 另有一道檢查，追蹤到這類檔名就讓 CI 失敗。
+*recovery-code*
+*recovery_code*
+*backup-code*
+*backup_code*
+*.pem
+*.key
+/secrets/
