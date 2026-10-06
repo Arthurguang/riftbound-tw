@@ -128,3 +128,52 @@ if (findings.length > 0) {
 }
 
 console.log('✅ 危險 API 檢查通過：src/ 與 scripts/ 中沒有任何禁用寫法。');
+
+/*
+ * ── 第二道：版控裡不准有機密檔案 ──────────────────────────────
+ *
+ * 2026-10-06 的事故：recovery-codes.txt（6 組兩步驟驗證備用碼）被帶進版控，
+ * 在公開儲存庫上公開了 38 天才發現。.gitignore 可以防止「新檔案」被加進來，
+ * 但防不了已經在追蹤中的檔案 —— 一旦被追蹤，.gitignore 就不再生效。
+ *
+ * 所以這裡直接問 git：「你現在追蹤了哪些檔案」，檔名像機密就讓 CI 失敗。
+ * 這是檔名層級的檢查，不讀內容 —— 腳本本身不該碰到任何機密。
+ */
+const SECRET_FILE_PATTERNS = [
+  { pattern: /recovery[-_]?codes?/i, what: '備用碼／救援碼' },
+  { pattern: /backup[-_]?codes?/i, what: '備用碼' },
+  { pattern: /\.(pem|key|p12|pfx)$/i, what: '私鑰或憑證檔' },
+  { pattern: /(^|\/)\.env($|\.)/i, what: '環境變數檔' },
+  { pattern: /(password|credential)s?\.(txt|json|csv|md)$/i, what: '密碼或憑證清單' },
+];
+
+let tracked = [];
+try {
+  const { execFileSync } = await import('node:child_process');
+  tracked = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
+} catch {
+  // 不是 git 環境（例如從壓縮檔解開）就跳過這道檢查，不要讓建置失敗
+  console.log('ℹ️  略過機密檔案檢查：這裡不是 git 工作目錄。');
+}
+
+const secretFiles = tracked
+  .map((file) => ({ file, rule: SECRET_FILE_PATTERNS.find((r) => r.pattern.test(file)) }))
+  .filter((hit) => hit.rule);
+
+if (secretFiles.length > 0) {
+  console.error(`\n❌ 版控裡出現 ${secretFiles.length} 個看起來是機密的檔案：\n`);
+  for (const { file, rule } of secretFiles) {
+    console.error(`  ${file}`);
+    console.error(`    → 檔名像${rule.what}。機密不進版控，正確位置是紙本與密碼管理器。`);
+    console.error(`    → 移除方式：git rm --cached "${file}"，並確認 .gitignore 有涵蓋。`);
+    console.error(`    → ⚠️ 已經推上公開儲存庫的話，**那組機密要視為已外洩，必須重新產生**。\n`);
+  }
+  process.exit(1);
+}
+
+if (tracked.length > 0) {
+  console.log(`✅ 機密檔案檢查通過：版控中的 ${tracked.length} 個檔案沒有可疑檔名。`);
+}
