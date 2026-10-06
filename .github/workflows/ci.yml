@@ -132,7 +132,21 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: 依賴漏洞掃描（npm audit）
+      # 會擋下合併的那一道：**使用者實際會下載執行的套件**（next / react / react-dom）。
+      # 這裡有任何 high 以上的漏洞就該停下來修。
+      - name: 依賴漏洞掃描（執行期套件，不過就擋）
+        run: npm audit --omit=dev --audit-level=high
+
+      # 開發與檢查工具（ESLint、測試框架…）只跑在我們自己的機器與 CI 上，
+      # 不會送到使用者的瀏覽器，所以列出來看但不擋合併。
+      #
+      # 2026-10-06 之所以分成兩道：排程的每週掃描紅燈，查出是 eslint-config-next
+      # 底下的 braces 有 DoS 漏洞，而 braces **上游沒有修正版**（最新 3.0.3 就在漏洞範圍內，
+      # 2024 年後未再發布）。npm 建議的「修法」是把 eslint-config-next 降兩個大版本 ——
+      # 那會讓整套檢查規則倒退，比漏洞本身更糟。
+      # 紅燈長期掛著的代價是「狼來了」：真的出事時沒人會當真。
+      - name: 依賴漏洞掃描（開發工具，僅回報）
+        continue-on-error: true
         run: npm audit --audit-level=high
 
       - name: 依賴漏洞掃描（OSV-Scanner，涵蓋範圍比 npm audit 廣）
