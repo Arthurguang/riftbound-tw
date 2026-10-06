@@ -149,10 +149,13 @@ jobs:
         continue-on-error: true
         run: npm audit --audit-level=high
 
+      # OSV-Scanner 不分開發與執行期依賴，所以查證過、上游又沒有修法的那一筆
+      # 寫在 osv-scanner.toml 的忽略清單裡（含理由與**到期日**，到期會自動變回紅燈）。
       - name: 依賴漏洞掃描（OSV-Scanner，涵蓋範圍比 npm audit 廣）
         uses: google/osv-scanner-action/osv-scanner-action@v2.5.1
         with:
           scan-args: |-
+            --config=osv-scanner.toml
             --lockfile=package-lock.json
 
   codeql:
