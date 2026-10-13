@@ -3522,7 +3522,8 @@ Next 的升級在這個專案有前科（問題 60：Next 16 讓站內換頁退�
 - [x] ~~**Next.js 16**：等官方修好 Trusted Types 相容性再評估~~ —— 已升級；換頁問題以限定範圍的 default 政策解決（問題 60）
 - [x] ~~**送出 Riot 開發者註冊**~~ —— 2026-09-21 使用者送出（App ID 883133，Game Focus：Riftbound，未辦賽事）；
       驗證碼已放在 `public/riot.txt`，等 Riot 審核（問題 62、68）
-- [ ] **等 Riot 審核結果**：審核期間網站與 `riot.txt` 都不能下線；超過三週可在 support-developer.riotgames.com 或申請頁的 product message 詢問；
+- [ ] **等 Riot 審核結果**：審核期間網站與 `riot.txt` 都不能下線；2026-10-13 已開客服單詢問進度（#139541314，Status Open）；
+      申請頁的 MESSAGES 只能看 Riot 留言、開發者不能寫，要問事情得到 support-developer.riotgames.com 開單；
       通過後卡牌資料改用 `riftbound-content-v1`，且新增功能要再送審
 - [ ] **ESLint 10 / TypeScript 7**：等 `eslint-config-next` 與 `typescript-eslint` 支援
 - [ ] `Add` 關鍵字缺官方說明（已在介面標示，等官方在後續系列補上）
@@ -3593,6 +3594,7 @@ Next 的升級在這個專案有前科（問題 60：Next 16 讓站內換頁退�
 | 2026-09-15～18 | 網域 ashvigil.com 上線：Porkbun 註冊（安全金鑰、網域鎖、隱私、DNSSEC、CAA、防冒名寄信），客服確認 ICANN 驗證無待辦；舊 vercel.app 網址永久轉到新網域 |
 | 2026-09-19 | 復盤：傳奇可休眠（喚醒階段一起喚醒）、雙方計分（不判定勝負）、廢牌堆與放逐區收成一疊並照進入順序檢視與搬移；查出官方規則 108.2／108.6 這兩區無排序，視窗內註明 |
 | 2026-09-21 | 送出 Riot 開發者申請（App ID 883133）並完成網域驗證，狀態 Pending Review；查出說明欄位上限 1500 字元、送出時被安靜截斷，已更新為完整版 |
+| 2026-10-13 | Riot 申請滿三週仍 Pending Review：首頁與 riot.txt 檢查正常；原以為申請頁 MESSAGES 能留言，實際只能看、要到客服網站開單，已開單 #139541314 詢問進度 |
 | 2026-10-13 | 排程掃描抓到 sharp 的執行期漏洞（CVE-2026-96889，經 next 帶入）：升級 0.35.4→0.35.5；本站未使用 next/image，實際風險為零 |
 | 2026-10-06 | 查出 recovery-codes.txt（6 組備用碼）自 2026-08-29 起公開在儲存庫上 38 天：移出版控、.gitignore 補強、check:danger 新增機密檔名檢查；備用碼由使用者重新產生 |
 | 2026-10-06 | 每週排程掃描紅燈：升級 Next 16.3.4→16.3.8 修掉 next/og 的嚴重漏洞（本站未使用該功能）；查出 braces 上游無修正版，audit 改成「執行期套件擋、開發工具只回報」 |
