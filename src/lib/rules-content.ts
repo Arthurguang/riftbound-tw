@@ -108,6 +108,17 @@ export const RULES_STRINGS = {
     '官方卡面未提供这个关键字的说明，请参阅官方规则书。',
     'The cards do not print reminder text for this keyword — see the official Core Rules.',
   ),
+  /*
+   * 2026-10-13 新系列帶進的五個關鍵字（Burn、Empower、Empowered、Flow、Level），
+   * 官方卡面有英文說明、中文版還沒收錄帶這些字的卡。
+   * 這種情況要誠實說「這段是英文原文」，不能自己翻一段看起來很合理的中文，
+   * 也不能套用上面那句「官方沒有提供說明」—— 官方有提供，只是還沒有中文。
+   */
+  englishOnlyText: tri(
+    '官方中文版尚未收錄帶這個關鍵字的卡，以下為官方英文卡面原文：',
+    '官方中文版尚未收录带这个关键字的卡，以下为官方英文卡面原文：',
+    '',
+  ),
   usedOnCards: tri('使用這個關鍵字的卡牌', '使用这个关键字的卡牌', 'Cards with this keyword'),
 
   glyphsTitle: tri('符號說明', '符号说明', 'Symbols'),

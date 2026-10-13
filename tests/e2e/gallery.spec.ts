@@ -1,4 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
+import cards from '../../src/data/cards.origins.json';
+
+/*
+ * 總張數從資料檔算，不寫死。
+ * 官方 API 的分頁會抖動，每次抓到的張數會差一兩張（抓取腳本本身有容忍機制），
+ * 寫死的話每次更新資料都要回來改這個數字 —— 而且改錯了測試還是綠的。
+ */
+const TOTAL = cards.length;
 
 /**
  * 在搜尋框輸入文字。
@@ -16,16 +24,16 @@ async function typeSearch(page: Page, text: string) {
 /** 圖鑑的功能驗證：搜尋、篩選、排序、單卡頁、網址分享。 */
 
 test.describe('卡牌圖鑑', () => {
-  test('列出全部 376 張卡', async ({ page }) => {
+  test('列出全部卡牌', async ({ page }) => {
     await page.goto('/cards');
     await expect(page.getByRole('heading', { name: '卡牌圖鑑', level: 1 })).toBeVisible();
-    await expect(page.locator('main ul > li')).toHaveCount(376);
+    await expect(page.locator('main ul > li')).toHaveCount(TOTAL);
   });
 
   test('搜尋卡名', async ({ page }) => {
     await page.goto('/cards');
     await typeSearch(page, 'Ahri');
-    await expect(page.locator('main ul > li')).not.toHaveCount(376);
+    await expect(page.locator('main ul > li')).not.toHaveCount(TOTAL);
     // 預設介面是繁中，所以顯示的是繁中卡名（但用英文也搜得到）。
     const names = await page.locator('main ul > li a span').first().textContent();
     expect(names).toContain('阿璃');
@@ -37,7 +45,7 @@ test.describe('卡牌圖鑑', () => {
     await expect(page.locator('main ul > li').first()).toBeVisible();
     const count = await page.locator('main ul > li').count();
     expect(count).toBeGreaterThan(0);
-    expect(count).toBeLessThan(376);
+    expect(count).toBeLessThan(TOTAL);
   });
 
   test('搜尋標籤', async ({ page }) => {
@@ -53,7 +61,7 @@ test.describe('卡牌圖鑑', () => {
     await page.getByRole('button', { name: '單位', exact: true }).click();
     const unitsOnly = await page.locator('main ul > li').count();
     expect(unitsOnly).toBeGreaterThan(0);
-    expect(unitsOnly).toBeLessThan(376);
+    expect(unitsOnly).toBeLessThan(TOTAL);
 
     // 篩選鈕顯示官方特性名稱加顏色（核心規則 134.2），例如「止靜（綠）」。
     await page.getByRole('button', { name: '止靜（綠）', exact: true }).click();
@@ -77,7 +85,7 @@ test.describe('卡牌圖鑑', () => {
 
   test('網址帶入無效參數時安全地忽略，不會壞掉', async ({ page }) => {
     await page.goto('/cards?type=<script>alert(1)</script>&rarity=nope&energy=999&sort=bogus');
-    await expect(page.locator('main ul > li')).toHaveCount(376);
+    await expect(page.locator('main ul > li')).toHaveCount(TOTAL);
     // 惡意字串不會出現在畫面上。
     await expect(page.locator('body')).not.toContainText('alert(1)');
   });
@@ -93,7 +101,7 @@ test.describe('卡牌圖鑑', () => {
   test('清除條件會回到全部卡牌', async ({ page }) => {
     await page.goto('/cards?type=legend');
     await page.getByRole('button', { name: '清除所有條件' }).click();
-    await expect(page.locator('main ul > li')).toHaveCount(376);
+    await expect(page.locator('main ul > li')).toHaveCount(TOTAL);
   });
 
   test('找不到結果時顯示提示', async ({ page }) => {
@@ -105,7 +113,7 @@ test.describe('卡牌圖鑑', () => {
 
 /*
  * 2026-09-12 使用者回報：捲到很下面、點進一張卡、按「回到卡牌圖鑑」，
- * 結果被丟回頁面最上面，又要重新捲一次找剛才看到哪。翻 376 張卡時這會一直發生。
+ * 結果被丟回頁面最上面，又要重新捲一次找剛才看到哪。翻一千多張卡時這會一直發生。
  *
  * 「回到卡牌圖鑑」是連結（前往新頁面）而不是瀏覽器的上一頁，
  * 所以瀏覽器不會自己還原位置 —— 位置是點卡片當下記下來的。
@@ -270,7 +278,7 @@ test.describe('多語系', () => {
       await expect(page.locator('main ul > li').first()).toBeVisible();
       const count = await page.locator('main ul > li').count();
       expect(count, `搜尋「${term}」應該有結果`).toBeGreaterThan(0);
-      expect(count, `搜尋「${term}」應該縮小範圍`).toBeLessThan(376);
+      expect(count, `搜尋「${term}」應該縮小範圍`).toBeLessThan(TOTAL);
     }
   });
 

@@ -17,7 +17,7 @@
  * 實體卡玩家帶去卡店時只要看一張表，不必在「牌表」和「缺卡清單」之間切換。
  */
 
-import { cardName, legendFullName } from './cards';
+import { cardName, fullCardName } from './cards';
 import { TYPE_LABELS, DOMAIN_LABELS } from './labels';
 import { RULES_VERSION, deckNeeds, type Deck } from './deck-rules';
 import { shortCode } from './deck-url';
@@ -75,6 +75,16 @@ export function deckRows(deck: Deck, byId: Map<string, Card>): ExportRow[] {
   }
   return rows;
 }
+
+/**
+ * 匯出用的卡名。
+ *
+ * 英文要補上副標（Annie, Fiery）—— 2026-10-13 起官方把英文卡名拆成兩半，
+ * 只寫 name 的話匯出的牌表會出現六張都叫「Ahri」的卡，別人讀不出是哪一張。
+ * 中文資料本來就是合在一起的，照原樣。
+ */
+const displayName = (card: Card, lang: TextLang) =>
+  lang === 'en' ? fullCardName(card) : cardName(card, lang);
 
 const ZONE_LABELS: Record<ExportRow['zone'], Record<TextLang, string>> = {
   legend: { 'zh-TW': '傳奇', 'zh-CN': '传奇', en: 'Legend' },
@@ -203,8 +213,8 @@ export function toPlainText(
     lines.push(`【${zoneLabel(zone, lang)}】${total}`);
 
     for (const { card, qty, owned, short } of inZone) {
-      const name = cardName(card, lang);
-      const english = lang === 'en' ? '' : ` / ${card.name}`;
+      const name = displayName(card, lang);
+      const english = lang === 'en' ? '' : ` / ${fullCardName(card)}`;
       // 只有缺的才標記，湊齊的不加雜訊
       const mark = short !== null && short > 0 ? `　← 有 ${owned}，缺 ${short}` : '';
       lines.push(`${qty} ${name}${english} (${card.code})${mark}`);
@@ -221,7 +231,7 @@ export function toPlainText(
       lines.push(`共缺 ${cards} 張，${kinds} 種`);
       for (const row of rows) {
         if ((row.short ?? 0) <= 0) continue;
-        const name = cardName(row.card, lang);
+        const name = displayName(row.card, lang);
         lines.push(`${row.short} ${name} (${row.card.code})　（已有 ${row.owned}）`);
       }
     }
@@ -294,7 +304,7 @@ export function toSectionedText(deck: Deck, byId: Map<string, Card>): string {
        * 傳奇要用「英雄名, 稱號」的完整寫法 —— 官方 API 把這兩半拆開存，
        * 但牌表上寫的是合起來的。只給稱號的話，別的工具會找不到這張卡。
        */
-      const name = legendFullName(card);
+      const name = fullCardName(card);
       if (listed > 0) merged.set(name, (merged.get(name) ?? 0) + listed);
     }
 
@@ -346,8 +356,8 @@ export function toCsv(
     const row: (string | number)[] = [
       zoneLabel(zone, lang),
       qty,
-      cardName(card, lang),
-      card.name,
+      displayName(card, lang),
+      fullCardName(card),
       card.code,
       card.types.map((t) => TYPE_LABELS[t][lang]).join(' / '),
       card.domains.map((d) => DOMAIN_LABELS[d][lang]).join(' / '),
@@ -388,7 +398,7 @@ export function collectionToCsv(
     .sort((a, b) => a.card.code.localeCompare(b.card.code));
 
   for (const { card, qty } of entries) {
-    rows.push([card.code, cardName(card, lang), card.name, qty]);
+    rows.push([card.code, displayName(card, lang), fullCardName(card), qty]);
   }
   return toCsvText(rows);
 }

@@ -11,7 +11,7 @@ import { importDeck, inferChampion } from '../../src/lib/deck-import';
 import { toCsv, toPlainText } from '../../src/lib/deck-export';
 import { EMPTY_DECK, type Deck } from '../../src/lib/deck-rules';
 import { ALL_CARDS } from '../../src/lib/cards';
-import type { Card } from '../../src/lib/types';
+import { SET_IDS, type Card } from '../../src/lib/types';
 
 const byId = new Map(ALL_CARDS.map((c) => [c.id, c]));
 
@@ -210,8 +210,13 @@ describe('認不得的內容會回報，不會亂猜', () => {
   });
 });
 
+/*
+ * 2026-10-13 收錄六個系列後，同名卡會跨系列（六張阿璃分散在五個系列），
+ * 「卡號最小」變成跨系列比大小，對使用者等於隨機。
+ * 改成**先照系列的官方順序、同系列才比卡號**，見 deck-import.ts 的 pickOrder。
+ */
 describe('同名卡的版本選擇', () => {
-  it('同名多版本時一律取卡號最小的，結果可預測', () => {
+  it('同名多版本時一律取最早系列、卡號最小的那張，結果可預測', () => {
     const groups = new Map<string, Card[]>();
     for (const card of ALL_CARDS) {
       groups.set(card.name, [...(groups.get(card.name) ?? []), card]);
@@ -219,7 +224,9 @@ describe('同名卡的版本選擇', () => {
     const pair = [...groups.values()].find((list) => list.length >= 2);
     expect(pair).toBeDefined();
 
-    const smallest = [...pair!].sort((a, b) => a.number - b.number)[0]!;
+    const smallest = [...pair!].sort(
+      (a, b) => SET_IDS.indexOf(a.set) - SET_IDS.indexOf(b.set) || a.number - b.number,
+    )[0]!;
     const result = importDeck(`1 ${smallest.name}`, ALL_CARDS);
 
     const picked = Object.keys({

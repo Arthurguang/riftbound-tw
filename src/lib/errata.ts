@@ -22,6 +22,7 @@
 
 import data from '@/data/errata.json';
 import zh from '@/data/errata-zh.json';
+import { fullCardName } from './card-name';
 import type { Card } from './types';
 
 export type ErrataEntry = {
@@ -47,7 +48,7 @@ export const ERRATA: readonly ErrataEntry[] = data.entries;
 
 /** 用卡名查勘誤 —— 勘誤是針對卡名的，所以異畫版一樣適用。 */
 export function errataFor(card: Card): ErrataEntry | null {
-  return ERRATA.find((e) => e.name === card.name) ?? null;
+  return ERRATA.find((e) => e.name === fullCardName(card)) ?? null;
 }
 
 /**

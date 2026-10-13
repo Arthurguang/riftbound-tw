@@ -16,6 +16,7 @@ import {
   ALLOWED_KEYWORDS,
   CardTextError,
 } from '../../scripts/lib/card-text-parser.mjs';
+import { GLYPH_IDS, KEYWORDS } from '../../src/lib/types';
 
 describe('紅隊：惡意輸入必須讓建置失敗', () => {
   const attacks: [string, string][] = [
@@ -110,13 +111,30 @@ describe('正常官方資料必須能正確解析', () => {
 });
 
 describe('允許清單本身', () => {
-  it('符號清單是 15 個且不重複', () => {
-    expect(ALLOWED_GLYPHS).toHaveLength(15);
-    expect(new Set(ALLOWED_GLYPHS).size).toBe(15);
+  it('符號清單是 19 個且不重複', () => {
+    expect(ALLOWED_GLYPHS).toHaveLength(19);
+    expect(new Set(ALLOWED_GLYPHS).size).toBe(19);
   });
 
-  it('關鍵字清單是 15 個且不重複', () => {
-    expect(ALLOWED_KEYWORDS).toHaveLength(15);
-    expect(new Set(ALLOWED_KEYWORDS).size).toBe(15);
+  // 符號清單同樣存在兩個地方，理由與下面的關鍵字一致性測試相同。
+  it('兩份符號清單完全一致（抓取腳本 vs 網站）', () => {
+    expect([...ALLOWED_GLYPHS].sort()).toEqual([...GLYPH_IDS].sort());
+  });
+
+  it('關鍵字清單是 34 個且不重複', () => {
+    expect(ALLOWED_KEYWORDS).toHaveLength(34);
+    expect(new Set(ALLOWED_KEYWORDS).size).toBe(34);
+  });
+
+  /*
+   * 同一份關鍵字清單存在兩個地方：
+   *   src/lib/types.ts                  網站用（TypeScript）
+   *   scripts/lib/card-text-parser.mjs  抓取腳本用（純 .mjs，沒辦法讀 TypeScript）
+   *
+   * 2026-10-13 新增 18 個關鍵字時只改了前者，抓取立刻失敗 ——
+   * 當時沒有任何測試在守這兩份的一致性。現在有了。
+   */
+  it('兩份關鍵字清單完全一致（抓取腳本 vs 網站）', () => {
+    expect([...ALLOWED_KEYWORDS].sort()).toEqual([...KEYWORDS].sort());
   });
 });

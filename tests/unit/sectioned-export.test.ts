@@ -14,7 +14,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { toSectionedText } from '../../src/lib/deck-export';
-import { legendFullName } from '../../src/lib/cards';
+import { fullCardName } from '../../src/lib/cards';
 import { importDeck, inferChampion } from '../../src/lib/deck-import';
 import { ALL_CARDS } from '../../src/lib/cards';
 import type { Deck } from '../../src/lib/deck-rules';
@@ -116,8 +116,9 @@ describe('分區英文牌表', () => {
 
   it('選定英雄只出現一次 —— 兩區都列會被算成兩張', () => {
     const text2 = toSectionedText(deck, byId);
-    const occurrences = text2.split('\n').filter((l) => l.endsWith(` ${champion.name}`));
-    expect(occurrences).toEqual([`1 ${champion.name}`]);
+    const full = fullCardName(champion);
+    const occurrences = text2.split('\n').filter((l) => l.endsWith(` ${full}`));
+    expect(occurrences).toEqual([`1 ${full}`]);
   });
 
   it('不含牌組名稱 —— 對方有自己的名稱欄位', () => {
@@ -135,31 +136,52 @@ describe('分區英文牌表', () => {
 });
 
 /*
- * 官方 API 把傳奇的名字拆成兩半：name 只有稱號（Daughter of the Void），
- * 英雄名放在 tags（["Kai'Sa"]）。但牌表上寫的是合起來的
- * 「Kai'Sa, Daughter of the Void」—— 繁中資料本來就是合的，只有英文是拆的。
+ * 官方 API 把名字拆成兩半，而且兩種卡拆法不一樣：
+ *   傳奇      name 只有稱號（Daughter of the Void），英雄名在 tags
+ *   英雄單位  name 是英雄名（Annie），稱號在 subtitle（Fiery）
+ * 但牌表上寫的都是合起來的 —— 繁中資料本來就是合的，只有英文是拆的。
  *
  * 這個差異先前害我們匯出的牌表貼到別的社群工具時，傳奇那一行被判成找不到卡。
  */
-describe('傳奇的完整卡名', () => {
-  it('全部傳奇都剛好一個 tag，組法沒有例外', () => {
+describe('完整卡名', () => {
+  it('每張傳奇都標得出唯一的英雄標籤', () => {
     const legends = ALL_CARDS.filter((c) => c.types.includes('legend'));
     expect(legends.length).toBeGreaterThan(0);
-    for (const l of legends) expect(l.tags).toHaveLength(1);
+    for (const l of legends) {
+      expect(l.championTag, `${l.code} ${l.name}`).not.toBeNull();
+      expect(l.tags).toContain(l.championTag);
+    }
+  });
+
+  /*
+   * 2026-10-13 的新系列出現同時帶種族標籤的傳奇。
+   * 以前取 tags[0] 就對了，現在那樣會組出「Yordle, Hexplosives Expert」。
+   */
+  it('傳奇帶兩個標籤時，取的是英雄而不是種族', () => {
+    const ziggs = ALL_CARDS.find((c) => c.code === 'RAD-141/167')!;
+    expect(ziggs.tags).toEqual(['Yordle', 'Ziggs']);
+    expect(fullCardName(ziggs)).toBe('Ziggs, Hexplosives Expert');
   });
 
   it('匯出時補上英雄名前綴', () => {
     const kaisa = ALL_CARDS.find((c) => c.code === 'OGN-247/298')!;
     expect(kaisa.name).toBe('Daughter of the Void');
-    expect(legendFullName(kaisa)).toBe("Kai'Sa, Daughter of the Void");
+    expect(fullCardName(kaisa)).toBe("Kai'Sa, Daughter of the Void");
 
     const text = toSectionedText({ ...deck, legendId: kaisa.id }, byId);
     expect(text).toContain("1 Kai'Sa, Daughter of the Void");
   });
 
-  it('非傳奇卡不動它的名字 —— 英雄卡本來就是完整的', () => {
-    const unitCard = ALL_CARDS.find((c) => c.subtype === 'champion')!;
-    expect(legendFullName(unitCard)).toBe(unitCard.name);
+  it('英雄單位補上副標 —— 只寫 Ahri 的話卡池裡有六張符合', () => {
+    const ahri = ALL_CARDS.find((c) => c.code === 'OGN-066/298')!;
+    expect(ahri.name).toBe('Ahri');
+    expect(fullCardName(ahri)).toBe(`Ahri, ${ahri.subtitle}`);
+    expect(ALL_CARDS.filter((c) => c.name === 'Ahri').length).toBeGreaterThan(1);
+  });
+
+  it('沒有副標也不是傳奇的卡，名字原封不動', () => {
+    const plain = ALL_CARDS.find((c) => c.subtitle === null && !c.types.includes('legend'))!;
+    expect(fullCardName(plain)).toBe(plain.name);
   });
 
   it('匯入認得完整名稱 —— 貼別家工具的牌表也讀得進來', () => {

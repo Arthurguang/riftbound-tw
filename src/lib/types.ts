@@ -8,7 +8,11 @@
 export const CARD_TYPES = ['unit', 'spell', 'legend', 'gear', 'battlefield', 'rune'] as const;
 export const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'showcase'] as const;
 export const DOMAINS = ['calm', 'chaos', 'fury', 'body', 'mind', 'order', 'colorless'] as const;
-export const SET_IDS = ['OGN', 'OGS'] as const;
+/**
+ * 收錄的系列。2026-10-13 起收錄官方提供的全部六個系列。
+ * 順序就是顯示順序：起源在前，之後依推出時間。
+ */
+export const SET_IDS = ['OGN', 'OGS', 'RAD', 'SFD', 'UNL', 'VEN'] as const;
 
 export const GLYPH_IDS = [
   'might',
@@ -19,6 +23,11 @@ export const GLYPH_IDS = [
   'energy_3',
   'energy_4',
   'energy_5',
+  // 2026-10-13 新系列（Vendetta 的高費卡）帶來的能量符號
+  'energy_6',
+  'energy_7',
+  'energy_8',
+  'energy_12',
   'rune_body',
   'rune_calm',
   'rune_chaos',
@@ -28,22 +37,48 @@ export const GLYPH_IDS = [
   'rune_rainbow',
 ] as const;
 
+/**
+ * 官方關鍵字。
+ *
+ * 2026-10-13 隨四個新系列（Radiance／Spiritforged／Unleashed／Vendetta）
+ * 新增 18 個。名稱一律照官方英文原文，包含含空格（Show Off）與連字號（Quick-Draw）的那幾個 ——
+ * 解析器的格式檢查要跟著放寬，見 scripts/lib/card-text-parser.mjs。
+ */
 export const KEYWORDS = [
   'Accelerate',
   'Action',
   'Add',
+  'Ambush',
   'Assault',
+  'Backline',
+  'Buff',
+  'Burn',
   'Deathknell',
   'Deflect',
+  'Deploy',
+  'Disarm',
+  'Empower',
+  'Empowered',
+  'Equip',
+  'Flow',
   'Ganking',
   'Hidden',
+  'Hunt',
   'Legion',
+  'Level',
   'Mighty',
+  'Predict',
+  'Quick-Draw',
   'Reaction',
+  'Repeat',
   'Shield',
+  'Show Off',
+  'Stun',
   'Tank',
   'Temporary',
+  'Unique',
   'Vision',
+  'Weaponmaster',
 ] as const;
 
 export type CardType = (typeof CARD_TYPES)[number];
@@ -104,9 +139,29 @@ export type Card = {
   code: string;
   /** 收藏編號的數字部分。 */
   number: number;
+  /**
+   * 卡號裡數字前面的字母，一般卡為 null。
+   *
+   * 2026-10-13 四個新系列帶進三種特殊編號：
+   *   T  衍生物（UNL-T01）
+   *   R  符文（VEN-R04、RAD-R04a）
+   *   SP 特別卡（VEN-SP3/006）
+   *
+   * ⚠️ 這個欄位必須進分享用的短代碼，否則 `UNL-T01` 與 `UNL-001` 會撞成同一碼，
+   * 分享出去的牌組會解析到**錯的卡**（見 deck-url.ts 的 shortCode）。
+   */
+  codePrefix: 'T' | 'R' | 'SP' | null;
   /** 變體標記（"a"、"*" 等），一般卡為 null。 */
   variant: string | null;
   name: string;
+  /**
+   * 英雄卡的副標（Annie **, Fiery**）。沒有副標的卡為 null。
+   *
+   * 2026-10-13 官方把英文卡名拆成 name + subtitle（以前合在 name 裡）。
+   * 顯示與比對請用 card-name.ts 的 fullCardName()，不要只用 name ——
+   * 全卡池有 145 個卡名被多張卡共用，只比 name 會對到錯的卡。
+   */
+  subtitle: string | null;
   set: SetId;
   types: CardType[];
   /**
@@ -118,6 +173,14 @@ export type Card = {
   rarity: Rarity;
   domains: Domain[];
   tags: string[];
+  /**
+   * tags 裡代表「哪位英雄」的那一個，沒有就是 null。
+   *
+   * 傳奇卡一定有（建置階段驗證，見 scripts/fetch-cards.mjs 的 attachChampionTags）——
+   * 牌表上的卡名要靠它組出來（Ziggs, Hexplosives Expert）。
+   * 不能用 tags[0]：新系列的傳奇會同時帶種族標籤（["Yordle","Ziggs"]）。
+   */
+  championTag: string | null;
   energy: number | null;
   might: number | null;
   power: number | null;
@@ -148,18 +211,29 @@ export type Taxonomy = {
    * 關鍵字辭典。
    *
    * 內容抽取自官方卡面上的提醒文字（見 scripts/fetch-cards.mjs），
-   * 不是任何人手寫的。source 為 'none' 代表官方卡面沒有提供說明，
+   * 不是任何人手寫的。source 的三種值：
+   *   'official-card-text'          官方英文與簡中卡面都有，三種語言齊全
+   *   'official-card-text-en-only'  只有英文卡面有（官方簡中還沒收錄帶這個關鍵字的卡）
+   *   'none'                        官方卡面完全沒有說明
    * 介面上會誠實標示並指向官方規則書。
    */
   keywords: Record<
     string,
-    { en: string | null; cn: string | null; tw: string | null; source: 'official-card-text' | 'none' }
+    {
+      en: string | null;
+      cn: string | null;
+      tw: string | null;
+      source: 'official-card-text' | 'official-card-text-en-only' | 'none';
+    }
   >;
   /**
    * 標籤的中文對照。
-   * src 標示繁中譯名的來源：'official'（Riot 官方 / 台服正式譯名）或 'converted'（簡轉繁）。
+   * src 標示繁中譯名的來源：
+   *   'official'   Riot 官方 / 台服正式譯名
+   *   'converted'  簡轉繁
+   *   'english'    兩邊官方中文都還沒有，直接沿用英文原文
    */
-  tagLabels: Record<string, { cn: string; tw: string; src: 'official' | 'converted' }>;
+  tagLabels: Record<string, { cn: string; tw: string; src: 'official' | 'converted' | 'english' }>;
   energies: number[];
   mights: number[];
   powers: number[];

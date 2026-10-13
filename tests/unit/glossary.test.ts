@@ -15,9 +15,9 @@ const keywords = (taxonomy as unknown as { keywords: Parameters<typeof filterKey
   .keywords;
 
 describe('關鍵字搜尋', () => {
-  it('空字串回傳全部 15 個關鍵字', () => {
-    expect(filterKeywords(keywords, '')).toHaveLength(15);
-    expect(filterKeywords(keywords, '   ')).toHaveLength(15);
+  it('空字串回傳全部關鍵字', () => {
+    expect(filterKeywords(keywords, '')).toHaveLength(KEYWORDS.length);
+    expect(filterKeywords(keywords, '   ')).toHaveLength(KEYWORDS.length);
   });
 
   /*
@@ -74,7 +74,7 @@ describe('辭典資料', () => {
     for (const name of KEYWORDS) {
       const entry = keywords[name];
       expect(entry, `${name} 缺少條目`).toBeDefined();
-      expect(['official-card-text', 'none']).toContain(entry!.source);
+      expect(['official-card-text', 'official-card-text-en-only', 'none']).toContain(entry!.source);
     }
   });
 
@@ -85,6 +85,21 @@ describe('辭典資料', () => {
       expect(entry.en, `${name} 缺英文`).toBeTruthy();
       expect(entry.cn, `${name} 缺简中`).toBeTruthy();
       expect(entry.tw, `${name} 缺繁中`).toBeTruthy();
+    }
+  });
+
+  /*
+   * 2026-10-13 新系列帶進幾個關鍵字（Burn、Empower、Empowered、Flow、Level），
+   * 官方簡中還沒收錄帶這些字的卡，所以只有英文說明。
+   * 這種條目必須誠實：有英文、中文留空，而不是拿簡轉繁或自己編的字充數。
+   */
+  it('只有英文說明的條目，中文欄位必須留空而不是硬湊', () => {
+    for (const name of KEYWORDS) {
+      const entry = keywords[name]!;
+      if (entry.source !== 'official-card-text-en-only') continue;
+      expect(entry.en, `${name} 缺英文`).toBeTruthy();
+      expect(entry.cn, `${name} 不該有简中`).toBeNull();
+      expect(entry.tw, `${name} 不該有繁中`).toBeNull();
     }
   });
 

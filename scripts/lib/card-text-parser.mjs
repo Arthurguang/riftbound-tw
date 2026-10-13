@@ -28,6 +28,10 @@ export const ALLOWED_GLYPHS = Object.freeze([
   'energy_3',
   'energy_4',
   'energy_5',
+  'energy_6',
+  'energy_7',
+  'energy_8',
+  'energy_12',
   'rune_body',
   'rune_calm',
   'rune_chaos',
@@ -37,23 +41,49 @@ export const ALLOWED_GLYPHS = Object.freeze([
   'rune_rainbow',
 ]);
 
-/** 允許出現在方括號裡的關鍵字（[Assault]、[Shield 2] 等）。未列出的一律拒絕。 */
+/**
+ * 允許出現在方括號裡的關鍵字（[Assault]、[Shield 2] 等）。未列出的一律拒絕。
+ *
+ * ⚠️ 這份清單必須與 src/lib/types.ts 的 KEYWORDS **完全一致**。
+ * 之所以抄一份：這支腳本是純 .mjs，沒有建置步驟，沒辦法直接讀 TypeScript 檔。
+ * 兩份會不會走散，由 tests/unit/card-text-parser.test.ts 的一致性測試守著 ——
+ * 2026-10-13 新增關鍵字時就是先只改了 types.ts，抓取立刻失敗，才發現當時沒有人在守。
+ */
 export const ALLOWED_KEYWORDS = Object.freeze([
   'Accelerate',
   'Action',
   'Add',
+  'Ambush',
   'Assault',
+  'Backline',
+  'Buff',
+  'Burn',
   'Deathknell',
   'Deflect',
+  'Deploy',
+  'Disarm',
+  'Empower',
+  'Empowered',
+  'Equip',
+  'Flow',
   'Ganking',
   'Hidden',
+  'Hunt',
   'Legion',
+  'Level',
   'Mighty',
+  'Predict',
+  'Quick-Draw',
   'Reaction',
+  'Repeat',
   'Shield',
+  'Show Off',
+  'Stun',
   'Tank',
   'Temporary',
+  'Unique',
   'Vision',
+  'Weaponmaster',
 ]);
 
 /**
@@ -130,9 +160,42 @@ function tokenizeSegment(segment, out) {
       }
       out.push({ type: 'glyph', id });
     } else {
-      // [Assault] / [Shield 2] 形式的關鍵字
+      // [Assault] / [Shield 2] / [Quick-Draw] / [Show Off] 形式的關鍵字
       const inner = match[2];
-      const kw = /^([A-Z][A-Za-z]*)(?: (\d+))?$/.exec(inner);
+
+      /*
+       * 官方資料裡的兩個已知雜訊（2026-10-13 隨新系列出現，逐張查證過）：
+       *
+       *   [NO TEXT]  6 張 Radiance 的異畫符文卡（RAD-R01a～R06a）用它表示「這張卡沒有能力文字」，
+       *              不是關鍵字。當成空白處理。
+       *   [ADD]      只有 SFD-249 一張，是既有關鍵字 Add 的大寫誤植。
+       *
+       * 刻意逐一列舉而不是寫成「忽略所有不認得的大寫詞」——
+       * 那樣會讓真正的新關鍵字被靜靜吞掉，失去 fail-closed 的意義。
+       */
+      if (inner === 'NO TEXT') {
+        cursor = pattern.lastIndex;
+        continue;
+      }
+
+      /*
+       * 箭頭標示，不是關鍵字本身。官方英文與簡中都用同一組符號。
+       *
+       *   [>]   §135.2.e.7「與技能相關的關鍵字會以 [>] 符號標示」，
+       *         格式「[獲得賦能][>][效果文字]」—— 箭頭後面的效果受前面的關鍵字影響。
+       *   [>>]  §727.1.b.3 連接多個依賴型關鍵字，例「[等級11][>>][軍團][>]…」，
+       *         表示兩個條件都要滿足。
+       *
+       * 卡面上印的就是箭頭，所以解析成箭頭字元，交給一般文字渲染。
+       */
+      if (inner === '>' || inner === '>>') {
+        out.push({ type: 'text', value: inner === '>' ? ' ▸' : ' ▸▸' });
+        cursor = pattern.lastIndex;
+        continue;
+      }
+      const normalized = inner === 'ADD' ? 'Add' : inner;
+
+      const kw = /^([A-Z][A-Za-z]*(?:[- ][A-Z][A-Za-z]*)?)(?: (\d+))?$/.exec(normalized);
       if (!kw) {
         throw new CardTextError(`方括號內容 "[${inner}]" 不是合法的關鍵字格式`, segment);
       }

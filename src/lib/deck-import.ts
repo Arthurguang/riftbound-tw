@@ -17,10 +17,10 @@
  * 認不得的一律略過並回報數量，絕不猜測。
  */
 
-import { legendFullName } from './cards';
+import { fullCardName } from './cards';
 import { EMPTY_DECK, zoneForCard, type Deck, type DeckZone } from './deck-rules';
 import { shortCode } from './deck-url';
-import type { Card } from './types';
+import { SET_IDS, type Card } from './types';
 
 /** 一次最多處理幾行。防止貼上超大檔案癱瘓瀏覽器。 */
 const MAX_LINES = 2000;
@@ -85,8 +85,15 @@ export function buildImportIndex(cards: Card[]): Lookup {
 
     // 三種語言的卡名都收，貼中文或英文都找得到
     addName(card.name, card);
-    // 傳奇在牌表上寫成「英雄名, 稱號」，官方 API 卻把兩半拆開存
-    addName(legendFullName(card), card);
+    /*
+     * 牌表上寫的是完整名稱（「Kai'Sa, Daughter of the Void」「Annie, Fiery」），
+     * 官方 API 卻把兩半拆開存 —— 兩種寫法都要收。
+     *
+     * 只收 name 的話，六張都叫「Ahri」的卡會擠在同一個鍵，
+     * 貼進來只會拿到卡號最小的那一張（見 findCard）。
+     */
+    addName(fullCardName(card), card);
+    if (card.subtitle) addName(`${card.name}-${card.subtitle}`, card);
     addName(card.zh.tw?.name, card);
     addName(card.zh.cn?.name, card);
 
@@ -102,9 +109,20 @@ export function buildImportIndex(cards: Card[]): Lookup {
 }
 
 /**
+ * 同名卡的挑選順序：先照系列的官方順序，再照卡號。
+ *
+ * 2026-10-13 收錄六個系列後，只比卡號會變成「跨系列比大小」——
+ * 貼「Ahri」可能拿到 RAD-038 而不是起源的 OGN-066，完全看哪個數字小，
+ * 對使用者來說等於隨機。改成起源優先，同系列才比卡號。
+ */
+function pickOrder(a: Card, b: Card): number {
+  return SET_IDS.indexOf(a.set) - SET_IDS.indexOf(b.set) || a.number - b.number;
+}
+
+/**
  * 依卡名或卡號找卡片。
  *
- * 同名卡有多個版本（異畫）時，一律選**卡號最小**的那一張 ——
+ * 同名卡有多個版本（異畫、再版）時，一律選**最早系列、卡號最小**的那一張 ——
  * 這是可預測的規則，而不是隨機挑一張。使用者要指定版本就用卡號。
  */
 function findCard(token: string, lookup: Lookup): Card | null {
@@ -120,7 +138,7 @@ function findCard(token: string, lookup: Lookup): Card | null {
   const matches = lookup.byName.get(normalizeName(raw));
   if (!matches || matches.length === 0) return null;
 
-  return [...matches].sort((a, b) => a.number - b.number)[0] ?? null;
+  return [...matches].sort(pickOrder)[0] ?? null;
 }
 
 /** 各區域標題的關鍵字，三種語言都認。 */

@@ -16,13 +16,37 @@ import { applyFilters, buildSearchIndex, EMPTY_FILTERS } from '../../src/lib/sea
 const index = buildSearchIndex(ALL_CARDS, TAXONOMY.tagLabels);
 const search = (query: string) => applyFilters(ALL_CARDS, { ...EMPTY_FILTERS, query }, index, 'zh-TW');
 
-describe('圖鑑搜尋：關鍵字的各種寫法', () => {
-  it('英文、規則書用語、卡面用語、簡中都找得到同一批卡', () => {
-    const byEnglish = search('Tank').map((c) => c.id);
-    expect(byEnglish.length).toBeGreaterThan(0);
+/** 能力文字裡實際帶有這個關鍵字的卡 —— 不論英文還是簡中那一面。 */
+function cardsWithKeyword(keyword: string): string[] {
+  return ALL_CARDS.filter((card) =>
+    [card.text, card.zh.cn?.text ?? [], card.zh.tw?.text ?? []].some((blocks) =>
+      blocks.some((block) =>
+        (block.kind === 'paragraph' ? [block.tokens] : block.items).some((tokens) =>
+          tokens.some((t) => t.type === 'keyword' && t.name === keyword),
+        ),
+      ),
+    ),
+  ).map((c) => c.id);
+}
 
-    for (const term of ['坦克', '壁壘', '壁垒']) {
-      expect(search(term).map((c) => c.id), `搜尋「${term}」`).toEqual(byEnglish);
+/*
+ * 檢查方式是「每一種寫法都要找得到所有帶這個關鍵字的卡」，
+ * 而不是「三種寫法的結果完全相同」。
+ *
+ * 2026-10-13 收錄新系列後，後者不再成立，而且不成立是對的：
+ * 搜尋框同時也比對卡名，UNL-202「Void Assault」的英文卡名裡就有 Assault，
+ * 它卻沒有 Assault 關鍵字；反過來 SFD-002 的簡中卡名裡有「强袭」。
+ * 那是搜尋該有的行為，不是壞掉 —— 真正要守住的是使用者當初回報的那件事：
+ * 中文怎麼打都要找得到帶該關鍵字的卡。
+ */
+describe('圖鑑搜尋：關鍵字的各種寫法', () => {
+  it('英文、規則書用語、卡面用語、簡中都找得到帶該關鍵字的卡', () => {
+    const expected = cardsWithKeyword('Tank');
+    expect(expected.length).toBeGreaterThan(0);
+
+    for (const term of ['Tank', '坦克', '壁壘', '壁垒']) {
+      const found = search(term).map((c) => c.id);
+      expect(found, `搜尋「${term}」`).toEqual(expect.arrayContaining(expected));
     }
   });
 
@@ -33,10 +57,13 @@ describe('圖鑑搜尋：關鍵字的各種寫法', () => {
       ['Deathknell', '喪鐘', '絕念'],
       ['Vision', '預視', '預知'],
     ] as const) {
-      const expected = search(english).map((c) => c.id);
+      const expected = cardsWithKeyword(english);
       expect(expected.length, `${english} 應該有卡`).toBeGreaterThan(0);
-      expect(search(rulebook).map((c) => c.id), `規則書「${rulebook}」`).toEqual(expected);
-      expect(search(cardFace).map((c) => c.id), `卡面「${cardFace}」`).toEqual(expected);
+      for (const term of [english, rulebook, cardFace]) {
+        expect(search(term).map((c) => c.id), `搜尋「${term}」`).toEqual(
+          expect.arrayContaining(expected),
+        );
+      }
     }
   });
 

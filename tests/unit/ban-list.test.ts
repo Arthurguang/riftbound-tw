@@ -16,10 +16,16 @@ import { applyFilters, buildSearchIndex, EMPTY_FILTERS, type Mark } from '../../
 import { filtersFromParams, filtersToQueryString } from '../../src/lib/filters-url';
 import { BAN_LIST, BAN_LIST_VERSION, banEntriesFor, bannedEntryFor } from '../../src/lib/ban-list';
 import { checkLegality, EMPTY_DECK } from '../../src/lib/deck-rules';
+import { fullCardName } from '../../src/lib/card-name';
 import type { Card } from '../../src/lib/types';
 
 const byId = new Map(ALL_CARDS.map((c) => [c.id, c]));
-const byName = (name: string): Card | undefined => ALL_CARDS.find((c) => c.name === name);
+/*
+ * 一律用完整卡名查 —— 2026-10-13 起官方把英文卡名拆成 name + subtitle，
+ * 全卡池有 145 個 name 被多張不同的卡共用，只比 name 會查到錯的卡。
+ */
+const byName = (name: string): Card | undefined =>
+  ALL_CARDS.find((c) => fullCardName(c) === name);
 
 describe('禁卡表的資料本身', () => {
   it('有標示版本日期與官方出處 —— 使用者要能自己查證', () => {
@@ -70,9 +76,16 @@ describe('人工對應有沒有對到真的卡片', () => {
     expect(byName('Dreaming Tree')).toBeUndefined();
     expect(byName('The Dreaming Tree')).toBeDefined();
 
+    /*
+     * 2026-10-13 官方改了資料：這張傳奇以前叫「Wuju Bladesman - Starter」，
+     * 現在拆成 name="Wuju Bladesman"、tags=["Master Yi"]，
+     * 合起來剛好就是官方禁卡表的寫法。這條測試當時就是這樣紅燈的。
+     */
     const yi = BAN_LIST.find((e) => e.official === 'Master Yi, Wuju Bladesman');
-    expect(yi?.name).toBe('Wuju Bladesman - Starter');
-    expect(byName('Master Yi, Wuju Bladesman')).toBeUndefined();
+    expect(yi?.name).toBe('Master Yi, Wuju Bladesman');
+    expect(byName('Master Yi, Wuju Bladesman')?.code).toBe('OGS-019/024');
+    // 光看 name 欄位是對不到的 —— 這正是必須用完整卡名比對的原因
+    expect(ALL_CARDS.find((c) => c.name === 'Master Yi, Wuju Bladesman')).toBeUndefined();
   });
 });
 
@@ -92,7 +105,7 @@ describe('查詢函式', () => {
    * 把 2v2 的限制套到 1v1 會平白擋掉一張能用的卡 —— 那比漏掉還糟。
    */
   it('只在 2v2 被禁的傳奇，不會影響 1v1', () => {
-    const yi = byName('Wuju Bladesman - Starter')!;
+    const yi = byName('Master Yi, Wuju Bladesman')!;
     expect(bannedEntryFor(yi, 'constructed')).toBeNull();
     expect(bannedEntryFor(yi, 'constructed-2v2')?.official).toBe('Master Yi, Wuju Bladesman');
     // 圖鑑仍要標示得出來（它確實在某個賽制被禁）
@@ -156,7 +169,7 @@ describe('特殊標記篩選', () => {
     expect(result.length).toBeGreaterThan(0);
     for (const c of result) expect(bannedEntryFor(c, 'constructed')).not.toBeNull();
     // 只在 2v2 被禁的不算 —— 那張 1v1 可以用
-    expect(result.some((c) => c.name === 'Wuju Bladesman - Starter')).toBe(false);
+    expect(result.some((c) => fullCardName(c) === 'Master Yi, Wuju Bladesman')).toBe(false);
   });
 
   it('衍生物標記只留下衍生物', () => {

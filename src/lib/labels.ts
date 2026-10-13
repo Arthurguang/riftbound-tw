@@ -26,9 +26,17 @@ type Tri = Record<TextLang, string>;
 
 const tri = (tw: string, cn: string, en: string): Tri => ({ 'zh-TW': tw, 'zh-CN': cn, en });
 
+/*
+ * 系列名稱三種語言都取自官方 API 自己的 set.value.label
+ * （locale=zh_TW 雖然卡名仍是英文，但**系列名稱是官方翻譯過的**，2026-10-13 確認）。
+ */
 export const SET_LABELS: Record<SetId, Tri> = {
   OGN: tri('起源', '起源', 'Origins'),
   OGS: tri('試煉之地', '试炼之地', 'Proving Grounds'),
+  RAD: tri('熠耀光彩', '辉耀群星', 'Radiance'),
+  SFD: tri('鑄魂淬鍊', '铸魂淬炼', 'Spiritforged'),
+  UNL: tri('潛能怒放', '破限', 'Unleashed'),
+  VEN: tri('血海深仇', '化神争锋', 'Vendetta'),
 };
 
 export const TYPE_LABELS: Record<CardType, Tri> = {
@@ -89,6 +97,16 @@ export const CARD_FACE_TW: Partial<Record<Domain | Keyword | 'might' | 'exhaust'
   Mighty: '強力',
   Tank: '壁壘',
   Vision: '預知',
+  // 2026-10-13 新系列：卡面用語與規則書不同的那幾個（簡中卡面逐字轉繁）
+  Ambush: '伏擊',
+  Empower: '強化',
+  Empowered: '已強化',
+  Flow: '流轉',
+  'Quick-Draw': '靈便',
+  Repeat: '回響',
+  Stun: '眩暈',
+  Unique: '唯我',
+  Weaponmaster: '百煉',
   might: '力量',
   exhaust: '橫置',
 };
@@ -139,23 +157,57 @@ export const RARITY_ORDER: Record<Rarity, number> = {
  * 現在解釋一律來自官方卡面上的提醒文字，由建置腳本自動抽取到
  * taxonomy.json 的 keywords 欄位，官方改措辭時我們會跟著更新。
  */
+/*
+ * 繁中一律採**官方繁中規則書**的用語，簡中採官方簡中卡面用語。
+ * 兩者不同時，卡面用語另外記在下面的 CARD_FACE_TW，介面會標示「卡面印『X』」。
+ *
+ * 2026-10-13 新增 18 個關鍵字（四個新系列）。繁中來源分兩種：
+ *   · 規則書有收錄（§818–829）：裝配、速決、重施、鋒鏑、潛伏、狩獵、等級、
+ *     唯一、後排、賦能、獲得賦能、川流，以及狀態詞「暈眩」（§124.2）與「增益」（§426）
+ *   · 規則書還沒收錄（RAD／VEN 的新機制）：部署、繳械、洞察、亮出 ——
+ *     這四個用官方簡中逐字轉繁，與卡面一致
+ */
 export const KEYWORD_LABELS: Record<Keyword, Tri> = {
   Accelerate: tri('加速', '急速', 'Accelerate'),
   Action: tri('行動', '迅捷', 'Action'),
   Add: tri('獲得', '获得', 'Add'),
+  // 規則書 §822 潛伏；卡面印「伏擊」。與 Hidden（待命）是兩個不同的關鍵字，別對調。
+  Ambush: tri('潛伏', '伏击', 'Ambush'),
   Assault: tri('強襲', '强攻', 'Assault'),
+  Backline: tri('後排', '后排', 'Backline'),
+  // §426 強化／增益：把增益指示物放上單位叫「強化」，指示物本身叫「增益」。
+  Buff: tri('增益', '增益', 'Buff'),
+  // 規則書 §440 燃燒：把主牌堆最上面的卡移到廢牌堆
+  Burn: tri('燃燒', '燃烧', 'Burn'),
   Deathknell: tri('喪鐘', '绝念', 'Deathknell'),
   Deflect: tri('法盾', '法盾', 'Deflect'),
+  Deploy: tri('部署', '部署', 'Deploy'),
+  Disarm: tri('繳械', '缴械', 'Disarm'),
+  // §827 賦能／§828 獲得賦能；卡面印「強化」「已強化」。
+  Empower: tri('賦能', '强化', 'Empower'),
+  Empowered: tri('獲得賦能', '已强化', 'Empowered'),
+  Equip: tri('裝配', '装配', 'Equip'),
+  Flow: tri('川流', '流转', 'Flow'),
   Ganking: tri('遊走', '游走', 'Ganking'),
   // 「待命」是 Hidden。規則書另有「潛伏」是 Ambush —— 兩個不同的關鍵字，別對調。
   Hidden: tri('待命', '待命', 'Hidden'),
+  Hunt: tri('狩獵', '狩猎', 'Hunt'),
   Legion: tri('軍團', '鼓舞', 'Legion'),
+  Level: tri('等級', '等级', 'Level'),
   Mighty: tri('強大', '强力', 'Mighty'),
+  Predict: tri('洞察', '洞察', 'Predict'),
+  'Quick-Draw': tri('速決', '灵便', 'Quick-Draw'),
   Reaction: tri('反應', '反应', 'Reaction'),
+  Repeat: tri('重施', '回响', 'Repeat'),
   Shield: tri('堅守', '坚守', 'Shield'),
+  'Show Off': tri('亮出', '亮出', 'Show Off'),
+  // §124.2 的狀態清單寫「暈眩」，卡面印「眩暈」—— 兩個字的順序相反，不是筆誤。
+  Stun: tri('暈眩', '眩晕', 'Stun'),
   Tank: tri('坦克', '壁垒', 'Tank'),
   Temporary: tri('瞬息', '瞬息', 'Temporary'),
+  Unique: tri('唯一', '唯我', 'Unique'),
   Vision: tri('預視', '预知', 'Vision'),
+  Weaponmaster: tri('鋒鏑', '百炼', 'Weaponmaster'),
 };
 
 export const GLYPH_LABELS: Record<GlyphId, Tri> = {
@@ -167,6 +219,10 @@ export const GLYPH_LABELS: Record<GlyphId, Tri> = {
   energy_3: tri('3 點能量', '3 点能量', '3 Energy'),
   energy_4: tri('4 點能量', '4 点能量', '4 Energy'),
   energy_5: tri('5 點能量', '5 点能量', '5 Energy'),
+  energy_6: tri('6 點能量', '6 点能量', '6 Energy'),
+  energy_7: tri('7 點能量', '7 点能量', '7 Energy'),
+  energy_8: tri('8 點能量', '8 点能量', '8 Energy'),
+  energy_12: tri('12 點能量', '12 点能量', '12 Energy'),
   rune_body: tri('橙色符文', '橙色符文', 'Body Rune'),
   rune_calm: tri('綠色符文', '绿色符文', 'Calm Rune'),
   rune_chaos: tri('紫色符文', '紫色符文', 'Chaos Rune'),

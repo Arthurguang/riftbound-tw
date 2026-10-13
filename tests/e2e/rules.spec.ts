@@ -1,13 +1,17 @@
 import { expect, test } from '@playwright/test';
 import { expectOfficialUrl } from './url-assert';
+import taxonomy from '../../src/data/taxonomy.json';
+
+/* 關鍵字數量從資料算，不寫死 —— 官方每出一個新系列就會多幾個。 */
+const KEYWORD_COUNT = Object.keys(taxonomy.keywords).length;
 
 /** 規則說明與關鍵字辭典。 */
 
 test.describe('規則頁', () => {
-  test('列出全部 15 個關鍵字', async ({ page }) => {
+  test('列出全部關鍵字', async ({ page }) => {
     await page.goto('/rules');
     await expect(page.getByRole('heading', { name: '規則說明', level: 1 })).toBeVisible();
-    await expect(page.locator('[id^="keyword-"]')).toHaveCount(15);
+    await expect(page.locator('[id^="keyword-"]')).toHaveCount(KEYWORD_COUNT);
   });
 
   /**
@@ -40,9 +44,17 @@ test.describe('規則頁', () => {
     }
   });
 
-  test('沒有官方說明的關鍵字會誠實標示，而不是編一段', async ({ page }) => {
-    await page.goto('/rules?lang=en');
-    await expect(page.locator('#keyword-add')).toContainText('do not print reminder text');
+  /*
+   * 2026-10-13 的新系列帶進五個官方中文還沒收錄的關鍵字。
+   * 這種時候要說「中文尚未收錄，以下為英文原文」並附上官方英文，
+   * 不能自己翻一段，也不能套用「官方沒提供說明」那句 —— 官方有提供。
+   */
+  test('只有英文說明的關鍵字會誠實標示，而不是自己翻一段', async ({ page }) => {
+    await page.goto('/rules');
+    const burn = page.locator('#keyword-burn');
+    await expect(burn).toContainText('官方中文版尚未收錄');
+    // 官方英文卡面原文，照抄
+    await expect(burn).toContainText('put the top card of their Main Deck into their trash');
   });
 
   test('三種語言都能顯示', async ({ page }) => {
@@ -65,14 +77,14 @@ test.describe('規則頁', () => {
    */
   test('搜尋會即時篩選畫面上的關鍵字', async ({ page }) => {
     await page.goto('/rules');
-    await expect(page.locator('[id^="keyword-"]')).toHaveCount(15);
+    await expect(page.locator('[id^="keyword-"]')).toHaveCount(KEYWORD_COUNT);
 
     // 等瀏覽器接手之後再輸入，否則打的字 React 收不到
     await expect(page.locator('[data-glossary-ready="true"]')).toBeVisible();
 
     await page.getByLabel('搜尋關鍵字').pressSequentially('defend', { delay: 20 });
     await expect(page.locator('#keyword-shield')).toBeVisible();
-    await expect(page.locator('[id^="keyword-"]')).not.toHaveCount(15);
+    await expect(page.locator('[id^="keyword-"]')).not.toHaveCount(KEYWORD_COUNT);
   });
 
   test('每條遊戲概要都標明出處', async ({ page }) => {

@@ -8,6 +8,9 @@
 import cardsJson from '@/data/cards.origins.json';
 import taxonomyJson from '@/data/taxonomy.json';
 import type { Card, CardTextBlock, CardTextNode, Taxonomy } from './types';
+// 純函式放在沒有資料相依的檔案（見 card-name.ts 開頭），這裡轉出去方便既有呼叫端
+export { fullCardName } from './card-name';
+import { fullCardName } from './card-name';
 import type { ArtLang, TextLang } from './i18n';
 
 /*
@@ -27,9 +30,15 @@ export function getCardById(id: string): Card | undefined {
   return BY_ID.get(id);
 }
 
-/** 找出同名的其他卡（例如不同稀有度的變體版本）。 */
+/**
+ * 找出同一張卡的其他版本（異畫、超框、再版）。
+ *
+ * 比的是**完整卡名**：2026-10-13 起官方把英文卡名拆成 name + subtitle，
+ * 只比 name 的話「Ahri, Alluring」會跟其他五張不同的阿璃卡被當成同一張。
+ */
 export function getVariants(card: Card): Card[] {
-  return ALL_CARDS.filter((other) => other.id !== card.id && other.name === card.name);
+  const full = fullCardName(card);
+  return ALL_CARDS.filter((other) => other.id !== card.id && fullCardName(other) === full);
 }
 
 /** 把能力文字的 token 攤平成純文字，供搜尋比對使用。 */
@@ -70,10 +79,16 @@ export function cardName(card: Card, lang: TextLang): string {
 
 /** 冠軍卡的副標（例如 Ahri, **Alluring**）。 */
 export function cardSubtitle(card: Card, lang: TextLang): string | null {
-  if (lang === 'zh-CN') return card.zh.cn?.subtitle ?? null;
-  if (lang === 'zh-TW') return card.zh.tw?.subtitle ?? null;
-  // 英文版的副標本來就寫在卡名裡（"Ahri, Alluring"），不另外拆分。
-  return null;
+  /*
+   * 2026-10-13 起官方英文資料也把副標拆出來了（以前寫在卡名裡）。
+   *
+   * 中文資料整個缺的時候要退回英文副標，跟卡名的退回規則一致 ——
+   * 否則新系列的六張阿璃在中文介面上會全部顯示成「Ahri」，分不出是哪一張。
+   * 中文資料有、但那張卡本來就沒有副標（一般單位、法術）時才是 null。
+   */
+  if (lang === 'zh-CN') return card.zh.cn === null ? card.subtitle : card.zh.cn.subtitle;
+  if (lang === 'zh-TW') return card.zh.tw === null ? card.subtitle : card.zh.tw.subtitle;
+  return card.subtitle;
 }
 
 export function cardText(card: Card, lang: TextLang): CardTextBlock[] {
@@ -142,33 +157,3 @@ export function cardImageAlt(card: Card, lang: TextLang = 'en', art: ArtLang = '
   return `${name}${subtitle ? `・${subtitle}` : ''}（${card.code}）`;
 }
 
-/**
- * 傳奇卡在牌表上的完整英文名。
- *
- * 官方 API 把傳奇的名字拆成兩半：`name` 只有稱號（`Daughter of the Void`），
- * 英雄名放在 `tags`（`["Kai'Sa"]`）。但牌表上寫的是合起來的
- * `Kai'Sa, Daughter of the Void` —— 繁中資料本來就是合的（凱莎-虛空之女），
- * 只有英文是拆的。
- *
- * 這個差異先前害我們匯出的牌表貼到別的社群工具時，**傳奇那一行會被判成
- * 找不到卡**。所以匯出與匯入共用這一個函式，兩邊的規則不會走鐘。
- *
- * 已驗證 OGN 全部 40 張傳奇都剛好一個 tag，所以這個組法沒有例外。
- * 非傳奇卡（英雄單位等）的 `name` 本來就是完整的，直接回傳。
- */
-export function legendFullName(card: Card): string {
-  if (!card.types.includes('legend')) return card.name;
-  const champion = card.tags[0];
-  if (!champion) return card.name;
-  /*
-   * 已經合併好的就別再合一次。
-   *
-   * OGN 的傳奇是拆開的，但查官方全系列卡表時發現**後續系列不是**：
-   * SFD 的 Draven 傳奇，name 欄位直接就是「Draven, Vanquisher」。
-   * 等收錄那些系列時，少了這一行就會變成「Draven, Draven, Vanquisher」。
-   *
-   * 與其等它壞掉，不如現在就擋住 —— 反正這個判斷不會誤傷拆開的資料。
-   */
-  if (card.name.startsWith(`${champion},`)) return card.name;
-  return `${champion}, ${card.name}`;
-}

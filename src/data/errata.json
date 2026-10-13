@@ -2,8 +2,15 @@
   "source": "https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/",
   "document": "Riftbound: Origins Card Errata（官方英文版）",
   "published": "2025-10-28",
-  "fetchedAt": "2026-09-05",
+  "fetchedAt": "2026-10-13",
   "entries": [
+    {
+      "official": "Dark Child, Starter",
+      "name": "Annie, Dark Child",
+      "updated": "At the end of your turn, ready up to 2 runes.",
+      "printed": "At the end of your turn, ready 2 runes.",
+      "note": null
+    },
     {
       "official": "Ava Achiever",
       "name": "Ava Achiever",
@@ -40,13 +47,6 @@
       "note": null
     },
     {
-      "official": "Dark Child, Starter",
-      "name": "Dark Child - Starter",
-      "updated": "At the end of your turn, ready up to 2 runes.",
-      "printed": "At the end of your turn, ready 2 runes.",
-      "note": null
-    },
-    {
       "official": "Dazzling Aurora",
       "name": "Dazzling Aurora",
       "updated": "At the end of your turn, reveal cards from the top of your Main Deck until you reveal a unit and banish it. Play it, ignoring its cost, and recycle the rest.",
@@ -62,7 +62,7 @@
     },
     {
       "official": "Dragon's Rage",
-      "name": "Dragon's Rage",
+      "name": "Dragon's Rage, Lee Sin",
       "updated": "Move an enemy unit. Then do this: Choose another enemy unit at its destination. They deal damage equal to their Mights to each other.",
       "printed": "Move an enemy unit. Then choose another enemy unit at its destination. They deal damage equal to their Mights to each other.",
       "note": null
@@ -76,7 +76,7 @@
     },
     {
       "official": "Highlander",
-      "name": "Highlander",
+      "name": "Highlander, Yi",
       "updated": "[Reaction] (Play any time, even before spells and abilities resolve.)\nChoose a friendly unit. The next time it would die this turn, heal it, exhaust it, and recall it instead. (Send it to base. This isn't a move.)",
       "printed": "[Reaction] (Play any time, even before spells and abilities resolve.)\nChoose a friendly unit. The next time it dies this turn, recall it exhausted instead. (Send it to base. This isn't a move.)",
       "note": null
@@ -138,6 +138,13 @@
       "note": null
     },
     {
+      "official": "The Boss",
+      "name": "Sett, The Boss",
+      "updated": "If a buffed unit you control would die, you may pay [C], exhaust me, and spend its buff to heal it, exhaust it, and recall it instead. (Send it to base. This isn't a move.)\nWhen you conquer, ready me.",
+      "printed": "When a buffed unit you control would die, you may pay [C] and exhaust me to spend its buff and recall it exhausted instead. (Send it to base. This isn't a move.)\nWhen you conquer, ready me.",
+      "note": null
+    },
+    {
       "official": "Sigil of the Storm",
       "name": "Sigil of the Storm",
       "updated": "When you conquer here, you must recycle one of your runes. (This doesn’t choose anything.)",
@@ -166,13 +173,6 @@
       "note": null
     },
     {
-      "official": "The Boss",
-      "name": "The Boss",
-      "updated": "If a buffed unit you control would die, you may pay [C], exhaust me, and spend its buff to heal it, exhaust it, and recall it instead. (Send it to base. This isn't a move.)\nWhen you conquer, ready me.",
-      "printed": "When a buffed unit you control would die, you may pay [C] and exhaust me to spend its buff and recall it exhausted instead. (Send it to base. This isn't a move.)\nWhen you conquer, ready me.",
-      "note": null
-    },
-    {
       "official": "The Dreaming Tree",
       "name": "The Dreaming Tree",
       "updated": "When a player chooses a friendly unit here with a spell for the first time each turn, they draw 1.",
@@ -194,13 +194,6 @@
       "note": null
     },
     {
-      "official": "Unforgiven",
-      "name": "Unforgiven",
-      "updated": "[2], [E]: Move a friendly unit to or from its base.",
-      "printed": "[2], [E]: Move a friendly unit to or from your base.\nNote: Text only differs for English version of the card",
-      "note": "Note: Text only differs for English version of the card"
-    },
-    {
       "official": "Unlicensed Armory",
       "name": "Unlicensed Armory",
       "updated": "Discard 1, [E]: Choose a friendly unit. The next time it would die this turn, you may pay [C] to heal it, exhaust it, and recall it instead. (Send it to base. This isn't a move.)",
@@ -213,6 +206,13 @@
       "updated": "Spells and abilities deal 1 Bonus Damage to units here. (Each instance of damage the spell deals to a unit here is increased by 1.)",
       "printed": "Spells and abilities affecting units here each deal 1 Bonus Damage. (Each instance of damage the spell deals is increased by 1.)",
       "note": null
+    },
+    {
+      "official": "Unforgiven",
+      "name": "Yasuo, Unforgiven",
+      "updated": "[2], [E]: Move a friendly unit to or from its base.",
+      "printed": "[2], [E]: Move a friendly unit to or from your base.\nNote: Text only differs for English version of the card",
+      "note": "Note: Text only differs for English version of the card"
     },
     {
       "official": "Zhonya's Hourglass",

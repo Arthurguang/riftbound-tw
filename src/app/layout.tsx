@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: '%s｜守夜圖鑑 Ashvigil',
   },
   description:
-    '符文戰場（Riftbound）繁體中文玩家資源站。起源系列卡牌圖鑑，支援繁中／简中／英文三語切換、英文與简中卡面切換，以及全文搜尋與多條件篩選。',
+    '符文戰場（Riftbound）繁體中文玩家資源站。全系列卡牌圖鑑，支援繁中／简中／英文三語切換、英文與简中卡面切換，以及全文搜尋與多條件篩選。',
   robots: { index: true, follow: true },
   applicationName: '守夜圖鑑 Ashvigil',
 };
