@@ -67,6 +67,7 @@ type UiStrings = {
   navDeck: string;
   navOdds: string;
   navReplay: string;
+  navScore: string;
   galleryTitle: string;
   gallerySubtitle: (count: number) => string;
   searchLabel: string;
@@ -123,6 +124,7 @@ const ZH_TW: UiStrings = {
   navDeck: '牌組編輯器',
   navOdds: '機率計算',
   navReplay: '對局復盤',
+  navScore: '計分板',
   galleryTitle: '卡牌圖鑑',
   gallerySubtitle: (n) => `收錄官方已公開的全部系列，共 ${n} 張卡。`,
   searchLabel: '搜尋卡牌',
@@ -179,6 +181,7 @@ const ZH_CN: UiStrings = {
   navDeck: '卡组编辑器',
   navOdds: '概率计算',
   navReplay: '对局复盘',
+  navScore: '计分板',
   galleryTitle: '卡牌图鉴',
   gallerySubtitle: (n) => `收录官方已公开的全部系列，共 ${n} 张卡。`,
   searchLabel: '搜索卡牌',
@@ -234,6 +237,7 @@ const EN: UiStrings = {
   navDeck: 'Deck Builder',
   navOdds: 'Odds',
   navReplay: 'Replay',
+  navScore: 'Scoreboard',
   galleryTitle: 'Card Gallery',
   gallerySubtitle: (n) => `${n} cards from every published set.`,
   searchLabel: 'Search cards',

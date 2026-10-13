@@ -83,8 +83,12 @@ describe('隱私權政策跟程式碼對得上', () => {
   const using = (pattern: RegExp) =>
     files.filter((f) => pattern.test(f.code)).map((f) => f.path).sort();
 
-  it('用到 localStorage 的只有政策列出的兩處（動畫音樂偏好、收藏紀錄）', () => {
-    expect(using(/localStorage\./)).toEqual(['src/components/Ambience.tsx', 'src/lib/collection.ts']);
+  it('用到 localStorage 的只有政策列出的三處（動畫音樂偏好、收藏紀錄、計分板）', () => {
+    expect(using(/localStorage\./)).toEqual([
+      'src/components/Ambience.tsx',
+      'src/lib/collection.ts',
+      'src/lib/scoreboard.ts',
+    ]);
   });
 
   it('用到 sessionStorage 的只有政策列出的兩處（編輯中的牌組與盤面、圖鑑捲動位置）', () => {
