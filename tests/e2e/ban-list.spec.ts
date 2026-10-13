@@ -120,10 +120,32 @@ test.describe('牌組編輯器的禁卡提醒', () => {
 });
 
 test.describe('圖鑑的特殊標記篩選', () => {
-  test('只看禁卡 —— 正好 5 張戰場加 3 張其他卡', async ({ page }) => {
+  /*
+   * 官方 2026-07-16 版在 1v1 構築禁了 10 個卡名：
+   *   起源 8 張（5 戰場 + 1 法術 + 1 裝備 + 1 單位）
+   *   鑄魂淬鍊 2 張（Called Shot、Draven, Vanquisher，含異畫版共 3 張卡）
+   * 只在 2v2 被禁的那張傳奇不算在內 —— 它在 1v1 可以用。
+   *
+   * 不寫死張數：官方 API 的分頁會抖動，異畫版偶爾會在某次抓取中缺席，
+   * 寫死會讓 CI 偶發紅燈（而偶發紅燈比沒有這條檢查還糟）。
+   * 改成驗「十個卡名全都在，而且畫面上每一張都確實是禁卡」。
+   */
+  test('只看禁卡 —— 十個被禁的卡名全都在', async ({ page }) => {
     await page.goto('/cards?mark=banned', { waitUntil: 'domcontentloaded' });
-    // 官方 2026-07-16 版在 Origins 裡禁了 8 張（5 戰場 + 1 法術 + 1 裝備 + 1 單位）
-    await expect(page.getByTestId('tile-ban')).toHaveCount(8);
+
+    // 用卡號比對而不是卡名：介面預設是繁中，顯示的是譯名
+    const banned = [
+      'OGN-168', 'OGN-177', 'OGN-182', 'OGN-276', 'OGN-284',
+      'OGN-285', 'OGN-290', 'OGN-292', 'SFD-020', 'SFD-122',
+    ];
+    const shown = (await page.locator('main ul > li').allInnerTexts()).join(' ');
+    for (const code of banned) {
+      expect(shown, `${code} 應該在禁卡清單裡`).toContain(code);
+    }
+    // 畫面上每一張都掛著禁卡標記，沒有混進別的卡
+    const tiles = await page.locator('main ul > li').count();
+    await expect(page.getByTestId('tile-ban')).toHaveCount(tiles);
+    expect(tiles).toBeGreaterThanOrEqual(banned.length);
   });
 
   test('只看衍生物', async ({ page }) => {
@@ -138,8 +160,12 @@ test.describe('圖鑑的特殊標記篩選', () => {
    * 那顯然不是使用者勾兩個框想看到的。
    */
   test('兩個都勾是聯集，不是交集', async ({ page }) => {
+    await page.goto('/cards?mark=banned', { waitUntil: 'domcontentloaded' });
+    const bannedOnly = await page.getByTestId('tile-ban').count();
+
     await page.goto('/cards?mark=banned,token', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByTestId('tile-ban')).toHaveCount(8);
+    // 禁卡一張都沒少（交集的話會變成 0），而且衍生物也一起出現
+    await expect(page.getByTestId('tile-ban')).toHaveCount(bannedOnly);
     await expect(page.getByRole('link', { name: /OGN-274/ })).toBeVisible();
   });
 
@@ -149,7 +175,9 @@ test.describe('圖鑑的特殊標記篩選', () => {
     await page.getByRole('button', { name: '展開篩選' }).click();
     await page.getByRole('button', { name: '賽事禁用', exact: true }).click();
     await expect(page).toHaveURL(/[?&]mark=banned/);
-    await expect(page.getByTestId('tile-ban')).toHaveCount(8);
+    const tiles = await page.locator('main ul > li').count();
+    expect(tiles).toBeGreaterThan(0);
+    await expect(page.getByTestId('tile-ban')).toHaveCount(tiles);
   });
 });
 
@@ -233,9 +261,15 @@ test.describe('勘誤', () => {
 
   test('圖鑑可以只看有勘誤的卡', async ({ page }) => {
     await page.goto('/cards?mark=errata', { waitUntil: 'domcontentloaded' });
-    // 31 筆勘誤，涵蓋 36 張卡（同名異畫版一樣適用）
+    /*
+     * 31 筆勘誤，涵蓋四十幾張卡（同名異畫版與再版一樣適用）。
+     * 不寫死張數 —— 官方 API 的分頁會抖動，異畫版偶爾會缺席一次。
+     * 這裡驗「數字標示與實際張數一致」，而不是某個會飄的數字。
+     */
     await expect(page.getByRole('link', { name: /OGN-224/ })).toBeVisible();
-    await expect(page.getByText('符合條件：36 張')).toBeVisible();
+    const tiles = await page.locator('main ul > li').count();
+    expect(tiles).toBeGreaterThanOrEqual(31);
+    await expect(page.getByText(`符合條件：${tiles} 張`)).toBeVisible();
   });
 });
 

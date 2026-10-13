@@ -25,6 +25,8 @@ export const DOMAIN_BY_CN_COLOR = Object.freeze({
   purple: 'chaos',
   yellow: 'order',
   colorless: 'colorless',
+  // 2026-10-13 新系列：簡中改用 neutral 表示無流派（英文仍是 colorless，例 RAD-167 妮可）
+  neutral: 'colorless',
 });
 
 /** 卡種：簡中把英雄單位、指示物單位等細分，英文版統一為 unit。 */
@@ -37,8 +39,12 @@ export const TYPE_BY_CN_CATEGORY = Object.freeze({
   专属法术: 'spell',
   符文: 'rune',
   装备: 'gear',
+  // 2026-10-13 新系列：綁定特定英雄的裝備（例如 RAD-156 嘉文四世的「德瑪西亞軍旗」）
+  专属装备: 'gear',
+  指示物装备: 'gear',
   传奇: 'legend',
   战场: 'battlefield',
+  指示物战场: 'battlefield',
 });
 
 /**
@@ -57,6 +63,9 @@ export const SUBTYPE_BY_CN_CATEGORY = Object.freeze({
   英雄单位: 'champion',
   专属单位: 'signature',
   专属法术: 'signature',
+  专属装备: 'signature',
+  指示物装备: 'token',
+  指示物战场: 'token',
   指示物单位: 'token',
 });
 
@@ -73,30 +82,64 @@ export const KEYWORD_BY_CN = Object.freeze({
   急速: 'Accelerate',
   迅捷: 'Action',
   获得: 'Add',
+  伏击: 'Ambush',
   强攻: 'Assault',
+  后排: 'Backline',
+  增益: 'Buff',
+  燃烧: 'Burn',
   绝念: 'Deathknell',
   法盾: 'Deflect',
+  部署: 'Deploy',
+  缴械: 'Disarm',
+  强化: 'Empower',
+  已强化: 'Empowered',
+  装配: 'Equip',
+  流转: 'Flow',
   游走: 'Ganking',
   待命: 'Hidden',
+  狩猎: 'Hunt',
   鼓舞: 'Legion',
+  等级: 'Level',
   强力: 'Mighty',
+  洞察: 'Predict',
+  灵便: 'Quick-Draw',
   反应: 'Reaction',
+  回响: 'Repeat',
   坚守: 'Shield',
+  亮出: 'Show Off',
+  眩晕: 'Stun',
   壁垒: 'Tank',
   瞬息: 'Temporary',
+  唯我: 'Unique',
   预知: 'Vision',
+  百炼: 'Weaponmaster',
 });
 
 /** 能力文字裡的符號 token（簡中）→ 本站的符號 id。 */
 export const GLYPH_BY_CN_TOKEN = Object.freeze({
   S: 'might',
   横置: 'exhaust',
+  /*
+   * 2026-10-13 的新系列改用單字母寫法，與舊系列並存。對照是比對同一張卡的英文版確認的：
+   *   T  RAD-027 簡「{{T}}：给予一名单位{{增益}}」＝ 英「:rb_exhaust:: [Buff] a unit」
+   *   A  RAD-036 簡「对手必须支付{{A}}」＝ 英「Opponents must pay :rb_rune_rainbow:」
+   * （另有 {{C}}＝「這張卡自己流派的符文」，因為要看卡片才知道是哪一色，
+   *   處理寫在 cn-text-parser.mjs 而不是這張表。）
+   */
+  T: 'exhaust',
+  // SFD-206 的官方資料把 {{S}} 寫成小寫 {{s}}（全站僅此一處），比照處理
+  s: 'might',
+  A: 'rune_rainbow',
   0: 'energy_0',
   1: 'energy_1',
   2: 'energy_2',
   3: 'energy_3',
   4: 'energy_4',
   5: 'energy_5',
+  6: 'energy_6',
+  7: 'energy_7',
+  8: 'energy_8',
+  12: 'energy_12',
   红色: 'rune_fury',
   绿色: 'rune_calm',
   蓝色: 'rune_mind',
@@ -184,4 +227,86 @@ export const TAGS = Object.freeze({
   Spirit: { cn: '灵体', tw: '靈體', src: 'converted' },
   Trifarian: { cn: '崔法利', tw: '崔法利', src: 'converted' },
   Yordle: { cn: '约德尔人', tw: '約德爾人', src: 'official' },
+
+  // ── 2026-10-13 四個新系列的英雄（同樣取自 Data Dragon zh_TW／zh_CN） ──
+  Akali: { cn: '阿卡丽', tw: '阿卡莉', src: 'official' },
+  Akshan: { cn: '阿克尚', tw: '埃可尚', src: 'official' },
+  Ambessa: { cn: '安蓓萨', tw: '安比薩', src: 'official' },
+  Aphelios: { cn: '厄斐琉斯', tw: '亞菲利歐', src: 'official' },
+  Ashe: { cn: '艾希', tw: '艾希', src: 'official' },
+  Azir: { cn: '阿兹尔', tw: '阿祈爾', src: 'official' },
+  Bard: { cn: '巴德', tw: '巴德', src: 'official' },
+  Diana: { cn: '黛安娜', tw: '黛安娜', src: 'official' },
+  Evelynn: { cn: '伊芙琳', tw: '伊芙琳', src: 'official' },
+  Ezreal: { cn: '伊泽瑞尔', tw: '伊澤瑞爾', src: 'official' },
+  Fizz: { cn: '菲兹', tw: '飛斯', src: 'official' },
+  Galio: { cn: '加里奥', tw: '加里歐', src: 'official' },
+  Gangplank: { cn: '普朗克', tw: '剛普朗克', src: 'official' },
+  Graves: { cn: '格雷福斯', tw: '葛雷夫', src: 'official' },
+  Hwei: { cn: '彗', tw: '赫威', src: 'official' },
+  Illaoi: { cn: '俄洛伊', tw: '伊羅旖', src: 'official' },
+  Irelia: { cn: '艾瑞莉娅', tw: '伊瑞莉雅', src: 'official' },
+  Ivern: { cn: '艾翁', tw: '埃爾文', src: 'official' },
+  Janna: { cn: '迦娜', tw: '珍娜', src: 'official' },
+  'Jarvan IV': { cn: '嘉文四世', tw: '嘉文四世', src: 'official' },
+  Jax: { cn: '贾克斯', tw: '賈克斯', src: 'official' },
+  Jayce: { cn: '杰斯', tw: '杰西', src: 'official' },
+  Jhin: { cn: '烬', tw: '燼', src: 'official' },
+  "K'Sante": { cn: '奎桑提', tw: '卡桑帝', src: 'official' },
+  Karma: { cn: '卡尔玛', tw: '卡瑪', src: 'official' },
+  Katarina: { cn: '卡特琳娜', tw: '卡特蓮娜', src: 'official' },
+  Kayle: { cn: '凯尔', tw: '凱爾', src: 'official' },
+  Kennen: { cn: '凯南', tw: '凱能', src: 'official' },
+  "Kha'Zix": { cn: '卡兹克', tw: '卡力斯', src: 'official' },
+  LeBlanc: { cn: '乐芙兰', tw: '勒布朗', src: 'official' },
+  Lillia: { cn: '莉莉娅', tw: '莉莉亞', src: 'official' },
+  Lucian: { cn: '卢锡安', tw: '路西恩', src: 'official' },
+  Lulu: { cn: '璐璐', tw: '露璐', src: 'official' },
+  Mel: { cn: '梅尔', tw: '梅爾', src: 'official' },
+  Mordekaiser: { cn: '莫德凯撒', tw: '魔鬥凱薩', src: 'official' },
+  Morgana: { cn: '莫甘娜', tw: '魔甘娜', src: 'official' },
+  Nami: { cn: '娜美', tw: '娜米', src: 'official' },
+  Nasus: { cn: '内瑟斯', tw: '納瑟斯', src: 'official' },
+  Neeko: { cn: '妮蔻', tw: '妮可', src: 'official' },
+  Nidalee: { cn: '奈德丽', tw: '奈德麗', src: 'official' },
+  Nilah: { cn: '尼菈', tw: '淣菈', src: 'official' },
+  Orianna: { cn: '奥莉安娜', tw: '奧莉安娜', src: 'official' },
+  Ornn: { cn: '奥恩', tw: '鄂爾', src: 'official' },
+  Poppy: { cn: '波比', tw: '波比', src: 'official' },
+  Pyke: { cn: '派克', tw: '派克', src: 'official' },
+  "Rek'Sai": { cn: '雷克塞', tw: '雷珂煞', src: 'official' },
+  Rell: { cn: '芮尔', tw: '銳兒', src: 'official' },
+  'Renata Glasc': { cn: '烈娜塔 · 戈拉斯克', tw: '睿娜妲‧格萊斯克', src: 'official' },
+  Renekton: { cn: '雷克顿', tw: '雷尼克頓', src: 'official' },
+  Rengar: { cn: '雷恩加尔', tw: '雷葛爾', src: 'official' },
+  Riven: { cn: '锐雯', tw: '雷玟', src: 'official' },
+  Rumble: { cn: '兰博', tw: '藍寶', src: 'official' },
+  Seraphine: { cn: '萨勒芬妮', tw: '瑟菈紛', src: 'official' },
+  Sivir: { cn: '希维尔', tw: '希維爾', src: 'official' },
+  Soraka: { cn: '索拉卡', tw: '索拉卡', src: 'official' },
+  Swain: { cn: '斯维因', tw: '斯溫', src: 'official' },
+  Syndra: { cn: '辛德拉', tw: '星朵拉', src: 'official' },
+  Vex: { cn: '薇古丝', tw: '薇可絲', src: 'official' },
+  Xerath: { cn: '泽拉斯', tw: '齊勒斯', src: 'official' },
+  'Xin Zhao': { cn: '赵信', tw: '趙信', src: 'official' },
+  Yone: { cn: '永恩', tw: '犽凝', src: 'official' },
+  Yuumi: { cn: '悠米', tw: '悠咪', src: 'official' },
+  Zed: { cn: '劫', tw: '劫', src: 'official' },
+  Ziggs: { cn: '吉格斯', tw: '希格斯', src: 'official' },
+  Zilean: { cn: '基兰', tw: '極靈', src: 'official' },
+
+  // ── 新系列的其他標籤：簡中取自中國大陸官方站，繁中為逐字轉換 ──
+  Demon: { cn: '恶魔', tw: '惡魔', src: 'converted' },
+  Equipment: { cn: '武装', tw: '武裝', src: 'converted' },
+  Icathia: { cn: '艾卡西亚', tw: '艾卡西亞', src: 'converted' },
+  Kathkan: { cn: '喀斯坎', tw: '喀斯坎', src: 'converted' },
+  Sentinel: { cn: '哨兵', tw: '哨兵', src: 'converted' },
+  Spider: { cn: '蜘蛛', tw: '蜘蛛', src: 'converted' },
+
+  /*
+   * Device：官方中英文資料都查過，**沒有任何官方中文**
+   * （中國大陸官方站把這些卡歸在「装备」類別，但沒有對應的標籤）。
+   * 依照本站「沒有官方譯名就顯示英文」的原則保留英文，有了官方譯名再補。
+   */
+  Device: { cn: 'Device', tw: 'Device', src: 'english' },
 });

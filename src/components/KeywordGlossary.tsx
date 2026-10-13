@@ -22,7 +22,7 @@ export function KeywordGlossary({
   langQuery,
 }: {
   keywords: Taxonomy['keywords'];
-  /** 每個關鍵字在 Origins 系列裡有幾張卡使用 */
+  /** 每個關鍵字在卡池裡有幾張卡使用 */
   counts: Record<string, number>;
   lang: TextLang;
   /*
@@ -99,9 +99,24 @@ export function KeywordGlossary({
                     </span>
                   )}
                 </dt>
+                {/*
+                  三種情況，說法要分清楚：
+                    有這個語言的官方說明  直接顯示
+                    只有英文（新關鍵字）   標明「中文尚未收錄」後顯示英文原文
+                    官方完全沒有說明       說「官方沒提供」，指向規則書
+                  中間那種是 2026-10-13 新系列帶來的。混用第三種說法等於騙人：
+                  官方有寫，只是還沒有中文。
+                */}
                 <dd className="mt-1.5 text-sm leading-relaxed text-ink">
                   {official ? (
                     <GlossaryText text={official} lang={lang} />
+                  ) : entry?.en ? (
+                    <>
+                      <span className="block text-xs text-ink-faint">
+                        {strings.englishOnlyText[lang]}
+                      </span>
+                      <GlossaryText text={entry.en} lang="en" />
+                    </>
                   ) : (
                     <span className="text-ink-faint">{strings.noOfficialText[lang]}</span>
                   )}

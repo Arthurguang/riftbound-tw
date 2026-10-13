@@ -68,7 +68,8 @@ test.describe('首頁的傳奇與流派', () => {
     await toggleBadge(page, '狂怒', true);
     await toggleBadge(page, '渾沌', true);
 
-    await expect(legends(page)).toHaveCount(2);
+    // 2026-10-13 收錄六個系列後，狂怒＋渾沌每個系列各有一位，共六位
+    await expect(legends(page)).toHaveCount(6);
     for (const d of await legends(page).evaluateAll((els) =>
       els.map((e) => e.getAttribute('data-domains') ?? ''),
     )) {
@@ -76,13 +77,19 @@ test.describe('首頁的傳奇與流派', () => {
     }
   });
 
-  test('選兩個對立的流派，說明目前沒有這樣的傳奇', async ({ page }) => {
+  /*
+   * 原本這條測的是「選對立的兩個流派會是空的」——
+   * 2026-10-13 收錄 Vendetta 後不再成立：該系列刻意做了三位跨對立流派的傳奇。
+   * 改成確認篩選器找得到它們（空狀態的文案仍然留著，由單元測試涵蓋判斷邏輯）。
+   */
+  test('選兩個對立的流派，看得到 Vendetta 那位跨流派傳奇', async ({ page }) => {
     await gotoHome(page);
     await toggleBadge(page, '狂怒', true);
     await toggleBadge(page, '止靜', true);
 
-    await expect(legends(page)).toHaveCount(0);
-    await expect(page.getByTestId('legend-empty')).toContainText('目前卡池沒有');
+    await expect(legends(page)).toHaveCount(1);
+    const domains = await legends(page).first().getAttribute('data-domains');
+    expect((domains ?? '').split(' ').sort()).toEqual(['calm', 'fury']);
   });
 
   test('再點一次取消選取；清除篩選回到全部', async ({ page }) => {

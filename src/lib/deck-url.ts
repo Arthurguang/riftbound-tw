@@ -31,13 +31,18 @@ const MAX_QTY = 99;
 const MAX_ENTRIES = 300;
 
 /**
- * 卡片的短代碼，例如 `ogn056`、`ogn066a`。
+ * 卡片的短代碼，例如 `ogn056`、`ogn066a`、`unlt001`。
  *
  * 不直接用卡片 id（`ogn-056-298`）是因為結尾的系列總數是冗餘的，
  * 網址會變得又長又難讀。
+ *
+ * ⚠️ 2026-10-13 起要帶上 codePrefix（T／R／SP）。
+ * 新系列的 `UNL-T01` 與 `UNL-001` 數字都是 1，少了前綴會編成同一個代碼 ——
+ * 那會讓分享出去的牌組解析到錯的卡。一般卡沒有前綴，舊連結的代碼完全不變。
  */
 export function shortCode(card: Card): string {
-  return `${card.set.toLowerCase()}${String(card.number).padStart(3, '0')}${card.variant ?? ''}`;
+  const prefix = card.codePrefix?.toLowerCase() ?? '';
+  return `${card.set.toLowerCase()}${prefix}${String(card.number).padStart(3, '0')}${card.variant ?? ''}`;
 }
 
 /** 建立「短代碼 → 卡片」的查表，供解碼使用。 */

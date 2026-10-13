@@ -557,7 +557,7 @@ export function OddsCalculator({ cards }: { cards: Card[] }) {
           <p>
             <strong className="text-ink">不含任何卡牌能力。</strong>
             額外抽牌、資源加速、搜尋牌庫都沒有算進去 ——
-            那需要一個看得懂 376 張卡各自能力的規則引擎。
+            那需要一個看得懂每一張卡各自能力的規則引擎。
           </p>
           <p>
             <strong className="text-ink">這不是勝率。</strong>

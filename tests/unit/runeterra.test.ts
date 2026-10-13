@@ -8,6 +8,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { ALL_CARDS, TAXONOMY } from '../../src/lib/cards';
+import { SET_IDS } from '../../src/lib/types';
 import {
   DOMAIN_ESSENCE,
   matchesDomains,
@@ -44,15 +45,27 @@ describe('傳奇清單', () => {
     expect(legends).toHaveLength(names.size);
   });
 
-  /* 數量快照：資料變了會先紅燈，提醒看一下首頁是否需要調整說明文字。 */
-  it('目前是 16 位：起源 12 位＋試煉之地 4 位', () => {
-    expect(legends.filter((l) => l.set === 'OGN')).toHaveLength(12);
-    expect(legends.filter((l) => l.set === 'OGS')).toHaveLength(4);
+  /*
+   * 數量快照：資料變了會先紅燈，提醒看一下首頁是否需要調整說明文字。
+   * 2026-10-13 收錄六個系列後從 16 位變成 57 位。
+   */
+  it('目前是 57 位，六個系列都有', () => {
+    const bySet: Record<string, number> = {
+      OGN: 12, OGS: 4, RAD: 8, SFD: 12, UNL: 12, VEN: 9,
+    };
+    for (const [set, count] of Object.entries(bySet)) {
+      expect(legends.filter((l) => l.set === set), `${set} 傳奇數`).toHaveLength(count);
+    }
+    expect(legends).toHaveLength(57);
   });
 
-  it('起源系列排在前面', () => {
-    const firstStarter = legends.findIndex((l) => l.set === 'OGS');
-    expect(legends.slice(firstStarter).every((l) => l.set === 'OGS')).toBe(true);
+  it('依系列的官方順序排列，同系列依卡號', () => {
+    const order = legends.map((l) => SET_IDS.indexOf(l.set));
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    for (const set of SET_IDS) {
+      const numbers = legends.filter((l) => l.set === set).map((l) => l.number);
+      expect(numbers, `${set} 卡號順序`).toEqual([...numbers].sort((a, b) => a - b));
+    }
   });
 
   it('每位傳奇剛好兩個流派', () => {
@@ -90,19 +103,35 @@ describe('流派篩選', () => {
     expect(matchesDomains(['fury', 'mind'], ['fury', 'chaos'])).toBe(false);
   });
 
-  it('用真實資料：狂怒＋渾沌有兩位傳奇（起源與試煉之地各一）', () => {
+  it('用真實資料：狂怒＋渾沌每個系列都有一位傳奇', () => {
     const matched = allLegends(ALL_CARDS).filter((l) =>
       matchesDomains(playDomains(l), ['fury', 'chaos']),
     );
-    expect(matched.map((l) => l.set).sort()).toEqual(['OGN', 'OGS']);
+    expect(matched.map((l) => l.set).sort()).toEqual([...SET_IDS].sort());
   });
 
-  it('用真實資料：對立的兩個流派目前沒有傳奇', () => {
-    for (const domain of RING) {
-      const matched = allLegends(ALL_CARDS).filter((l) =>
-        matchesDomains(playDomains(l), [domain, OPPOSITE[domain]]),
-      );
-      expect(matched).toHaveLength(0);
+  /*
+   * 2026-10-13 更新：原本這條寫「對立的兩個流派沒有傳奇」，
+   * 收錄 Vendetta 後不再成立 —— 該系列刻意做了三位跨對立流派的傳奇
+   * （VEN-139 狂怒＋平靜、VEN-149 心智＋身體、VEN-155 渾沌＋秩序）。
+   *
+   * 這是官方設計的改變，不是資料壞掉，所以改成記錄「哪幾組對立有傳奇」。
+   * 之後再出跨對立的傳奇時這條會紅燈，提醒回來確認首頁的篩選說明。
+   */
+  it('用真實資料：跨對立流派的傳奇只有 Vendetta 那三位', () => {
+    const crossing = allLegends(ALL_CARDS).filter((l) => {
+      const [a, b] = playDomains(l);
+      return a !== undefined && b !== undefined && OPPOSITE[a] === b;
+    });
+    expect(crossing.map((l) => l.code).sort()).toEqual([
+      'VEN-139/166',
+      'VEN-149/166',
+      'VEN-155/166',
+    ]);
+    // 篩選器照樣找得到它們 —— 選了對立的兩個流派不會變成空清單
+    for (const legend of crossing) {
+      const [a, b] = playDomains(legend);
+      expect(matchesDomains(playDomains(legend), [a!, b!])).toBe(true);
     }
   });
 });

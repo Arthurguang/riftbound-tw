@@ -644,8 +644,11 @@ test.describe('衍生物', () => {
 
     const add = await editOf(page, 'you', 'add');
     const tokens = add.locator('[data-token="true"]');
-    // OGN 共四張衍生物：三種侍從加上精靈
-    await expect(tokens).toHaveCount(4);
+    /*
+     * 卡池裡共 12 張衍生物：起源 4 張（三種侍從＋精靈），
+     * 其餘 8 張來自新系列（卡號帶 T 的那些）。
+     */
+    await expect(tokens).toHaveCount(12);
   });
 
   test('可以把衍生物放到場上，而且不會跳「不在牌組裡」', async ({ page }) => {

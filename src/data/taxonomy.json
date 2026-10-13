@@ -9,6 +9,26 @@
    "id": "OGS",
    "name": "Proving Grounds",
    "count": 24
+  },
+  {
+   "id": "RAD",
+   "name": "Radiance",
+   "count": 183
+  },
+  {
+   "id": "SFD",
+   "name": "Spiritforged",
+   "count": 288
+  },
+  {
+   "id": "UNL",
+   "name": "Unleashed",
+   "count": 285
+  },
+  {
+   "id": "VEN",
+   "name": "Vendetta",
+   "count": 237
   }
  ],
  "types": [
@@ -37,9 +57,16 @@
  ],
  "tags": [
   "Ahri",
+  "Akali",
+  "Akshan",
+  "Ambessa",
   "Anivia",
   "Annie",
+  "Aphelios",
+  "Ashe",
+  "Azir",
   "Bandle City",
+  "Bard",
   "Bilgewater",
   "Bird",
   "Blitzcrank",
@@ -47,45 +74,102 @@
   "Cat",
   "Darius",
   "Demacia",
+  "Demon",
+  "Device",
+  "Diana",
   "Dog",
   "Dr. Mundo",
   "Dragon",
   "Draven",
   "Ekko",
   "Elite",
+  "Equipment",
+  "Evelynn",
+  "Ezreal",
   "Fae",
   "Fiora",
+  "Fizz",
   "Freljord",
+  "Galio",
+  "Gangplank",
   "Garen",
+  "Graves",
   "Heimerdinger",
+  "Hwei",
+  "Icathia",
+  "Illaoi",
   "Ionia",
+  "Irelia",
+  "Ivern",
   "Ixtal",
+  "Janna",
+  "Jarvan IV",
+  "Jax",
+  "Jayce",
+  "Jhin",
   "Jinx",
+  "K'Sante",
   "Kai'Sa",
+  "Karma",
   "Karthus",
+  "Katarina",
+  "Kathkan",
+  "Kayle",
   "Kayn",
+  "Kennen",
+  "Kha'Zix",
   "Kog'Maw",
+  "LeBlanc",
   "Lee Sin",
   "Leona",
+  "Lillia",
+  "Lucian",
+  "Lulu",
   "Lux",
   "Malzahar",
   "Master Yi",
   "Mech",
+  "Mel",
   "Miss Fortune",
+  "Mordekaiser",
+  "Morgana",
   "Mount Targon",
+  "Nami",
+  "Nasus",
+  "Neeko",
+  "Nidalee",
+  "Nilah",
   "Nocturne",
   "Noxus",
+  "Orianna",
+  "Ornn",
   "Piltover",
   "Pirate",
+  "Poppy",
   "Poro",
+  "Pyke",
   "Qiyana",
   "Recruit",
+  "Rek'Sai",
+  "Rell",
+  "Renata Glasc",
+  "Renekton",
+  "Rengar",
+  "Riven",
+  "Rumble",
+  "Sentinel",
+  "Seraphine",
   "Sett",
   "Shadow Isles",
   "Shen",
   "Shurima",
+  "Sivir",
   "Sona",
+  "Soraka",
+  "Spider",
   "Spirit",
+  "Swain",
+  "Syndra",
   "Taric",
   "Teemo",
   "The Void",
@@ -94,18 +178,41 @@
   "Twisted Fate",
   "Udyr",
   "Vayne",
+  "Vex",
   "Vi",
   "Viktor",
   "Volibear",
   "Warwick",
+  "Xerath",
+  "Xin Zhao",
   "Yasuo",
+  "Yone",
   "Yordle",
-  "Zaun"
+  "Yuumi",
+  "Zaun",
+  "Zed",
+  "Ziggs",
+  "Zilean"
  ],
  "tagLabels": {
   "Ahri": {
    "cn": "阿狸",
    "tw": "阿璃",
+   "src": "official"
+  },
+  "Akali": {
+   "cn": "阿卡丽",
+   "tw": "阿卡莉",
+   "src": "official"
+  },
+  "Akshan": {
+   "cn": "阿克尚",
+   "tw": "埃可尚",
+   "src": "official"
+  },
+  "Ambessa": {
+   "cn": "安蓓萨",
+   "tw": "安比薩",
    "src": "official"
   },
   "Anivia": {
@@ -118,9 +225,29 @@
    "tw": "安妮",
    "src": "official"
   },
+  "Aphelios": {
+   "cn": "厄斐琉斯",
+   "tw": "亞菲利歐",
+   "src": "official"
+  },
+  "Ashe": {
+   "cn": "艾希",
+   "tw": "艾希",
+   "src": "official"
+  },
+  "Azir": {
+   "cn": "阿兹尔",
+   "tw": "阿祈爾",
+   "src": "official"
+  },
   "Bandle City": {
    "cn": "班德尔城",
    "tw": "班德爾城",
+   "src": "official"
+  },
+  "Bard": {
+   "cn": "巴德",
+   "tw": "巴德",
    "src": "official"
   },
   "Bilgewater": {
@@ -158,6 +285,21 @@
    "tw": "德瑪西亞",
    "src": "official"
   },
+  "Demon": {
+   "cn": "恶魔",
+   "tw": "惡魔",
+   "src": "converted"
+  },
+  "Device": {
+   "cn": "Device",
+   "tw": "Device",
+   "src": "english"
+  },
+  "Diana": {
+   "cn": "黛安娜",
+   "tw": "黛安娜",
+   "src": "official"
+  },
   "Dog": {
    "cn": "犬形",
    "tw": "犬形",
@@ -188,6 +330,21 @@
    "tw": "精銳",
    "src": "converted"
   },
+  "Equipment": {
+   "cn": "武装",
+   "tw": "武裝",
+   "src": "converted"
+  },
+  "Evelynn": {
+   "cn": "伊芙琳",
+   "tw": "伊芙琳",
+   "src": "official"
+  },
+  "Ezreal": {
+   "cn": "伊泽瑞尔",
+   "tw": "伊澤瑞爾",
+   "src": "official"
+  },
   "Fae": {
    "cn": "仙灵",
    "tw": "仙靈",
@@ -198,9 +355,24 @@
    "tw": "菲歐拉",
    "src": "official"
   },
+  "Fizz": {
+   "cn": "菲兹",
+   "tw": "飛斯",
+   "src": "official"
+  },
   "Freljord": {
    "cn": "弗雷尔卓德",
    "tw": "弗雷爾卓德",
+   "src": "official"
+  },
+  "Galio": {
+   "cn": "加里奥",
+   "tw": "加里歐",
+   "src": "official"
+  },
+  "Gangplank": {
+   "cn": "普朗克",
+   "tw": "剛普朗克",
    "src": "official"
   },
   "Garen": {
@@ -208,9 +380,29 @@
    "tw": "蓋倫",
    "src": "official"
   },
+  "Graves": {
+   "cn": "格雷福斯",
+   "tw": "葛雷夫",
+   "src": "official"
+  },
   "Heimerdinger": {
    "cn": "黑默丁格",
    "tw": "漢默丁格",
+   "src": "official"
+  },
+  "Hwei": {
+   "cn": "彗",
+   "tw": "赫威",
+   "src": "official"
+  },
+  "Icathia": {
+   "cn": "艾卡西亚",
+   "tw": "艾卡西亞",
+   "src": "converted"
+  },
+  "Illaoi": {
+   "cn": "俄洛伊",
+   "tw": "伊羅旖",
    "src": "official"
   },
   "Ionia": {
@@ -218,9 +410,44 @@
    "tw": "愛歐尼亞",
    "src": "official"
   },
+  "Irelia": {
+   "cn": "艾瑞莉娅",
+   "tw": "伊瑞莉雅",
+   "src": "official"
+  },
+  "Ivern": {
+   "cn": "艾翁",
+   "tw": "埃爾文",
+   "src": "official"
+  },
   "Ixtal": {
    "cn": "以绪塔尔",
    "tw": "伊薩爾",
+   "src": "official"
+  },
+  "Janna": {
+   "cn": "迦娜",
+   "tw": "珍娜",
+   "src": "official"
+  },
+  "Jarvan IV": {
+   "cn": "嘉文四世",
+   "tw": "嘉文四世",
+   "src": "official"
+  },
+  "Jax": {
+   "cn": "贾克斯",
+   "tw": "賈克斯",
+   "src": "official"
+  },
+  "Jayce": {
+   "cn": "杰斯",
+   "tw": "杰西",
+   "src": "official"
+  },
+  "Jhin": {
+   "cn": "烬",
+   "tw": "燼",
    "src": "official"
   },
   "Jinx": {
@@ -228,9 +455,19 @@
    "tw": "吉茵珂絲",
    "src": "official"
   },
+  "K'Sante": {
+   "cn": "奎桑提",
+   "tw": "卡桑帝",
+   "src": "official"
+  },
   "Kai'Sa": {
    "cn": "卡莎",
    "tw": "凱莎",
+   "src": "official"
+  },
+  "Karma": {
+   "cn": "卡尔玛",
+   "tw": "卡瑪",
    "src": "official"
   },
   "Karthus": {
@@ -238,14 +475,44 @@
    "tw": "卡爾瑟斯",
    "src": "official"
   },
+  "Katarina": {
+   "cn": "卡特琳娜",
+   "tw": "卡特蓮娜",
+   "src": "official"
+  },
+  "Kathkan": {
+   "cn": "喀斯坎",
+   "tw": "喀斯坎",
+   "src": "converted"
+  },
+  "Kayle": {
+   "cn": "凯尔",
+   "tw": "凱爾",
+   "src": "official"
+  },
   "Kayn": {
    "cn": "凯隐",
    "tw": "慨影",
    "src": "official"
   },
+  "Kennen": {
+   "cn": "凯南",
+   "tw": "凱能",
+   "src": "official"
+  },
+  "Kha'Zix": {
+   "cn": "卡兹克",
+   "tw": "卡力斯",
+   "src": "official"
+  },
   "Kog'Maw": {
    "cn": "克格莫",
    "tw": "寇格魔",
+   "src": "official"
+  },
+  "LeBlanc": {
+   "cn": "乐芙兰",
+   "tw": "勒布朗",
    "src": "official"
   },
   "Lee Sin": {
@@ -256,6 +523,21 @@
   "Leona": {
    "cn": "蕾欧娜",
    "tw": "雷歐娜",
+   "src": "official"
+  },
+  "Lillia": {
+   "cn": "莉莉娅",
+   "tw": "莉莉亞",
+   "src": "official"
+  },
+  "Lucian": {
+   "cn": "卢锡安",
+   "tw": "路西恩",
+   "src": "official"
+  },
+  "Lulu": {
+   "cn": "璐璐",
+   "tw": "露璐",
    "src": "official"
   },
   "Lux": {
@@ -278,14 +560,54 @@
    "tw": "機械",
    "src": "converted"
   },
+  "Mel": {
+   "cn": "梅尔",
+   "tw": "梅爾",
+   "src": "official"
+  },
   "Miss Fortune": {
    "cn": "厄运小姐",
    "tw": "好運姐",
    "src": "official"
   },
+  "Mordekaiser": {
+   "cn": "莫德凯撒",
+   "tw": "魔鬥凱薩",
+   "src": "official"
+  },
+  "Morgana": {
+   "cn": "莫甘娜",
+   "tw": "魔甘娜",
+   "src": "official"
+  },
   "Mount Targon": {
    "cn": "巨神峰",
    "tw": "巨神峰",
+   "src": "official"
+  },
+  "Nami": {
+   "cn": "娜美",
+   "tw": "娜米",
+   "src": "official"
+  },
+  "Nasus": {
+   "cn": "内瑟斯",
+   "tw": "納瑟斯",
+   "src": "official"
+  },
+  "Neeko": {
+   "cn": "妮蔻",
+   "tw": "妮可",
+   "src": "official"
+  },
+  "Nidalee": {
+   "cn": "奈德丽",
+   "tw": "奈德麗",
+   "src": "official"
+  },
+  "Nilah": {
+   "cn": "尼菈",
+   "tw": "淣菈",
    "src": "official"
   },
   "Nocturne": {
@@ -298,6 +620,16 @@
    "tw": "諾克薩斯",
    "src": "official"
   },
+  "Orianna": {
+   "cn": "奥莉安娜",
+   "tw": "奧莉安娜",
+   "src": "official"
+  },
+  "Ornn": {
+   "cn": "奥恩",
+   "tw": "鄂爾",
+   "src": "official"
+  },
   "Piltover": {
    "cn": "皮尔特沃夫",
    "tw": "皮爾托福",
@@ -308,9 +640,19 @@
    "tw": "海盜",
    "src": "converted"
   },
+  "Poppy": {
+   "cn": "波比",
+   "tw": "波比",
+   "src": "official"
+  },
   "Poro": {
    "cn": "魄罗",
    "tw": "波羅",
+   "src": "official"
+  },
+  "Pyke": {
+   "cn": "派克",
+   "tw": "派克",
    "src": "official"
   },
   "Qiyana": {
@@ -322,6 +664,51 @@
    "cn": "随从",
    "tw": "隨從",
    "src": "converted"
+  },
+  "Rek'Sai": {
+   "cn": "雷克塞",
+   "tw": "雷珂煞",
+   "src": "official"
+  },
+  "Rell": {
+   "cn": "芮尔",
+   "tw": "銳兒",
+   "src": "official"
+  },
+  "Renata Glasc": {
+   "cn": "烈娜塔 · 戈拉斯克",
+   "tw": "睿娜妲‧格萊斯克",
+   "src": "official"
+  },
+  "Renekton": {
+   "cn": "雷克顿",
+   "tw": "雷尼克頓",
+   "src": "official"
+  },
+  "Rengar": {
+   "cn": "雷恩加尔",
+   "tw": "雷葛爾",
+   "src": "official"
+  },
+  "Riven": {
+   "cn": "锐雯",
+   "tw": "雷玟",
+   "src": "official"
+  },
+  "Rumble": {
+   "cn": "兰博",
+   "tw": "藍寶",
+   "src": "official"
+  },
+  "Sentinel": {
+   "cn": "哨兵",
+   "tw": "哨兵",
+   "src": "converted"
+  },
+  "Seraphine": {
+   "cn": "萨勒芬妮",
+   "tw": "瑟菈紛",
+   "src": "official"
   },
   "Sett": {
    "cn": "瑟提",
@@ -343,15 +730,40 @@
    "tw": "恕瑞瑪",
    "src": "official"
   },
+  "Sivir": {
+   "cn": "希维尔",
+   "tw": "希維爾",
+   "src": "official"
+  },
   "Sona": {
    "cn": "娑娜",
    "tw": "索娜",
    "src": "official"
   },
+  "Soraka": {
+   "cn": "索拉卡",
+   "tw": "索拉卡",
+   "src": "official"
+  },
+  "Spider": {
+   "cn": "蜘蛛",
+   "tw": "蜘蛛",
+   "src": "converted"
+  },
   "Spirit": {
    "cn": "灵体",
    "tw": "靈體",
    "src": "converted"
+  },
+  "Swain": {
+   "cn": "斯维因",
+   "tw": "斯溫",
+   "src": "official"
+  },
+  "Syndra": {
+   "cn": "辛德拉",
+   "tw": "星朵拉",
+   "src": "official"
   },
   "Taric": {
    "cn": "塔里克",
@@ -393,6 +805,11 @@
    "tw": "汎",
    "src": "official"
   },
+  "Vex": {
+   "cn": "薇古丝",
+   "tw": "薇可絲",
+   "src": "official"
+  },
   "Vi": {
    "cn": "蔚",
    "tw": "菲艾",
@@ -413,9 +830,24 @@
    "tw": "沃維克",
    "src": "official"
   },
+  "Xerath": {
+   "cn": "泽拉斯",
+   "tw": "齊勒斯",
+   "src": "official"
+  },
+  "Xin Zhao": {
+   "cn": "赵信",
+   "tw": "趙信",
+   "src": "official"
+  },
   "Yasuo": {
    "cn": "亚索",
    "tw": "犽宿",
+   "src": "official"
+  },
+  "Yone": {
+   "cn": "永恩",
+   "tw": "犽凝",
    "src": "official"
   },
   "Yordle": {
@@ -423,9 +855,29 @@
    "tw": "約德爾人",
    "src": "official"
   },
+  "Yuumi": {
+   "cn": "悠米",
+   "tw": "悠咪",
+   "src": "official"
+  },
   "Zaun": {
    "cn": "祖安",
    "tw": "祖安",
+   "src": "official"
+  },
+  "Zed": {
+   "cn": "劫",
+   "tw": "劫",
+   "src": "official"
+  },
+  "Ziggs": {
+   "cn": "吉格斯",
+   "tw": "希格斯",
+   "src": "official"
+  },
+  "Zilean": {
+   "cn": "基兰",
+   "tw": "極靈",
    "src": "official"
   }
  },
@@ -444,6 +896,7 @@
   12
  ],
  "mights": [
+  0,
   1,
   2,
   3,
@@ -453,7 +906,8 @@
   7,
   8,
   9,
-  10
+  10,
+  12
  ],
  "powers": [
   1,
@@ -470,6 +924,10 @@
   "energy_3",
   "energy_4",
   "energy_5",
+  "energy_6",
+  "energy_7",
+  "energy_8",
+  "energy_12",
   "rune_body",
   "rune_calm",
   "rune_chaos",
@@ -492,16 +950,40 @@
    "source": "official-card-text"
   },
   "Add": {
-   "en": null,
-   "cn": null,
-   "tw": null,
-   "source": "none"
+   "en": "Abilities that add resources can't be reacted to.",
+   "cn": "获得费用资源的技能无法成为其他法术的反应目标。",
+   "tw": "獲得費用資源的技能無法成為其他法術的反應目標。",
+   "source": "official-card-text"
+  },
+  "Ambush": {
+   "en": "You may play me as a [Reaction] to a battlefield where you have units.",
+   "cn": "你可以选择将我作为{反应}牌，打出到有己方单位的战场。",
+   "tw": "你可以選擇將我作為{反應}牌，打出到有己方單位的戰場。",
+   "source": "official-card-text"
   },
   "Assault": {
-   "en": "+1 {might} while I'm an attacker.",
-   "cn": "如果我是进攻方，则{might}+1。",
-   "tw": "如果我是進攻方，則{might}+1。",
+   "en": "+1 {might} while they're attackers.",
+   "cn": "只要他们是进攻方，便{might}+1。",
+   "tw": "只要他們是進攻方，便{might}+1。",
    "source": "official-card-text"
+  },
+  "Backline": {
+   "en": "I must be assigned combat damage last.",
+   "cn": "我在战斗中最后承担伤害。",
+   "tw": "我在戰鬥中最後承擔傷害。",
+   "source": "official-card-text"
+  },
+  "Buff": {
+   "en": "Give it a +1 {might} buff if it doesn't have one.",
+   "cn": "如果其未拥有增益，则获得一个{might}+1增益。",
+   "tw": "如果其未擁有增益，則獲得一個{might}+1增益。",
+   "source": "official-card-text"
+  },
+  "Burn": {
+   "en": "They put the top card of their Main Deck into their trash.",
+   "cn": null,
+   "tw": null,
+   "source": "official-card-text-en-only"
   },
   "Deathknell": {
    "en": "When I die, get the effect.",
@@ -515,6 +997,42 @@
    "tw": "對手必須支付{rune_rainbow}才能將我選作法術或技能的目標。",
    "source": "official-card-text"
   },
+  "Deploy": {
+   "en": "Play this only to a battlefield. When an opponent holds here, kill this.",
+   "cn": "仅能将此牌打出到战场上。当对手据守此处时，摧毁此牌。",
+   "tw": "僅能將此牌打出到戰場上。當對手據守此處時，摧毀此牌。",
+   "source": "official-card-text"
+  },
+  "Disarm": {
+   "en": "When I attack, give an enemy unit here -1 {might} this turn.",
+   "cn": "当我进攻时，给予此处的一名敌方单位在本回合内{might}-1。",
+   "tw": "當我進攻時，給予此處的一名敵方單位在本回合內{might}-1。",
+   "source": "official-card-text"
+  },
+  "Empower": {
+   "en": "Use only if not Empowered.",
+   "cn": null,
+   "tw": null,
+   "source": "official-card-text-en-only"
+  },
+  "Empowered": {
+   "en": "I become Empowered if I'm not already.",
+   "cn": null,
+   "tw": null,
+   "source": "official-card-text-en-only"
+  },
+  "Equip": {
+   "en": "Pay the cost: Attach this to a unit you control.",
+   "cn": "支付此费用：将此牌贴附到你控制的一名单位上。",
+   "tw": "支付此費用：將此牌貼附到你控制的一名單位上。",
+   "source": "official-card-text"
+  },
+  "Flow": {
+   "en": "You may play this from your trash for its Flow cost. Then banish it.",
+   "cn": null,
+   "tw": null,
+   "source": "official-card-text-en-only"
+  },
   "Ganking": {
    "en": "I can move from battlefield to battlefield.",
    "cn": "我可以向其他战场进行移动。",
@@ -527,16 +1045,40 @@
    "tw": "支付{rune_rainbow}正面朝下放置此牌，之後可支付{energy_0}將其當作反應牌打出。",
    "source": "official-card-text"
   },
+  "Hunt": {
+   "en": "When I conquer or hold, gain 2 XP.",
+   "cn": "当我征服或据守一处战场时，获得2经验。",
+   "tw": "當我征服或據守一處戰場時，獲得2經驗。",
+   "source": "official-card-text"
+  },
   "Legion": {
    "en": "Get the effect if you've played another card this turn.",
    "cn": "如果你在本回合内已打出过其他卡牌，则发动此效果。",
    "tw": "如果你在本回合內已打出過其他卡牌，則發動此效果。",
    "source": "official-card-text"
   },
+  "Level": {
+   "en": "While you have 3+ XP, get the effect.",
+   "cn": null,
+   "tw": null,
+   "source": "official-card-text-en-only"
+  },
   "Mighty": {
    "en": "A unit is Mighty while it has 5+ {might}.",
    "cn": "战力达到5或以上时，即为强力单位。",
    "tw": "戰力達到5或以上時，即為強力單位。",
+   "source": "official-card-text"
+  },
+  "Predict": {
+   "en": "Look at the top card of your Main Deck. You may recycle it.",
+   "cn": "查看你主牌堆顶部的一张牌。你可以选择将其回收。",
+   "tw": "查看你主牌堆頂部的一張牌。你可以選擇將其回收。",
+   "source": "official-card-text"
+  },
+  "Quick-Draw": {
+   "en": "This has [Reaction]. When you play it, attach it to a unit you control.",
+   "cn": "此牌获得{反应}。当你打出此牌时，将它贴附到你控制的一名单位上。",
+   "tw": "此牌獲得{反應}。當你打出此牌時，將它貼附到你控制的一名單位上。",
    "source": "official-card-text"
   },
   "Reaction": {
@@ -545,10 +1087,28 @@
    "tw": "可在任意時機打出，甚至先於其他法術和技能的結算。",
    "source": "official-card-text"
   },
+  "Repeat": {
+   "en": "You may pay each additional cost to repeat this spell's effect.",
+   "cn": "你可以选择支付各额外费用一次，以重复多次此法术效果。",
+   "tw": "你可以選擇支付各額外費用一次，以重複多次此法術效果。",
+   "source": "official-card-text"
+  },
   "Shield": {
    "en": "+1 {might} while they're defenders.",
    "cn": "如果它们是防守方，则{might}+1。",
    "tw": "如果它們是防守方，則{might}+1。",
+   "source": "official-card-text"
+  },
+  "Show Off": {
+   "en": "As you play this, you may reveal a unit from hand or pick a friendly unit.",
+   "cn": "打出此牌时，你可以选择从手牌中展示一名单位，或挑选一名友方单位。",
+   "tw": "打出此牌時，你可以選擇從手牌中展示一名單位，或挑選一名友方單位。",
+   "source": "official-card-text"
+  },
+  "Stun": {
+   "en": "It doesn't deal combat damage this turn.",
+   "cn": "使其在本回合内无法造成战斗伤害。",
+   "tw": "使其在本回合內無法造成戰鬥傷害。",
    "source": "official-card-text"
   },
   "Tank": {
@@ -563,10 +1123,22 @@
    "tw": "在其控制者的下個回合開始階段，結算得分之前將其摧毀。",
    "source": "official-card-text"
   },
+  "Unique": {
+   "en": "Your deck can have only 1 card with this name.",
+   "cn": "你的卡组中只能拥有一张同名的此牌。",
+   "tw": "你的卡組中只能擁有一張同名的此牌。",
+   "source": "official-card-text"
+  },
   "Vision": {
    "en": "When you play this, look at the top card of your Main Deck. You may recycle it.",
    "cn": "当你打出此牌时，查看主牌堆顶部的一张牌。你可以选择将其回收。",
    "tw": "當你打出此牌時，查看主牌堆頂部的一張牌。你可以選擇將其回收。",
+   "source": "official-card-text"
+  },
+  "Weaponmaster": {
+   "en": "When you play me, you may [Equip] one of your Equipment to me for {rune_rainbow} less, even if it's already attached.",
+   "cn": "当你打出我时，你可以选择为我{装配}你的一件武装，其装配费用减少{rune_rainbow}。可选择已贴附的武装。",
+   "tw": "當你打出我時，你可以選擇為我{裝配}你的一件武裝，其裝配費用減少{rune_rainbow}。可選擇已貼附的武裝。",
    "source": "official-card-text"
   }
  }

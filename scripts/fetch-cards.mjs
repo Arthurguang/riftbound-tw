@@ -37,11 +37,37 @@ const API_PATH =
   '/publishing-content/v2.0/public/channel/riftbound_website/list/riftbound_gallery_cards';
 const PAGE_SIZE = 200;
 
-/** 本階段只收錄 Origins 系列（主系列 + 試煉場）。 */
-const WANTED_SETS = Object.freeze({ OGN: 'Origins', OGS: 'Proving Grounds' });
+/**
+ * 收錄的系列。2026-10-13 起收錄官方 API 提供的全部六個系列。
+ *
+ * 官方在 2026 年陸續推出了四個新系列，而且**簡體中文資料也一起上線**了 ——
+ * 以前簡中要另外去中國大陸發行商的站抓，現在 locale=zh_CN 就有，卡圖也在同一個圖床。
+ */
+const WANTED_SETS = Object.freeze({
+  OGN: 'Origins',
+  OGS: 'Proving Grounds',
+  RAD: 'Radiance',
+  SFD: 'Spiritforged',
+  UNL: 'Unleashed',
+  VEN: 'Vendetta',
+});
 
-/** 預期張數。對不上就代表官方改了東西，必須讓建置失敗以引起注意。 */
-const EXPECTED_COUNTS = Object.freeze({ OGN: 352, OGS: 24 });
+/**
+ * 預期張數。對不上就代表官方改了東西，必須讓建置失敗以引起注意。
+ *
+ * ⚠️ 這些數字是**以卡片 id 去重之後**的數量。API 分頁會回傳重複項目，
+ * 不去重的話同一個系列會多數出好幾張（2026-10-13 實測 OGN 會數成 353）。
+ */
+const EXPECTED_COUNTS = Object.freeze({
+  OGN: 352,
+  OGS: 24,
+  // RAD 官方 192 張，其中 9 張缺 cardType（見 KNOWN_DATA_GAPS）
+  RAD: 183,
+  SFD: 288,
+  // UNL 官方 288 張，其中 2 張衍生物缺 cardType
+  UNL: 286,
+  VEN: 237,
+});
 
 const GLYPH_BASE =
   'https://assetcdn.rgpub.io/public/live/riot-shared/player-experiences/riot-glyphs/rb/latest';
@@ -145,16 +171,26 @@ function normalizeImage(raw, cardCode) {
 }
 
 /**
- * 從 publicCode 拆出卡號與變體標記。
- * 格式範例： "OGN-056/298"、"OGN-066a/298"、"OGN-304(星號)/298"
+ * 從 publicCode 拆出卡號、特殊編號前綴與變體標記。
+ *
+ * 一般卡： "OGN-056/298"、"OGN-066a/298"，以及帶星號變體的 "OGN-304" 那一類
+ * 特殊編號（2026-10-13 隨新系列出現，全部掃過共四種形狀）：
+ *   "UNL-T01"      衍生物，沒有分母
+ *   "VEN-R04"      符文，沒有分母
+ *   "RAD-R04a"     符文的異畫版
+ *   "VEN-SP3/006"  特別卡，分母是特別卡自己的總數
  */
 function parsePublicCode(publicCode, setId, cardCode) {
-  const m = /^([A-Z]{2,4})-(\d{1,4})([a-z*]*)\/(\d{1,4})$/.exec(publicCode);
+  const m = /^([A-Z]{2,4})-(SP|T|R)?(\d{1,4})([a-z*]*)(?:\/(\d{1,4}))?$/.exec(publicCode);
   if (!m) fail(`publicCode 格式無法辨識："${publicCode}"`, cardCode);
   if (m[1] !== setId) {
     fail(`publicCode 的系列前綴 "${m[1]}" 與 set.value.id "${setId}" 不符`, cardCode);
   }
-  return { number: Number(m[2]), variant: m[3] === '' ? null : m[3] };
+  return {
+    number: Number(m[3]),
+    codePrefix: m[2] ?? null,
+    variant: m[4] === '' ? null : m[4],
+  };
 }
 
 function normalizeCard(raw) {
@@ -172,7 +208,7 @@ function normalizeCard(raw) {
     code,
   );
 
-  const { number, variant } = parsePublicCode(publicCode, setId, code);
+  const { number, codePrefix, variant } = parsePublicCode(publicCode, setId, code);
 
   const typeList = require_(raw?.cardType?.type, 'cardType.type', code);
   if (!Array.isArray(typeList) || typeList.length === 0) {
@@ -234,8 +270,21 @@ function normalizeCard(raw) {
     id,
     code,
     number,
+    codePrefix,
     variant,
     name: requireString(raw?.name, 'name', code),
+    /*
+     * 英雄卡的副標。
+     *
+     * 2026-10-13 發現官方把英文資料的卡名拆開了：
+     * 以前 name 欄位直接寫「Annie, Fiery」，現在變成 name="Annie"、subtitle="Fiery"。
+     *
+     * 這件事不只是顯示問題 —— 全卡池有 145 個卡名被多張不同的卡共用
+     * （六個阿璃、五個德萊文…），只靠 name 比對會對到錯的卡。
+     * 禁卡表、勘誤表、牌表匯入匯出一律改用「卡名, 副標」的完整名稱，
+     * 見 src/lib/cards.ts 的 fullCardName。
+     */
+    subtitle: typeof raw?.subtitle === 'string' && raw.subtitle !== '' ? raw.subtitle : null,
     set: setId,
     types,
     rarity,
@@ -298,6 +347,23 @@ const toTraditional = OpenCC.Converter({ from: 'cn', to: 'tw' });
  * 這個函式在每次建置時重新驗證一遍 —— 只要官方哪天改了分類，建置就會失敗，
  * 而不是默默產生錯誤的中文標籤。
  */
+/**
+ * 兩個官方來源對不上的卡。由 assertTaxonomyAgrees 累積，main() 最後一起判斷。
+ *
+ * 2026-10-13 的情況：RAD（Radiance）有 26 張卡，英文與簡中的流派不同
+ * （例如 RAD-001「Amateur Demolitionist／业余爆破狂」英文 chaos、簡中 fury）。
+ * 名稱與費用都對得上，所以不是對錯號，而是**兩邊官方資料本身不一致** ——
+ * 推測是英文版調整過，簡中還沒跟上。
+ *
+ * 本站的原則是「以官方英文為準」（卡片頁也一律並列英文原文），所以採用英文、
+ * 把差異記下來。但如果**大量**對不上，那代表我們的對照表壞了，不是官方不一致，
+ * 那種情況要中斷 —— 判斷寫在 main()。
+ */
+const domainDisagreements = [];
+
+/** 卡種對不上的卡，處理方式同 domainDisagreements。 */
+const typeDisagreements = [];
+
 function assertTaxonomyAgrees(card, cn) {
   const code = card.code;
 
@@ -308,7 +374,7 @@ function assertTaxonomyAgrees(card, cn) {
     return DOMAIN_BY_CN_COLOR[color];
   });
   if ([...cnDomains].sort().join() !== [...card.domains].sort().join()) {
-    fail(`領域對不上：英文 [${card.domains}] vs 簡中 [${cnDomains}]`, code);
+    domainDisagreements.push({ code, en: [...card.domains], cn: cnDomains });
   }
 
   const cnTypes = new Set(
@@ -320,7 +386,10 @@ function assertTaxonomyAgrees(card, cn) {
     }),
   );
   for (const type of card.types) {
-    if (!cnTypes.has(type)) fail(`卡種對不上：英文 ${type} 不在簡中 [${[...cnTypes]}]`, code);
+    // 與流派同樣的處理：兩個官方來源不一致時採用英文並記錄，比例過高才中斷（見 main()）
+    if (!cnTypes.has(type)) {
+      typeDisagreements.push({ code, en: type, cn: [...cnTypes] });
+    }
   }
 
   if (!Object.hasOwn(RARITY_BY_CN, cn.rarityName)) {
@@ -347,13 +416,57 @@ function normalizeCnImage(url, code) {
   return parsed.toString();
 }
 
+/**
+ * 標出每張卡的「英雄標籤」。
+ *
+ * 為什麼需要這個欄位：傳奇卡的英文 name 只有稱號（Hexplosives Expert），
+ * 英雄名在 tags 裡，牌表上要寫成「Ziggs, Hexplosives Expert」。
+ * 以前每張傳奇都剛好只有一個 tag，直接取 tags[0] 就對了；
+ * 2026-10-13 的新系列出現兩個標籤的傳奇（["Yordle","Ziggs"]），
+ * 取 tags[0] 會變成「Yordle, Hexplosives Expert」—— 錯的卡名。
+ *
+ * 怎麼判斷哪個標籤是英雄：官方的英雄單位卡就是「英雄名＋副標」的形狀
+ *（Ahri / Alluring），所以卡池裡**有副標的單位卡的卡名**就是英雄名清單。
+ * 這是從資料本身推出來的，不是另外維護一份名單。
+ *
+ * 任何一張傳奇判不出唯一的英雄標籤就中止建置 —— 寧可停下來，
+ * 也不要讓匯出的牌表帶著錯的卡名流出去。
+ */
+function attachChampionTags(cards) {
+  const championNames = new Set(
+    cards.filter((c) => c.types.includes('unit') && c.subtitle !== null).map((c) => c.name),
+  );
+
+  const ambiguous = [];
+  for (const card of cards) {
+    const hits = card.tags.filter((tag) => championNames.has(tag));
+    if (card.types.includes('legend') && hits.length !== 1) {
+      ambiguous.push(`${card.code} ${card.name}（標籤 ${JSON.stringify(card.tags)} → ${hits.length} 個英雄）`);
+    }
+    card.championTag = hits.length === 1 ? hits[0] : null;
+  }
+  if (ambiguous.length > 0) {
+    fail(
+      `這些傳奇判不出唯一的英雄標籤，匯出的牌表會寫錯卡名：\n      ${ambiguous.join('\n      ')}`,
+    );
+  }
+}
+
 /** 把中文資料掛到卡片上。 */
 function attachLocales(card, cn, twNames) {
-  if (!cn) return { cn: null, tw: null };
+  /*
+   * 沒有簡中資料時，subtype 要明確給 null，不能漏掉這個欄位
+   * （漏掉會讓 JSON 裡整個鍵不見，型別上說好一定有）。
+   *
+   * ⚠️ 連帶的限制：細分身分（英雄／專屬／衍生物）目前只能從簡中分類判斷，
+   * 所以官方簡中還沒收錄的新卡會是 null，牌組合法性檢查對那些卡無法判斷。
+   * 要解決得改用官方 API 的 zh_CN 語系當來源（涵蓋全部系列），列為後續工作。
+   */
+  if (!cn) return { cn: null, tw: null, subtype: null };
 
   assertTaxonomyAgrees(card, cn);
 
-  const cnText = parseCnText(cn.cardEffect);
+  const cnText = parseCnText(cn.cardEffect, card);
   const cnName = requireString(cn.cardName, 'cardName', card.code);
   const cnSubtitle = typeof cn.subTitle === 'string' && cn.subTitle !== '' ? cn.subTitle : null;
   const cnFlavor = typeof cn.flavorText === 'string' && cn.flavorText !== '' ? cn.flavorText : null;
@@ -486,7 +599,8 @@ function extractKeywordGlossary(rawEnCards, cnCards) {
    */
   const KEYWORD_PATTERNS = {
     en: {
-      newToken: () => /\[([A-Za-z]+)(?: \d+)?\]/g,
+      // 關鍵字可能含連字號（Quick-Draw）或空格（Show Off），2026-10-13 的新系列才出現
+      newToken: () => /\[([A-Za-z][A-Za-z-]*(?: [A-Za-z][A-Za-z-]*)?)(?: \d+)?\]/g,
       resolve: (raw) => (ALL_KEYWORDS.includes(raw) ? raw : null),
     },
     cn: {
@@ -581,6 +695,42 @@ function extractKeywordGlossary(rawEnCards, cnCards) {
     return result;
   };
 
+  /**
+   * 只有英文的後備來源。
+   *
+   * 2026-10-13 的新系列裡，有 5 個關鍵字（Burn／Empower／Empowered／Flow／Level）
+   * **只出現在中國大陸發行商還沒收錄的卡上**，配不出中英成對的說明。
+   * 這時取英文官方說明，中文留空 —— 跟本站處理新卡的方式一致：
+   * 沒有官方中文就顯示英文，絕不自己寫一段規則說明頂替。
+   */
+  const collectEnglishOnly = (enOnlyTexts) => {
+    const result = new Map();
+    for (const keyword of ALL_KEYWORDS) {
+      let best = null;
+      for (const text of enOnlyTexts) {
+        const hits = keywordHits(text, 'en').filter((h) => h.name === keyword);
+        if (hits.length === 0) continue;
+        const parens = parentheticals(text);
+        if (parens.length === 0) continue;
+
+        // 1. 括號緊接在關鍵字後面；2. 關鍵字與括號都只有一個
+        for (const hit of hits) {
+          const near = parens.find((p) => p.index >= hit.end && p.index - hit.end <= 3);
+          if (near) {
+            best = { score: 2, en: near.value };
+            break;
+          }
+        }
+        if (!best && new Set(keywordHits(text, 'en').map((h) => h.name)).size === 1 && parens.length === 1) {
+          best = { score: 1, en: parens[0].value };
+        }
+        if (best?.score === 2) break;
+      }
+      if (best) result.set(keyword, { en: best.en, cn: null });
+    }
+    return result;
+  };
+
   // 英文：把官方 HTML 轉成純文字（不經過解析器，因為這裡只是要讀，不會輸出到頁面）
   const enTexts = rawEnCards.map((c) =>
     (c?.text?.richText?.body ?? '')
@@ -614,10 +764,28 @@ function extractKeywordGlossary(rawEnCards, cnCards) {
 
   const paired = collectPaired(pairs);
 
+  // 配不出中英成對的，再試只有英文的來源（新系列的關鍵字會走到這裡）
+  const englishOnly = collectEnglishOnly(enTexts);
+
   const entries = {};
   const missing = [];
+  const englishOnlyNames = [];
   for (const name of Object.values(KEYWORD_BY_CN)) {
     const hit = paired.get(name);
+    if (!hit) {
+      const enHit = englishOnly.get(name);
+      if (enHit) {
+        entries[name] = {
+          en: enHit.en,
+          cn: null,
+          tw: null,
+          // 介面要能說出「這段只有英文，因為官方還沒出中文」
+          source: 'official-card-text-en-only',
+        };
+        englishOnlyNames.push(name);
+        continue;
+      }
+    }
     if (!hit) {
       // 沒有官方說明的關鍵字，介面上會誠實標示並指向官方規則書，
       // 不會用手寫的內容頂替。
@@ -633,6 +801,11 @@ function extractKeywordGlossary(rawEnCards, cnCards) {
       // 讓介面能誠實標示這段文字的來歷
       source: 'official-card-text',
     };
+  }
+  if (englishOnlyNames.length > 0) {
+    console.log(
+      `  ℹ ${englishOnlyNames.length} 個關鍵字目前只有英文官方說明（官方簡中尚未收錄這些卡）：${englishOnlyNames.join('、')}`,
+    );
   }
   return { entries, missing };
 }
@@ -676,23 +849,62 @@ function buildTaxonomy(cards) {
 async function main() {
   console.log('▶ 從 Riot 官方公開 API 抓取卡牌資料…');
 
-  const raw = [];
-  let from = 0;
+  /*
+   * ── 為什麼要抓兩輪 ──────────────────────────────────────────────
+   * 官方 API 的分頁**不穩定**：同一組請求，有時某張卡跨頁重複出現，
+   * 有時某張卡在頁面邊界被漏掉。2026-10-13 連續幾次實測，
+   * SFD 時而 287 張、時而 288 張，RAD 也會差一張。
+   *
+   * 只抓一輪的話，下面的張數檢查會**隨機**失敗，那比沒有檢查更糟 ——
+   * 紅燈一旦變得不可信，真正的問題就沒有人會當真。
+   *
+   * 所以抓兩輪取聯集：一輪漏掉的，另一輪通常有。
+   * 兩輪都漏的極少數情況仍會被張數檢查抓到，那時重跑即可。
+   */
   let total = Infinity;
+  const byApiId = new Map();
   let pages = 0;
 
-  while (from < total) {
-    const url = `${API_BASE}${API_PATH}?locale=en_US&from=${from}&limit=${PAGE_SIZE}`;
-    const body = await fetchJson(url);
-    if (!Array.isArray(body?.data)) fail(`API 回應缺少 data 陣列：${url}`);
-    total = requireInt(body?.metadata?.totalItems, 'metadata.totalItems');
-    if (body.data.length === 0) break; // 已經抓完，提早收工
-    raw.push(...body.data);
-    from += PAGE_SIZE;
-    pages += 1;
-    if (pages > 20) fail('分頁次數異常過多，中止以免無限迴圈');
+  /*
+   * 抓到「這一輪沒有帶來任何新卡」為止，最多 5 輪。
+   *
+   * 一開始只抓兩輪，結果仍然不穩（一次聯集 1381 張、下一次 1380 張）——
+   * 代表同一張卡可能連續兩輪都被漏掉。改成收斂式：重複抓到結果不再變多。
+   * 每輪 7 次請求，實務上 2～3 輪就會停。
+   */
+  const MAX_ROUNDS = 5;
+  for (let round = 1; round <= MAX_ROUNDS; round += 1) {
+    const before = byApiId.size;
+    let from = 0;
+    let roundTotal = Infinity;
+    while (from < roundTotal) {
+      const url = `${API_BASE}${API_PATH}?locale=en_US&from=${from}&limit=${PAGE_SIZE}`;
+      const body = await fetchJson(url);
+      if (!Array.isArray(body?.data)) fail(`API 回應缺少 data 陣列：${url}`);
+      roundTotal = requireInt(body?.metadata?.totalItems, 'metadata.totalItems');
+      total = roundTotal;
+      if (body.data.length === 0) break; // 已經抓完，提早收工
+      for (const card of body.data) {
+        const prev = byApiId.get(card?.id);
+        if (prev !== undefined && JSON.stringify(prev) !== JSON.stringify(card)) {
+          fail(`同一個 id 出現兩筆不同的資料："${card.id}"（${prev.publicCode} 與 ${card.publicCode}）`);
+        }
+        byApiId.set(card?.id, card);
+      }
+      from += PAGE_SIZE;
+      pages += 1;
+      if (pages > MAX_ROUNDS * 10) fail('分頁次數異常過多，中止以免無限迴圈');
+    }
+    const added = byApiId.size - before;
+    console.log(`  ✓ 第 ${round} 輪：累計 ${byApiId.size} 張（新增 ${added}）`);
+    if (round > 1 && added === 0) break; // 收斂了
+    if (round === MAX_ROUNDS) {
+      console.log(`  ⚠ 抓了 ${MAX_ROUNDS} 輪仍未收斂，以目前結果繼續（張數檢查會把關）`);
+    }
   }
-  console.log(`  ✓ 取得 ${raw.length} 張卡（${pages} 頁）`);
+
+  const raw = [...byApiId.values()];
+  console.log(`  ✓ 聯集共 ${raw.length} 張卡（${pages} 次請求）`);
 
   // 官方 metadata.totalItems 會把尚未公開的佔位項目也算進去，
   // 因此實際回傳筆數通常會少一些。這不是錯誤，只是記錄下來備查。
@@ -702,9 +914,44 @@ async function main() {
   }
   if (raw.length === 0) fail('API 沒有回傳任何卡片');
 
-  const wanted = raw.filter((c) => Object.keys(WANTED_SETS).includes(c?.set?.value?.id));
-  console.log(`  ✓ 篩出 Origins 系列 ${wanted.length} 張，開始驗證…`);
+  const inWantedSets = raw.filter((c) => Object.keys(WANTED_SETS).includes(c?.set?.value?.id));
 
+  /*
+   * 官方資料本身缺欄位的卡，逐張列出後跳過。
+   *
+   * 這 11 張有卡名、有卡圖，但**英文與簡中都沒有 cardType**（2026-10-13 兩邊都查過）。
+   * 沒有卡種就無法做牌組合法性檢查，也無法正確篩選，收進來只會產生壞資料。
+   *
+   * 為什麼要逐張列舉，而不是寫成「缺卡種就跳過」：
+   * 後者會讓**未來**任何一張缺資料的卡都被靜靜丟掉，失去 fail-closed 的意義。
+   * 列在這裡的才跳過，沒列到的照樣中斷建置。
+   * 官方補齊之後把對應那行刪掉，張數檢查會立刻提醒我們。
+   */
+  const KNOWN_DATA_GAPS = new Map([
+    ['RAD-006/167', '官方缺 cardType（Scorched Earth）'],
+    ['RAD-009/167', '官方缺 cardType（Antagonistic Apparatus）'],
+    ['RAD-026/167', '官方缺 cardType（Entrenched Boar）'],
+    ['RAD-034/167', '官方缺 cardType（Hunker Down）'],
+    ['RAD-041/167', '官方缺 cardType（Hush）'],
+    ['RAD-047/167', '官方缺 cardType（Fanfare）'],
+    ['RAD-049/167', '官方缺 cardType（Industrious Mechsmith）'],
+    ['RAD-121/167', '官方缺 cardType（One-Two Punch）'],
+    ['RAD-127/167', '官方缺 cardType（Rousing Display）'],
+    ['UNL-T04', '官方缺 cardType（Buff 衍生物）'],
+    ['UNL-T08', '官方缺 cardType（XP Tracker 衍生物）'],
+  ]);
+
+  const skipped = inWantedSets.filter((c) => KNOWN_DATA_GAPS.has(c?.publicCode));
+  const wanted = inWantedSets.filter((c) => !KNOWN_DATA_GAPS.has(c?.publicCode));
+  console.log(`  ✓ 篩出收錄系列 ${wanted.length} 張，開始驗證…`);
+  if (skipped.length > 0) {
+    console.log(`  ⚠ 跳過 ${skipped.length} 張官方資料不全的卡：`);
+    for (const c of skipped) {
+      console.log(`      ${c.publicCode}　${KNOWN_DATA_GAPS.get(c.publicCode)}`);
+    }
+  }
+
+  // 重複與遺漏在上面「兩輪聯集」時已經處理掉了。
   const cards = wanted.map(normalizeCard);
 
   // 網址會用 id 當作路由參數，必須唯一。
@@ -714,14 +961,45 @@ async function main() {
     seen.set(card.id, card.code);
   }
 
-  // 張數必須與預期相符，官方改動時要讓我們知道。
+  /*
+   * 張數檢查：兩個方向刻意不對稱。
+   *
+   * ── 為什麼不是嚴格相等 ──────────────────────────────────────────
+   * 官方 API 回傳的卡片數本身會浮動：2026-10-13 連續測了六次，
+   * 總數在 1379～1381 之間跳動，少的那一兩張每次還不一樣（這次 OGN、上次 SFD）。
+   * 多抓幾輪取聯集仍然會發生（同一輪連線多半落在同一個節點，漏的是同幾張）。
+   * 推測是官方把「尚未公開」的項目在分頁之後才濾掉，而各節點的快取進度不同。
+   *
+   * 嚴格相等會讓建置**隨機失敗**，那比沒有檢查更糟 —— 紅燈一旦不可信，
+   * 真正的問題就沒有人會當真（這個教訓在問題 69 已經學過一次）。
+   *
+   * ── 所以分成三種情況 ────────────────────────────────────────────
+   *   少一兩張   官方抖動，印警告繼續（頂多暫時少收錄一兩張卡）
+   *   少很多     抓取真的壞了（例如 API 改格式），中斷
+   *   變多       官方新增了卡，中斷並要求人確認後更新數字
+   */
+  const COUNT_TOLERANCE = 2;
   for (const [setId, expected] of Object.entries(EXPECTED_COUNTS)) {
     const actual = cards.filter((c) => c.set === setId).length;
-    if (actual !== expected) {
+    const diff = actual - expected;
+
+    if (diff > 0) {
       fail(
-        `${setId} 張數為 ${actual}，與預期的 ${expected} 不符。` +
-          `\n  若官方確實新增/調整了卡片，請確認內容後更新 scripts/fetch-cards.mjs 的 EXPECTED_COUNTS。`,
+        `${setId} 張數為 ${actual}，比預期的 ${expected} 多 ${diff} 張。` +
+          `\n  官方可能新增了卡片。請確認內容後更新 scripts/fetch-cards.mjs 的 EXPECTED_COUNTS。`,
       );
+    }
+    if (-diff > COUNT_TOLERANCE) {
+      fail(
+        `${setId} 張數為 ${actual}，比預期的 ${expected} 少 ${-diff} 張（超過容忍的 ${COUNT_TOLERANCE} 張）。` +
+          `\n  這通常代表抓取壞了，而不是官方抖動。請先重跑一次確認。`,
+      );
+    }
+    if (diff < 0) {
+      console.log(
+        `  ⚠ ${setId} (${WANTED_SETS[setId]}): ${actual} 張　比預期少 ${-diff} 張（官方分頁抖動，在容忍範圍內）`,
+      );
+      continue;
     }
     console.log(`  ✓ ${setId} (${WANTED_SETS[setId]}): ${actual} 張`);
   }
@@ -762,18 +1040,89 @@ async function main() {
     if (cn) cnMatched += 1;
     const locales = attachLocales(card, cn, twNames);
     card.subtype = locales.subtype;
+    /*
+     * 卡號帶 T 的就是衍生物（UNL-T01）。
+     *
+     * 細分身分本來只能從簡中資料看，但官方簡中還沒收錄新系列的衍生物 ——
+     * 那些卡在圖鑑的「衍生物」篩選與復盤的候選清單裡就會整批消失。
+     * 卡號本身已經說明了這件事，用它補上；兩邊說法不一致就中止。
+     */
+    if (card.codePrefix === 'T') {
+      if (card.subtype !== null && card.subtype !== 'token') {
+        fail(`卡號說是衍生物，簡中卻說是 ${card.subtype}`, card.code);
+      }
+      card.subtype = 'token';
+    }
     card.zh = { cn: locales.cn, tw: locales.tw };
     if (card.zh.tw?.nameSource === 'community') twOfficial += 1;
   }
 
-  if (cnMatched !== cards.length) {
-    const missing = cards.filter((c) => !cnMap.has(c.code)).map((c) => c.code);
+  attachChampionTags(cards);
+
+  /*
+   * 簡中覆蓋率：舊系列要求 100%，新系列允許缺。
+   *
+   * OGN／OGS 兩邊一直是完全對應的，少了就代表資料格式變了，必須中斷。
+   * 2026-10-13 起收錄的四個新系列，中國大陸發行商的進度落後官方英文
+   * （當天實測：1369 張裡有 1191 張有簡中），缺的那些卡會以英文呈現 ——
+   * 這跟本站既有的處理方式一致（翻譯一律與官方英文並列，沒有翻譯就只有英文）。
+   */
+  const LEGACY_SETS = ['OGN', 'OGS'];
+  const missingLegacy = cards
+    .filter((c) => LEGACY_SETS.includes(c.set) && !cnMap.has(c.code))
+    .map((c) => c.code);
+  if (missingLegacy.length > 0) {
     fail(
-      `有 ${missing.length} 張卡找不到對應的官方簡中資料：${missing.slice(0, 10).join('、')}` +
-        `\n  官方兩邊的卡號應該完全對應，出現落差代表資料格式改變了。`,
+      `有 ${missingLegacy.length} 張舊系列的卡找不到官方簡中資料：${missingLegacy.slice(0, 10).join('、')}` +
+        `\n  這兩個系列兩邊一向完全對應，出現落差代表資料格式改變了。`,
     );
   }
-  console.log(`  ✓ 簡中對應 ${cnMatched}/${cards.length} 張，繁中卡名 ${twOfficial} 張有社群譯名`);
+  const missingNew = cards.length - cnMatched;
+  console.log(
+    `  ✓ 簡中對應 ${cnMatched}/${cards.length} 張` +
+      (missingNew > 0 ? `（新系列有 ${missingNew} 張官方尚未提供簡中，將以英文呈現）` : '') +
+      `，繁中卡名 ${twOfficial} 張有社群譯名`,
+  );
+
+  /*
+   * 兩個官方來源對流派的說法不一致時：採用英文，把差異列出來。
+   * 但如果對不上的比例過高，那不是官方不一致，是我們的對照表壞了 —— 中斷。
+   */
+  if (domainDisagreements.length > 0) {
+    const ratio = domainDisagreements.length / Math.max(1, cnMatched);
+    const sample = domainDisagreements
+      .slice(0, 8)
+      .map((d) => `${d.code} 英[${d.en}]≠簡[${d.cn}]`)
+      .join('、');
+    if (ratio > 0.05) {
+      fail(
+        `有 ${domainDisagreements.length} 張卡（${(ratio * 100).toFixed(1)}%）英文與簡中的流派對不上：${sample}` +
+          `\n  比例這麼高通常代表 taxonomy-map.mjs 的顏色對照壞了，而不是官方資料不一致。`,
+      );
+    }
+    console.log(
+      `  ⚠ ${domainDisagreements.length} 張卡的流派兩邊官方說法不同，採用英文：${sample}` +
+        (domainDisagreements.length > 8 ? ` …等 ${domainDisagreements.length} 張` : ''),
+    );
+  }
+
+  if (typeDisagreements.length > 0) {
+    const ratio = typeDisagreements.length / Math.max(1, cnMatched);
+    const sample = typeDisagreements
+      .slice(0, 8)
+      .map((d) => `${d.code} 英[${d.en}]≠簡[${d.cn}]`)
+      .join('、');
+    if (ratio > 0.05) {
+      fail(
+        `有 ${typeDisagreements.length} 張卡（${(ratio * 100).toFixed(1)}%）英文與簡中的卡種對不上：${sample}` +
+          `\n  比例這麼高通常代表 taxonomy-map.mjs 的卡種對照壞了，而不是官方資料不一致。`,
+      );
+    }
+    console.log(
+      `  ⚠ ${typeDisagreements.length} 張卡的卡種兩邊官方說法不同，採用英文：${sample}` +
+        (typeDisagreements.length > 8 ? ` …等 ${typeDisagreements.length} 張` : ''),
+    );
+  }
 
   await downloadGlyphs();
 

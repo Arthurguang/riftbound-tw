@@ -30,6 +30,7 @@
  * 測試會馬上紅燈，而不是靜靜地失效。
  */
 
+import { fullCardName } from './card-name';
 import type { Card } from './types';
 
 /** 禁卡表的版本，介面上會標示，方便使用者自行對照官方公告。 */
@@ -54,8 +55,8 @@ export type BanEntry = {
   /** 官方禁卡表上的原文，照抄不修改 —— 使用者要拿這個字去對官方公告。 */
   official: string;
   /**
-   * 我們卡池裡的正式卡名。
-   * `null` = 這張卡屬於我們還沒收錄的系列（目前只收錄 Origins）。
+   * 我們卡池裡的正式**完整**卡名（含副標或英雄名前綴，見 card-name.ts 的 fullCardName）。
+   * `null` = 這張卡屬於我們還沒收錄的系列。
    */
   name: string | null;
   /** 這張卡所屬系列，用來說明為什麼我們沒有它。 */
@@ -74,8 +75,9 @@ const BOTH: readonly BanFormat[] = ['constructed', 'constructed-2v2'];
  */
 export const BAN_LIST: readonly BanEntry[] = [
   // ── 構築賽禁用卡片 ──
-  { official: 'Called Shot', name: null, set: 'SFD', formats: BOTH },
-  { official: 'Draven, Vanquisher', name: null, set: 'SFD', formats: BOTH },
+  // 2026-10-13 收錄 SFD 後，這兩張從「不在卡池」變成真的對得到卡
+  { official: 'Called Shot', name: 'Called Shot', set: 'SFD', formats: BOTH },
+  { official: 'Draven, Vanquisher', name: 'Draven, Vanquisher', set: 'SFD', formats: BOTH },
   { official: 'Fight or Flight', name: 'Fight or Flight', set: 'OGN', formats: BOTH },
   { official: 'Scrapheap', name: 'Scrapheap', set: 'OGN', formats: BOTH },
   { official: 'Stealthy Pursuer', name: 'Stealthy Pursuer', set: 'OGN', formats: BOTH },
@@ -89,11 +91,16 @@ export const BAN_LIST: readonly BanEntry[] = [
   { official: "Reaver's Row", name: "Reaver's Row", set: 'OGN', formats: BOTH },
 
   // ── 只有 2v2 禁用的傳奇 ──
-  // 官方卡表全系列都查不到「Master Yi, Wuju Bladesman」這個名字；
-  // 試煉場（OGS）的這張傳奇 tag 是 Master Yi，就是官方公告指的那張。
+  /*
+   * 試煉場（OGS）的這張傳奇，官方 API 存成 name="Wuju Bladesman"、tags=["Master Yi"]，
+   * 合起來就是官方公告寫的「Master Yi, Wuju Bladesman」。
+   *
+   * 2026-10-13 之前官方 API 把它叫「Wuju Bladesman - Starter」，這裡原本填的是那個名字；
+   * 官方改了資料後那個名字就不存在了 —— 測試當場紅燈，這正是當初把對應釘死的用意。
+   */
   {
     official: 'Master Yi, Wuju Bladesman',
-    name: 'Wuju Bladesman - Starter',
+    name: 'Master Yi, Wuju Bladesman',
     set: 'OGS',
     formats: ['constructed-2v2'],
   },
@@ -106,15 +113,17 @@ export const BAN_LIST: readonly BanEntry[] = [
  * 同一張卡一樣被禁，用卡名比對才會自動涵蓋到。
  */
 export function bannedEntryFor(card: Card, format: BanFormat = 'constructed'): BanEntry | null {
+  const name = fullCardName(card);
   for (const entry of BAN_LIST) {
-    if (entry.name === card.name && entry.formats.includes(format)) return entry;
+    if (entry.name === name && entry.formats.includes(format)) return entry;
   }
   return null;
 }
 
 /** 這張卡在任一賽制被禁 —— 圖鑑用這個決定要不要掛標籤。 */
 export function banEntriesFor(card: Card): BanEntry[] {
-  return BAN_LIST.filter((e) => e.name === card.name);
+  const name = fullCardName(card);
+  return BAN_LIST.filter((e) => e.name === name);
 }
 
 /**
@@ -130,10 +139,10 @@ export function bannedAmong(
   const seen = new Set<string>();
   const out: { card: Card; entry: BanEntry }[] = [];
   for (const card of cards) {
-    if (seen.has(card.name)) continue;
+    if (seen.has(fullCardName(card))) continue;
     const entry = bannedEntryFor(card, format);
     if (!entry) continue;
-    seen.add(card.name);
+    seen.add(fullCardName(card));
     out.push({ card, entry });
   }
   return out;

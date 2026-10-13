@@ -1,8 +1,11 @@
 /**
  * 圖鑑的搜尋、篩選與排序邏輯。
  *
- * 全部在瀏覽器端執行（376 張卡的資料只有幾百 KB），
- * 因此沒有任何搜尋請求會送到伺服器，也就沒有伺服器端的注入風險。
+ * 全部在瀏覽器端執行，因此沒有任何搜尋請求會送到伺服器，也就沒有伺服器端的注入風險。
+ *
+ * ⚠️ 2026-10-13 收錄六個系列後，卡牌資料從 376 張變成 1368 張，
+ * 圖鑑頁送到瀏覽器的資料也跟著變大（壓縮後約 450 KB）。
+ * 代價記在 PROGRESS.md，之後要做「只送畫面用得到的欄位」的瘦身。
  */
 
 import { bannedEntryFor } from './ban-list';
@@ -146,6 +149,8 @@ export function buildSearchIndex(cards: Card[], tagLabels: Taxonomy['tagLabels']
         normalize(
           [
             card.name,
+            // 英文副標（Ahri, **Alluring**）—— 2026-10-13 起官方把它從卡名裡拆出來
+            card.subtitle ?? '',
             card.code,
             card.artists.join(' '),
             cardTextToPlain(card.text),

@@ -19,10 +19,15 @@ import {
   ZH_COINED_TERMS,
   ZH_TRANSLATOR,
 } from '../../src/lib/errata';
+import { fullCardName } from '../../src/lib/card-name';
 import { applyFilters, buildSearchIndex, EMPTY_FILTERS } from '../../src/lib/search';
 import { filtersFromParams, filtersToQueryString } from '../../src/lib/filters-url';
 
-const byName = (n: string) => ALL_CARDS.find((c) => c.name === n);
+/*
+ * 一律用完整卡名查。勘誤表存的就是完整卡名（建置階段由 fetch-errata.mjs 解析），
+ * 原因見 src/lib/card-name.ts：全卡池有 145 個 name 被多張不同的卡共用。
+ */
+const byName = (n: string) => ALL_CARDS.find((c) => fullCardName(c) === n);
 
 describe('勘誤資料本身', () => {
   it('有東西，而且標了版本與出處', () => {
@@ -85,10 +90,24 @@ describe('勘誤資料本身', () => {
     }
   });
 
-  it('官方寫法與實際卡名不同的那一筆，差異還在', () => {
-    const dc = ERRATA.find((e) => e.official === 'Dark Child, Starter');
-    expect(dc?.name).toBe('Dark Child - Starter');
-    expect(byName('Dark Child, Starter')).toBeUndefined();
+  /*
+   * 官方勘誤頁的寫法與我們卡池的完整卡名不一樣，而且不只一種差法：
+   *   Dark Child, Starter → Annie, Dark Child（傳奇：稱號＋副標 vs 英雄名＋稱號）
+   *   The Boss            → Sett, The Boss
+   *   Dragon's Rage       → Dragon's Rage, Lee Sin（專屬卡的副標是英雄名）
+   * 抓取腳本負責把它解析成唯一的完整卡名，這條確認它真的有解析，而不是照抄。
+   */
+  it('官方寫法與實際卡名不同的那幾筆，確實被解析過', () => {
+    const cases = [
+      ['Dark Child, Starter', 'Annie, Dark Child'],
+      ['The Boss', 'Sett, The Boss'],
+      ["Dragon's Rage", "Dragon's Rage, Lee Sin"],
+    ] as const;
+    for (const [official, name] of cases) {
+      const entry = ERRATA.find((e) => e.official === official);
+      expect(entry?.name, official).toBe(name);
+      expect(byName(name), name).toBeDefined();
+    }
   });
 });
 

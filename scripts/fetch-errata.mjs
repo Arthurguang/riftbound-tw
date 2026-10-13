@@ -29,9 +29,34 @@ const SOURCE = 'https://playriftbound.com/en-us/news/rules-and-releases/riftboun
 const OUT = new URL('../src/data/errata.json', import.meta.url);
 
 /** 官方頁面上的卡名與我們卡池的正式卡名對不上的例外。 */
-const NAME_FIXES = {
-  'Dark Child, Starter': 'Dark Child - Starter',
-};
+/*
+ * 官方頁面的卡名寫法對不上卡牌資料時，在這裡人工對應。
+ *
+ * 2026-10-13 清空：官方把英文卡名拆成 name + subtitle 之後，
+ * 原本唯一一筆（「Dark Child, Starter」）剛好就是 name + ", " + subtitle，
+ * 下面的 nameAliases 直接認得，不需要人工對應了。
+ */
+const NAME_FIXES = {};
+
+/**
+ * 一張卡的完整名稱。必須與 src/lib/card-name.ts 的 fullCardName 一致 ——
+ * 存進 errata.json 的就是這個名字，網站執行期只比對它。
+ */
+function fullCardName(card) {
+  if (card.types.includes('legend')) {
+    const champion = card.championTag;
+    if (!champion) return card.name;
+    return card.name.startsWith(`${champion},`) ? card.name : `${champion}, ${card.name}`;
+  }
+  return card.subtitle ? `${card.name}, ${card.subtitle}` : card.name;
+}
+
+/** 官方文件上可能的各種寫法，用來把標題解析回卡片（對應 cardNameAliases）。 */
+function nameAliases(card) {
+  const names = new Set([fullCardName(card), card.name]);
+  if (card.subtitle) names.add(`${card.name}, ${card.subtitle}`);
+  return [...names];
+}
 
 /**
  * 取出某個標記（[NEW TEXT] / [OLD TEXT]）後面那一整段的純文字。
@@ -142,13 +167,40 @@ async function main() {
     ),
   );
   const list = Array.isArray(cards) ? cards : cards.cards;
-  const known = new Set(list.map((c) => c.name));
-  const missing = entries.filter((e) => !known.has(e.name));
+
+  /*
+   * 把官方頁面上的寫法解析成**唯一的完整卡名**。
+   *
+   * 2026-10-13 起官方把英文卡名拆成 name + subtitle，全卡池有 145 個 name
+   * 被多張不同的卡共用（六張阿璃…）。所以這裡不只是「找得到就好」：
+   * 一個標題對到兩張不同的卡時一律中止 —— 勘誤套到錯的卡比漏掉還嚴重。
+   */
+  const byAlias = new Map();
+  for (const card of list) {
+    for (const alias of nameAliases(card)) {
+      if (!byAlias.has(alias)) byAlias.set(alias, new Set());
+      byAlias.get(alias).add(fullCardName(card));
+    }
+  }
+
+  const missing = [];
+  const ambiguous = [];
+  for (const entry of entries) {
+    const hits = byAlias.get(entry.name);
+    if (!hits || hits.size === 0) missing.push(entry);
+    else if (hits.size > 1) ambiguous.push(`"${entry.official}" → ${[...hits].join(' / ')}`);
+    else entry.name = [...hits][0];
+  }
   if (missing.length > 0) {
     throw new Error(
       `這些勘誤對不到卡片，請到 NAME_FIXES 補上對應：\n  ${missing
         .map((e) => `"${e.official}"`)
         .join('\n  ')}`,
+    );
+  }
+  if (ambiguous.length > 0) {
+    throw new Error(
+      `這些勘誤同時對到多張不同的卡，請到 NAME_FIXES 指定完整卡名：\n  ${ambiguous.join('\n  ')}`,
     );
   }
 

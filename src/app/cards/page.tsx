@@ -6,7 +6,7 @@ import { ALL_CARDS, TAXONOMY } from '@/lib/cards';
 export const metadata: Metadata = {
   title: '卡牌圖鑑',
   description:
-    '符文戰場起源系列（Origins）與試煉場（Proving Grounds）完整卡牌圖鑑，支援繁中／简中／英文三語切換與多條件篩選。',
+    '符文戰場全系列（起源、試煉之地、熠耀光彩、鑄魂淬鍊、潛能怒放、血海深仇）完整卡牌圖鑑，支援繁中／简中／英文三語切換與多條件篩選。',
 };
 
 export default function CardsPage() {
