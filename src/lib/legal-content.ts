@@ -9,7 +9,8 @@
  * ── 寫的原則：每一句都要跟程式碼對得上 ─────────────────────────
  * 隱私權政策最常見的問題是「寫得很漂亮，但跟實際行為不符」。
  * 這裡列的每一項儲存都查過原始碼（2026-09-19）：
- *   localStorage   背景動畫／音樂偏好（lib/ambience.ts）、收藏紀錄與開關（lib/collection.ts）
+ *   localStorage   背景動畫／音樂偏好（lib/ambience.ts）、收藏紀錄與開關（lib/collection.ts）、
+ *                  計分板分數（lib/scoreboard.ts，12 小時保鮮期）
  *   sessionStorage 牌組編輯器與復盤盤面（lib/session-state.ts）、圖鑑捲動位置（lib/gallery-scroll.ts）
  *   cookie         無（tests/e2e/security.spec.ts 有測試釘住）
  *   第三方請求     無（同上，「零第三方請求」測試）
@@ -227,9 +228,9 @@ export const PRIVACY: LegalDoc = {
       heading: t('存在你瀏覽器裡的資料', '存在你浏览器里的数据', 'Data stored in your browser'),
       body: [
         t(
-          '有些設定會存在你自己的瀏覽器裡（localStorage），方便下次使用：背景動畫與音樂的開關，以及你在牌組編輯器記錄的卡牌收藏。這些資料只存在你的裝置上，不會傳給本站或任何人。',
-          '有些设置会存在你自己的浏览器里（localStorage），方便下次使用：背景动画与音乐的开关，以及你在卡组编辑器记录的卡牌收藏。这些数据只存在你的设备上，不会传给本站或任何人。',
-          'A few settings are saved in your own browser (localStorage) for next time: whether background animation and music are on, and the card collection you record in the deck builder. This data stays on your device and is never sent to us or anyone else.',
+          '有些設定會存在你自己的瀏覽器裡（localStorage），方便下次使用：背景動畫與音樂的開關、你在牌組編輯器記錄的卡牌收藏，以及計分板的分數（超過 12 小時會自動從新的一局開始）。這些資料只存在你的裝置上，不會傳給本站或任何人。',
+          '有些设置会存在你自己的浏览器里（localStorage），方便下次使用：背景动画与音乐的开关、你在卡组编辑器记录的卡牌收藏，以及计分板的分数（超过 12 小时会自动从新的一局开始）。这些数据只存在你的设备上，不会传给本站或任何人。',
+          'A few settings are saved in your own browser (localStorage) for next time: whether background animation and music are on, the card collection you record in the deck builder, and the scoreboard (which starts a fresh game after 12 hours). This data stays on your device and is never sent to us or anyone else.',
         ),
         t(
           '牌組編輯器與對局復盤正在編輯的內容、以及卡牌圖鑑的捲動位置，會暫存在這個分頁裡（sessionStorage），關閉分頁就會清除。',
