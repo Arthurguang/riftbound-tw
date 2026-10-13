@@ -43,13 +43,18 @@ const PAGE_SIZE = 200;
  * 官方在 2026 年陸續推出了四個新系列，而且**簡體中文資料也一起上線**了 ——
  * 以前簡中要另外去中國大陸發行商的站抓，現在 locale=zh_CN 就有，卡圖也在同一個圖床。
  */
+/*
+ * 收錄的系列，**依官方發售順序**（與 src/lib/types.ts 的 SET_IDS 一致）。
+ * 這個順序會寫進 taxonomy.json 的 sets，決定篩選器的排列。
+ * 原本是英文字母順序，害圖鑑的排序看起來毫無邏輯（第五代夾在第一、二代中間）。
+ */
 const WANTED_SETS = Object.freeze({
   OGN: 'Origins',
   OGS: 'Proving Grounds',
-  RAD: 'Radiance',
   SFD: 'Spiritforged',
   UNL: 'Unleashed',
   VEN: 'Vendetta',
+  RAD: 'Radiance',
 });
 
 /**
@@ -1004,7 +1009,14 @@ async function main() {
     console.log(`  ✓ ${setId} (${WANTED_SETS[setId]}): ${actual} 張`);
   }
 
-  cards.sort((a, b) => (a.set === b.set ? a.number - b.number : a.set.localeCompare(b.set)));
+  // 依系列的發售順序，再依卡號 —— 跟站上的顯示順序一致
+  const setOrder = Object.keys(WANTED_SETS);
+  cards.sort(
+    (a, b) =>
+      setOrder.indexOf(a.set) - setOrder.indexOf(b.set) ||
+      a.number - b.number ||
+      (a.variant ?? '').localeCompare(b.variant ?? ''),
+  );
 
   // 每個標籤都必須有中文對照，缺一個就讓建置失敗。
   const missingTagLabels = [...new Set(cards.flatMap((c) => c.tags))].filter(

@@ -75,6 +75,8 @@ type UiStrings = {
   showFilters: string;
   hideFilters: string;
   resultCount: (count: number) => string;
+  /** 分段標題用的張數（旁邊已經有系列名，不必再寫一次「符合條件」） */
+  sectionCount: (count: number) => string;
   clearFilters: string;
   noResults: string;
   backToGallery: string;
@@ -100,6 +102,7 @@ type UiStrings = {
   notFoundBody: string;
   loading: string;
   filterSet: string;
+  filterGeneration: string;
   filterType: string;
   filterDomain: string;
   filterRarity: string;
@@ -128,6 +131,7 @@ const ZH_TW: UiStrings = {
   showFilters: '展開篩選',
   hideFilters: '收合篩選',
   resultCount: (n) => `符合條件：${n} 張`,
+  sectionCount: (n) => `${n} 張`,
   clearFilters: '清除所有條件',
   noResults: '找不到符合條件的卡牌。試著放寬篩選條件，或換個關鍵字。',
   backToGallery: '回到卡牌圖鑑',
@@ -154,6 +158,7 @@ const ZH_TW: UiStrings = {
   notFoundBody: '這張卡片可能不存在，或是網址打錯了。',
   loading: '載入卡牌資料…',
   filterSet: '系列',
+  filterGeneration: '代數',
   filterType: '卡種',
   filterDomain: '流派',
   filterRarity: '稀有度',
@@ -182,6 +187,7 @@ const ZH_CN: UiStrings = {
   showFilters: '展开筛选',
   hideFilters: '收起筛选',
   resultCount: (n) => `符合条件：${n} 张`,
+  sectionCount: (n) => `${n} 张`,
   clearFilters: '清除所有条件',
   noResults: '找不到符合条件的卡牌。试着放宽筛选条件，或换个关键字。',
   backToGallery: '回到卡牌图鉴',
@@ -207,6 +213,7 @@ const ZH_CN: UiStrings = {
   notFoundBody: '这张卡片可能不存在，或者网址打错了。',
   loading: '加载卡牌资料…',
   filterSet: '系列',
+  filterGeneration: '代数',
   filterType: '类型',
   filterDomain: '颜色',
   filterRarity: '稀有度',
@@ -235,6 +242,7 @@ const EN: UiStrings = {
   showFilters: 'Show filters',
   hideFilters: 'Hide filters',
   resultCount: (n) => `${n} cards`,
+  sectionCount: (n) => `${n} cards`,
   clearFilters: 'Clear all filters',
   noResults: 'No cards match these filters. Try broadening them or using a different keyword.',
   backToGallery: 'Back to card gallery',
@@ -260,6 +268,7 @@ const EN: UiStrings = {
   notFoundBody: 'This card may not exist, or the URL is wrong.',
   loading: 'Loading cards…',
   filterSet: 'Set',
+  filterGeneration: 'Generation',
   filterType: 'Type',
   filterDomain: 'Domain',
   filterRarity: 'Rarity',

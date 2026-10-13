@@ -13,12 +13,22 @@ import { cardName, cardTextToPlain } from './cards';
 import { errataFor } from './errata';
 import type { TextLang } from './i18n';
 import { CARD_FACE_TW, KEYWORD_LABELS, RARITY_ORDER } from './labels';
-import type { Card, CardType, Domain, Keyword, Rarity, SetId, Taxonomy } from './types';
+import {
+  SET_IDS,
+  type Card,
+  type CardType,
+  type Domain,
+  type Keyword,
+  type Rarity,
+  type SetId,
+  type Taxonomy,
+} from './types';
 
 /** 排序選項。label 為三語對照。 */
 export const SORT_OPTIONS = [
-  { id: 'number-asc', label: { 'zh-TW': '卡號（小到大）', 'zh-CN': '卡号（小到大）', en: 'Card # ascending' } },
-  { id: 'number-desc', label: { 'zh-TW': '卡號（大到小）', 'zh-CN': '卡号（大到小）', en: 'Card # descending' } },
+  // 標籤要說得出排序規則 —— 使用者看不懂順序時，第一個會看的就是這裡
+  { id: 'number-asc', label: { 'zh-TW': '系列與卡號（舊→新）', 'zh-CN': '系列与卡号（旧→新）', en: 'Set & card # (oldest first)' } },
+  { id: 'number-desc', label: { 'zh-TW': '系列與卡號（新→舊）', 'zh-CN': '系列与卡号（新→旧）', en: 'Set & card # (newest first)' } },
   { id: 'name-asc', label: { 'zh-TW': '卡名（順序）', 'zh-CN': '卡名（顺序）', en: 'Name (A→Z)' } },
   { id: 'name-desc', label: { 'zh-TW': '卡名（反序）', 'zh-CN': '卡名（反序）', en: 'Name (Z→A)' } },
   { id: 'energy-asc', label: { 'zh-TW': '能量（低到高）', 'zh-CN': '费用（低到高）', en: 'Energy (low→high)' } },
@@ -197,13 +207,45 @@ function compareNullableNumber(a: number | null, b: number | null, descending: b
   return descending ? b - a : a - b;
 }
 
+/**
+ * 卡號裡字母前綴的順序：一般卡 → 衍生物(T) → 符文(R) → 特別卡(SP)。
+ *
+ * 官方的收藏編號本來就是分開編的（UNL-001 與 UNL-T01 是兩套號碼）。
+ * 不分開的話，UNL-T01 的 number 是 1，會夾在 UNL-001 旁邊 ——
+ * 使用者看到的就是「排序沒有邏輯」。
+ */
+const PREFIX_ORDER: Record<string, number> = { '': 0, T: 1, R: 2, SP: 3 };
+
+/**
+ * 同一個系列裡的順序：先看卡號前綴，再看號碼，最後才是異畫版的後綴。
+ * 這樣 019 與 019a 一定相鄰，而且 019 在前。
+ */
+function compareWithinSet(a: Card, b: Card): number {
+  return (
+    (PREFIX_ORDER[a.codePrefix ?? ''] ?? 9) - (PREFIX_ORDER[b.codePrefix ?? ''] ?? 9) ||
+    a.number - b.number ||
+    (a.variant ?? '').localeCompare(b.variant ?? '')
+  );
+}
+
+/** 系列的先後：依官方發售順序（SET_IDS），不是英文字母順序。 */
+const compareSet = (a: Card, b: Card) => SET_IDS.indexOf(a.set) - SET_IDS.indexOf(b.set);
+
 function sortCards(cards: Card[], sort: SortId, lang: TextLang): Card[] {
   const sorted = [...cards];
   switch (sort) {
+    /*
+     * 預設排序 ——「先系列、後卡號」。
+     *
+     * 2026-10-13 修正兩件讓它看起來毫無邏輯的事：
+     *   1. 系列原本照英文字母排，所以第五代（RAD）夾在第一代與第二代中間
+     *   2. 衍生物與符文的號碼跟一般卡混在一起（UNL-T01 排在 UNL-001 旁邊）
+     * 圖鑑在這個排序下會分段顯示系列標題，使用者看得到分界。
+     */
     case 'number-asc':
-      return sorted.sort((a, b) => a.set.localeCompare(b.set) || a.number - b.number);
+      return sorted.sort((a, b) => compareSet(a, b) || compareWithinSet(a, b));
     case 'number-desc':
-      return sorted.sort((a, b) => a.set.localeCompare(b.set) || b.number - a.number);
+      return sorted.sort((a, b) => -compareSet(a, b) || -compareWithinSet(a, b));
     case 'name-asc':
       return sorted.sort((a, b) => compareByName(a, b, lang) || a.number - b.number);
     case 'name-desc':

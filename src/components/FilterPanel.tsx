@@ -1,10 +1,18 @@
 'use client';
 
-import { DOMAIN_LABELS, RARITY_LABELS, SET_LABELS, TYPE_LABELS } from '@/lib/labels';
+import {
+  DOMAIN_LABELS,
+  GENERATIONS,
+  RARITY_LABELS,
+  SET_LABELS,
+  TYPE_LABELS,
+  generationLabel,
+  setsOfGeneration,
+} from '@/lib/labels';
 import { DomainDot } from './CardBadges';
 import { t, type TextLang } from '@/lib/i18n';
 import { MARKS, type Filters } from '@/lib/search';
-import type { Domain, Taxonomy } from '@/lib/types';
+import { SET_IDS, type Domain, type Taxonomy } from '@/lib/types';
 
 type ToggleGroupProps<T extends string | number> = {
   title: string;
@@ -75,6 +83,14 @@ export function FilterPanel({
     onChange({ ...filters, [key]: next });
   };
 
+  /*
+   * 系列照官方發售順序排（SET_IDS），不照資料檔裡的順序 ——
+   * 篩選器的順序要跟圖鑑的排列一致，不然使用者會以為是兩套邏輯。
+   */
+  const orderedSets = [...taxonomy.sets].sort(
+    (a, b) => SET_IDS.indexOf(a.id) - SET_IDS.indexOf(b.id),
+  );
+
   /** 標籤在三種語言下顯示各自的名稱，英文以外並附上英文原文方便對照。 */
   const tagLabel = (tag: string) => {
     const entry = taxonomy.tagLabels[tag];
@@ -107,9 +123,53 @@ export function FilterPanel({
         onToggle={(v) => toggle('marks', v)}
       />
 
+      {/*
+        代數篩選（使用者要求：「用代數來篩選，例如第一代是 OGN，然後是 SFD」）。
+        官方沒有在卡牌資料裡給代數，這份對照自己維護在 labels.ts 的 SET_META，
+        出處寫在那裡。按一下選起整個世代 —— 第 1 代有起源與試煉之地兩個系列。
+        選項不另外佔一個網址參數：它寫進既有的 `set`，舊連結照樣能開。
+      */}
+      <fieldset className="border-t border-line pt-4">
+        <legend className="mb-2 text-xs font-semibold tracking-wide text-ink-dim uppercase">
+          {strings.filterGeneration}
+        </legend>
+        <div className="flex flex-wrap gap-1.5">
+          {GENERATIONS.map((generation) => {
+            const inGen = setsOfGeneration(generation);
+            const isOn = inGen.every((id) => filters.sets.includes(id));
+            return (
+              <button
+                key={generation}
+                type="button"
+                aria-pressed={isOn}
+                data-generation={generation}
+                onClick={() =>
+                  onChange({
+                    ...filters,
+                    sets: isOn
+                      ? filters.sets.filter((id) => !inGen.includes(id))
+                      : [...new Set([...filters.sets, ...inGen])],
+                  })
+                }
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                  isOn
+                    ? 'border-accent bg-accent/15 text-accent-soft'
+                    : 'border-line bg-surface-1 text-ink-dim hover:border-surface-3 hover:text-ink'
+                }`}
+              >
+                {generationLabel(generation, lang)}
+                <span className="text-ink-faint">
+                  {inGen.map((id) => SET_LABELS[id][lang]).join('・')}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
+
       <ToggleGroup
         title={strings.filterSet}
-        options={taxonomy.sets.map((set) => ({
+        options={orderedSets.map((set) => ({
           value: set.id,
           label: `${SET_LABELS[set.id][lang]} (${set.count})`,
         }))}

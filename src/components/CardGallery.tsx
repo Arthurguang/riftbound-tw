@@ -16,7 +16,8 @@ import type { Filters } from '@/lib/search';
 import { filtersFromParams, filtersToQueryString } from '@/lib/filters-url';
 import { consumeGalleryScroll } from '@/lib/gallery-scroll';
 import { DEFAULT_ART_LANG, DEFAULT_TEXT_LANG, readArtLang, readTextLang, t } from '@/lib/i18n';
-import type { Card, Taxonomy } from '@/lib/types';
+import { SET_LABELS, SET_META, generationLabel } from '@/lib/labels';
+import type { Card, SetId, Taxonomy } from '@/lib/types';
 
 /**
  * 圖鑑主畫面。
@@ -63,6 +64,21 @@ export function CardGallery({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
     () => applyFilters(cards, filters, index, lang),
     [cards, filters, index, lang],
   );
+
+  /*
+   * 依系列分段。排序是「系列與卡號」時才分 —— 其他排序分段會打斷那個順序。
+   * 回傳 null 代表「不分段，照原本一個大格線」。
+   */
+  const grouped = useMemo(() => {
+    if (filters.sort !== 'number-asc' && filters.sort !== 'number-desc') return null;
+    const sections: { set: SetId; cards: Card[] }[] = [];
+    for (const card of results) {
+      const last = sections[sections.length - 1];
+      if (last && last.set === card.set) last.cards.push(card);
+      else sections.push({ set: card.set, cards: [card] });
+    }
+    return sections;
+  }, [results, filters.sort]);
 
   /** 保留語言設定的查詢字串（語言與篩選是兩件事，切換其一不該清掉另一個）。 */
   const langQuery = useMemo(() => {
@@ -184,7 +200,7 @@ export function CardGallery({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
 
       {results.length === 0 ? (
         <p className="mt-16 text-center text-ink-dim">{strings.noResults}</p>
-      ) : (
+      ) : grouped === null ? (
         <ul className="mt-6 grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {results.map((card) => (
             <li key={card.id}>
@@ -192,6 +208,36 @@ export function CardGallery({ cards, taxonomy }: { cards: Card[]; taxonomy: Taxo
             </li>
           ))}
         </ul>
+      ) : (
+        /*
+         * 依系列分段顯示（使用者回饋：「排列太混亂，看不出有任何邏輯」）。
+         *
+         * 排序規則寫在下拉選單的標籤裡，但一千多張卡捲下去之後就看不到那行字了。
+         * 分段標題讓順序在**畫面上任何位置**都看得出來：現在在第幾代、哪個系列、
+         * 這個系列有幾張。只有「系列與卡號」這個排序會分段 ——
+         * 依能量或稀有度排序時，分段反而會打斷那個順序。
+         */
+        grouped.map(({ set, cards: inSet }) => (
+          <section key={set} data-set-section={set} className="mt-8 first:mt-6">
+            <h2 className="mb-2 flex flex-wrap items-baseline gap-x-2 border-b border-line pb-1.5">
+              <span className="text-xs text-accent-soft">
+                {generationLabel(SET_META[set].generation, lang)}
+              </span>
+              <span className="text-base font-semibold text-ink">{SET_LABELS[set][lang]}</span>
+              {lang !== 'en' && <span className="text-xs text-ink-faint">{SET_LABELS[set].en}</span>}
+              <span className="text-xs text-ink-faint">
+                {set}・{strings.sectionCount(inSet.length)}
+              </span>
+            </h2>
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+              {inSet.map((card) => (
+                <li key={card.id}>
+                  <CardTile card={card} lang={lang} art={art} href={cardHref(card.id)} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
       )}
     </div>
   );

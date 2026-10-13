@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { SECONDS_PER_CARD, SHOWCASE_SIZE } from '../../src/lib/showcase';
 
 /**
  * 首頁：傳奇展示台、「流派徽章＋傳奇列」。
@@ -192,22 +193,47 @@ test.describe('首頁傳奇展示台', () => {
     return label.replace(/：看傳奇說明$/, '');
   };
 
-  test('展示全部傳奇（跟下方傳奇列一樣多），卡圖都由本站提供', async ({ page }) => {
+  /*
+   * 2026-10-13 起展示台只放隨機挑的 20 位（使用者要求）。
+   * 傳奇隨著新系列一直變多（目前 57 位），全部擺上去轉盤會變成一條看不出內容的帶子。
+   * 下方的傳奇列仍然是全部 —— 兩者的差別正是這條測試要守住的。
+   */
+  test('展示隨機 20 位（傳奇列仍是全部），卡圖都由本站提供', async ({ page }) => {
     await gotoHome(page);
     const cards = showcase(page).locator('[data-showcase-card]');
-    await expect(cards).toHaveCount(await legends(page).count());
+    await expect(cards).toHaveCount(SHOWCASE_SIZE);
+    expect(await legends(page).count()).toBeGreaterThan(SHOWCASE_SIZE);
+
     const sources = await cards
       .locator('img')
       .evaluateAll((els) => els.map((e) => e.getAttribute('src') ?? ''));
     for (const src of sources) expect(src).toMatch(SELF_HOSTED);
   });
 
+  test('每次進站挑的不一樣', async ({ page }) => {
+    const shown = async () => {
+      await gotoHome(page);
+      return showcase(page)
+        .locator('[data-showcase-card] img')
+        .evaluateAll((els) => els.map((e) => e.getAttribute('src')).join(','));
+    };
+    // 57 選 20 的組合數大到天文數字，兩次挑到完全一樣的機率可以忽略
+    expect(await shown()).not.toBe(await shown());
+  });
+
+  /*
+   * 等待時間從速度的設定值算出來，不寫死。
+   * 2026-10-13 把轉速放慢（每張卡 6 秒）之後，原本寫死的 8 秒就只剩一點餘裕 ——
+   * WebKit 在多工並行時曾因此紅燈一次。偶發紅燈比沒有這條檢查還糟。
+   */
   test('持續慢慢轉動，滑鼠移上去也不會停', async ({ page }) => {
     await gotoHome(page);
     await showcase(page).hover();
     await expect(showcase(page)).toHaveAttribute('data-auto', 'running');
     const start = await showcase(page).getAttribute('data-front');
-    await expect(showcase(page)).not.toHaveAttribute('data-front', start ?? '', { timeout: 8000 });
+    await expect(showcase(page)).not.toHaveAttribute('data-front', start ?? '', {
+      timeout: SECONDS_PER_CARD * 2500,
+    });
   });
 
   test('按頁首的「暫停背景動畫」，展示台也一起停', async ({ page }) => {
@@ -275,11 +301,20 @@ test.describe('首頁傳奇展示台', () => {
     await expect(dialog).toBeHidden();
   });
 
+  /*
+   * 不寫死卡號開頭（原本是 /cards/og[ns]-）：2026-10-13 起展示台從六個系列隨機挑 20 位，
+   * 正面那張可能來自任何系列，寫死就會變成偶發紅燈。
+   * 改成驗「連結指到哪，就該開到哪」—— 那才是這條真正要守住的事。
+   */
   test('說明視窗裡的連結會打開那張卡的完整頁面', async ({ page }) => {
     await gotoHome(page);
     await clickFrontCard(page);
-    await page.getByTestId('legend-dialog').getByRole('link', { name: /看完整卡片頁/ }).click();
-    await expect(page).toHaveURL(/\/cards\/og[ns]-/);
+    const link = page.getByTestId('legend-dialog').getByRole('link', { name: /看完整卡片頁/ });
+    const href = (await link.getAttribute('href')) ?? '';
+    expect(href).toMatch(/^\/cards\/[a-z0-9-]+/);
+
+    await link.click();
+    await expect(page).toHaveURL(new RegExp(`${href.split('?')[0]!}(\\?|$)`));
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
 
