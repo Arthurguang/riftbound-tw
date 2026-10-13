@@ -28,6 +28,7 @@ const PAGES = [
   '/deck',
   '/odds',
   '/replay',
+  '/score',
   '/terms',
   '/privacy',
 ];

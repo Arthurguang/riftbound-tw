@@ -95,6 +95,7 @@ function SiteHeader({ lang }: { lang: TextLang }) {
             { href: '/deck', label: strings.navDeck },
             { href: '/odds', label: strings.navOdds },
             { href: '/replay', label: strings.navReplay },
+            { href: '/score', label: strings.navScore },
           ]}
         />
         <div className="ml-auto flex flex-wrap items-center gap-3">
