@@ -15,6 +15,7 @@ import {
 import { SET_LABELS, TYPE_LABELS } from '@/lib/labels';
 import { readArtLang, readTextLang, t, DEFAULT_TEXT_LANG } from '@/lib/i18n';
 import { playDomains } from '@/lib/runeterra-core';
+import { pickShowcase } from '@/lib/showcase';
 import { allLegends, championTagOf, regionOfChampion, tagLabel } from '@/lib/runeterra';
 
 type PageProps = {
@@ -104,8 +105,13 @@ export default async function HomePage({ searchParams }: PageProps) {
   /*
    * 展示台的說明視窗要顯示能力文字。CardText 會用到卡牌資料，
    * 所以在伺服器端先渲染好（details），瀏覽器只收到渲染結果。
+   *
+   * 2026-10-13 起只放隨機挑的 20 位（使用者要求）：傳奇會隨著新系列一直變多，
+   * 全部擺上去轉盤會變成一條看不出內容的帶子，首頁也要多送幾十份能力文字。
+   * **挑選在伺服器端做**：在瀏覽器端挑的話，伺服器產生的 HTML 會與瀏覽器
+   * 接手後算出來的不一致（hydration 會壞）。下面的傳奇列仍然是全部。
    */
-  const showcase: ShowcaseLegend[] = legendCards.map((card) => {
+  const showcase: ShowcaseLegend[] = pickShowcase(legendCards).map((card) => {
     const champion = championTagOf(card);
     return {
       id: card.id,

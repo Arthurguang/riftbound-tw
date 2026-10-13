@@ -6,6 +6,52 @@
  * 第 i 張卡放在 i × (360 ÷ 張數) 度的位置；角度等於那個值時，它就在正前方。
  */
 
+/**
+ * 展示台最多放幾張。
+ *
+ * 傳奇會隨著新系列一直變多（2026-10-13 收錄六個系列後是 57 位），全部擺上去
+ * 會讓轉盤變成一條看不出內容的帶子，首頁也要多送 57 份能力文字給瀏覽器。
+ * 固定張數、每次進站**隨機挑**：轉盤維持好看的密度，而且每次來看到的都不一樣。
+ */
+export const SHOWCASE_SIZE = 20;
+
+/**
+ * 每張卡停留在正前方的秒數。
+ *
+ * 速度**不能**用「每秒幾度」寫死：張數變多時每張卡佔的角度變小，
+ * 同樣的度數就會讓卡片一張接一張閃過去 —— 使用者回饋「轉動太快」就是這個原因
+ *（16 位時每 3.75 秒換一張，57 位時變成每 1 秒換一張）。
+ * 改成以「每張幾秒」定速，再回推角速度，不論幾張卡感覺都一樣。
+ *
+ * 6 秒是這樣定出來的：改版前 16 位傳奇時是每 3.75 秒一張（當時沒有人反應太快），
+ * 這裡再放慢一點。20 張 × 6 秒 = 轉一圈兩分鐘。要調整只改這一個數字。
+ */
+export const SECONDS_PER_CARD = 6;
+
+/** 依張數算出角速度（度／秒）。張數越多轉越慢，每張卡露臉的時間固定。 */
+export function speedDegPerSec(count: number): number {
+  if (count <= 0) return 0;
+  return 360 / (count * SECONDS_PER_CARD);
+}
+
+/**
+ * 隨機挑出要放上展示台的傳奇。
+ *
+ * 用 Fisher–Yates 洗牌後取前 n 張：每一種組合的機率相同，而且不會挑到重複的卡。
+ * `random` 可以注入，測試才驗得了「真的洗過」而不是靠運氣。
+ *
+ * ⚠️ 必須在**伺服器端**挑好再傳給元件：在瀏覽器端挑的話，
+ * 伺服器產生的 HTML 與瀏覽器接手後算出來的會不一樣（hydration 不一致）。
+ */
+export function pickShowcase<T>(items: readonly T[], size = SHOWCASE_SIZE, random = Math.random): T[] {
+  const pool = [...items];
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j]!, pool[i]!];
+  }
+  return pool.slice(0, Math.max(0, Math.min(size, pool.length)));
+}
+
 /** 轉盤轉到 angle 度時，正前方是第幾張（最接近正面的那張）。 */
 export function frontFromAngle(angle: number, count: number): number {
   if (count <= 0) return 0;

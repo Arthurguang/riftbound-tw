@@ -9,10 +9,22 @@ export const CARD_TYPES = ['unit', 'spell', 'legend', 'gear', 'battlefield', 'ru
 export const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'showcase'] as const;
 export const DOMAINS = ['calm', 'chaos', 'fury', 'body', 'mind', 'order', 'colorless'] as const;
 /**
- * 收錄的系列。2026-10-13 起收錄官方提供的全部六個系列。
- * 順序就是顯示順序：起源在前，之後依推出時間。
+ * 收錄的系列，**依官方發售順序排列**。
+ *
+ * 這個順序就是全站的顯示順序（圖鑑預設排序、篩選器、首頁傳奇列）。
+ *
+ *   OGN  起源          2025-10-31　第 1 代
+ *   OGS  試煉之地      2025-10-31　第 1 代的入門產品，與起源同日發售
+ *   SFD  鑄魂淬鍊      2026-02-13　第 2 代
+ *   UNL  潛能怒放      2026-05-08　第 3 代
+ *   VEN  血海深仇      2026-07-31　第 4 代
+ *   RAD  熠耀光彩      2026-10-23　第 5 代（預覽資料已公開，實體卡尚未發售）
+ *
+ * ⚠️ 2026-10-13 修正：原本是英文字母順序（…RAD、SFD…），
+ * 結果圖鑑的預設排序看起來毫無邏輯 —— 第五代的卡夾在第一代與第二代中間。
+ * 日期出自官方公告與維基百科，詳見 labels.ts 的 SET_META。
  */
-export const SET_IDS = ['OGN', 'OGS', 'RAD', 'SFD', 'UNL', 'VEN'] as const;
+export const SET_IDS = ['OGN', 'OGS', 'SFD', 'UNL', 'VEN', 'RAD'] as const;
 
 export const GLYPH_IDS = [
   'might',

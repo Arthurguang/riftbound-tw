@@ -11,11 +11,6 @@
    "count": 24
   },
   {
-   "id": "RAD",
-   "name": "Radiance",
-   "count": 183
-  },
-  {
    "id": "SFD",
    "name": "Spiritforged",
    "count": 288
@@ -23,12 +18,17 @@
   {
    "id": "UNL",
    "name": "Unleashed",
-   "count": 285
+   "count": 286
   },
   {
    "id": "VEN",
    "name": "Vendetta",
    "count": 237
+  },
+  {
+   "id": "RAD",
+   "name": "Radiance",
+   "count": 183
   }
  ],
  "types": [

@@ -19,7 +19,7 @@
  * 與 en_US 完全相同 —— 官方線上並沒有繁中卡牌資料或繁中卡圖。
  */
 
-import type { CardType, Domain, GlyphId, Keyword, Rarity, SetId } from './types';
+import { SET_IDS, type CardType, type Domain, type GlyphId, type Keyword, type Rarity, type SetId } from './types';
 import type { TextLang } from './i18n';
 
 type Tri = Record<TextLang, string>;
@@ -38,6 +38,52 @@ export const SET_LABELS: Record<SetId, Tri> = {
   UNL: tri('潛能怒放', '破限', 'Unleashed'),
   VEN: tri('血海深仇', '化神争锋', 'Vendetta'),
 };
+
+/**
+ * 每個系列是第幾代、什麼時候發售。
+ *
+ * ── 這份資料為什麼要自己維護 ────────────────────────────────────
+ * 官方卡牌 API 只給系列代碼與名稱，**沒有任何順序或日期**。
+ * 少了它，程式只能照字母排 —— 那正是 2026-10-13 之前圖鑑排序亂掉的原因
+ *（RAD 是第五代，卻因為字母順序排在第一代與第二代中間）。
+ *
+ * ── 出處（2026-10-13 查證，兩個來源互相對得上）────────────────
+ * · 官方公告「Products and Sets into 2027」：Radiance 是第 5 代、2026-10-23 發售
+ *   https://playriftbound.com/en-us/news/announcements/products-and-sets-into-2027/
+ * · 維基百科 Riftbound 條目的系列表：OGN 2025-10-31、SFD 2026-02-13、
+ *   UNL 2026-05-08、VEN 2026-07-31、RAD 2026-10-23
+ *
+ * 試煉之地（OGS）是起源的入門產品、同日發售，所以算第 1 代，不另外給代數。
+ *
+ * ⚠️ RAD 的實體卡 2026-10-23 才發售，本站的資料來自官方預覽期公開的卡表。
+ * 日後新增系列時，這裡與 types.ts 的 SET_IDS 都要補，測試會檢查兩邊一致。
+ */
+export const SET_META: Record<SetId, { generation: number; released: string }> = {
+  OGN: { generation: 1, released: '2025-10-31' },
+  OGS: { generation: 1, released: '2025-10-31' },
+  SFD: { generation: 2, released: '2026-02-13' },
+  UNL: { generation: 3, released: '2026-05-08' },
+  VEN: { generation: 4, released: '2026-07-31' },
+  RAD: { generation: 5, released: '2026-10-23' },
+};
+
+/** 目前總共幾代（用來產生篩選器的代數按鈕）。 */
+export const GENERATIONS: readonly number[] = [
+  ...new Set(Object.values(SET_META).map((m) => m.generation)),
+].sort((a, b) => a - b);
+
+/** 第幾代的三語說法。中文用「第 N 代」，英文用官方的 "Set N"。 */
+export function generationLabel(generation: number, lang: TextLang): string {
+  const CHINESE = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+  if (lang === 'en') return `Set ${generation}`;
+  return `第${CHINESE[generation] ?? generation}代`;
+}
+
+/** 這一代包含哪些系列（第 1 代有起源與試煉之地兩個）。 */
+export function setsOfGeneration(generation: number): SetId[] {
+  // 用 SET_IDS 的順序，不是物件的鍵順序 —— 顯示順序要跟全站一致
+  return SET_IDS.filter((id) => SET_META[id].generation === generation);
+}
 
 export const TYPE_LABELS: Record<CardType, Tri> = {
   unit: tri('單位', '单位', 'Unit'),

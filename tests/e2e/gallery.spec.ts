@@ -370,3 +370,83 @@ test.describe('返回圖鑑時保留篩選', () => {
     expect(href).not.toContain('nope');
   });
 });
+
+/*
+ * 2026-10-13 使用者回饋：「圖鑑的排列太混亂，看不出有任何邏輯」。
+ *
+ * 修法有兩層：排序本身改成依官方發售順序（單元測試驗規則），
+ * 以及**在畫面上把分界畫出來** —— 一千多張卡捲下去之後，
+ * 下拉選單裡那行「系列與卡號」早就看不到了。這一組驗的是第二層。
+ */
+test.describe('圖鑑的排列看得出邏輯', () => {
+  test('依系列分段，標題寫明第幾代與張數', async ({ page }) => {
+    await page.goto('/cards');
+    const sections = page.locator('[data-set-section]');
+    await expect(sections).toHaveCount(6);
+
+    // 分段順序就是官方發售順序
+    const ids = await sections.evaluateAll((els) =>
+      els.map((e) => e.getAttribute('data-set-section')),
+    );
+    expect(ids).toEqual(['OGN', 'OGS', 'SFD', 'UNL', 'VEN', 'RAD']);
+
+    const first = sections.first();
+    await expect(first.getByRole('heading', { level: 2 })).toContainText('第一代');
+    await expect(first.getByRole('heading', { level: 2 })).toContainText('起源');
+  });
+
+  test('每一段的張數跟實際卡片數一致', async ({ page }) => {
+    await page.goto('/cards?set=OGS');
+    const section = page.locator('[data-set-section="OGS"]');
+    const tiles = await section.locator('li').count();
+    await expect(section.getByRole('heading', { level: 2 })).toContainText(`${tiles} 張`);
+  });
+
+  /* 依能量、稀有度排序時不分段 —— 分段會把那個順序打斷。 */
+  test('換成其他排序就不分段', async ({ page }) => {
+    await page.goto('/cards?sort=energy-asc');
+    await expect(page.locator('[data-set-section]')).toHaveCount(0);
+    await expect(page.locator('main ul > li').first()).toBeVisible();
+  });
+});
+
+/*
+ * 代數篩選（使用者要求：「用代數來篩選，例如第一代是 OGN，然後是 SFD」）。
+ * 官方資料沒有代數，對照表自己維護在 labels.ts，出處寫在那裡。
+ */
+test.describe('代數篩選', () => {
+  const openFilters = async (page: Page) => {
+    await page.goto('/cards');
+    await page.getByRole('button', { name: '展開篩選' }).click();
+  };
+
+  test('第一代一次選起源與試煉之地兩個系列', async ({ page }) => {
+    await openFilters(page);
+    await page.locator('[data-generation="1"]').click();
+
+    await expect(page.locator('[data-set-section]')).toHaveCount(2);
+    await expect(page).toHaveURL(/set=OGN%2COGS|set=OGN,OGS/);
+    await expect(page.locator('[data-generation="1"]')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('第二代只有鑄魂淬鍊', async ({ page }) => {
+    await openFilters(page);
+    await page.locator('[data-generation="2"]').click();
+
+    const sections = page.locator('[data-set-section]');
+    await expect(sections).toHaveCount(1);
+    await expect(sections.first()).toHaveAttribute('data-set-section', 'SFD');
+  });
+
+  test('再按一次取消，而且不會動到別代的選擇', async ({ page }) => {
+    await openFilters(page);
+    await page.locator('[data-generation="2"]').click();
+    await page.locator('[data-generation="4"]').click();
+    await expect(page.locator('[data-set-section]')).toHaveCount(2);
+
+    await page.locator('[data-generation="2"]').click();
+    const sections = page.locator('[data-set-section]');
+    await expect(sections).toHaveCount(1);
+    await expect(sections.first()).toHaveAttribute('data-set-section', 'VEN');
+  });
+});

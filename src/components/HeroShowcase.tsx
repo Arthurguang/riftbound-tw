@@ -10,7 +10,13 @@ import {
   type ReactNode,
 } from 'react';
 import { useAmbiencePaused } from './Ambience';
-import { angleForIndex, frontFromAngle, ringRadius, snapAngle } from '@/lib/showcase';
+import {
+  angleForIndex,
+  frontFromAngle,
+  ringRadius,
+  snapAngle,
+  speedDegPerSec,
+} from '@/lib/showcase';
 import type { TextLang } from '@/lib/i18n';
 import { useHydrated } from '@/lib/use-hydrated';
 
@@ -50,8 +56,7 @@ export type ShowcaseLegend = {
   details: ReactNode;
 };
 
-/** 每秒轉幾度：一圈一分鐘 */
-const SPEED_DEG_PER_SEC = 6;
+
 /** 與 globals.css 的 .showcase-card 寬度一致 */
 const CARD_WIDTH = 180;
 /** 拖曳一像素轉幾度 */
@@ -201,7 +206,7 @@ export function HeroShowcase({ lang, legends }: { lang: TextLang; legends: Showc
         angleRef.current = tween.from + (tween.to - tween.from) * easeOut(progress);
         if (progress >= 1) tweenRef.current = null;
       } else if (!dragRef.current?.active && !autoPausedRef.current) {
-        angleRef.current += SPEED_DEG_PER_SEC * dt;
+        angleRef.current += speedDegPerSec(count) * dt;
       } else if (!interactive) {
         return; // 停住、也沒在拖：不必重畫
       }
