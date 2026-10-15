@@ -29,8 +29,11 @@ export declare class CardTextError extends Error {
 /**
  * 把官方 API 的能力文字 HTML 解析成結構化 token。
  *
+ * @param cn 解析 Riot 官方 zh_CN 時才傳：簡中關鍵字對照與「其實是標籤」的字。
+ *           英文不傳，行為完全不變。
  * @throws {CardTextError} 遇到任何非預期的標籤、屬性、實體、符號或關鍵字
  */
 export declare function parseCardText(
   html: string | null | undefined,
+  cn?: { keywords: Readonly<Record<string, string>>; tags: ReadonlySet<string> },
 ): ParsedTextBlock[];

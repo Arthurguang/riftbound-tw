@@ -26,14 +26,15 @@ describe('卡牌資料完整性', () => {
    */
   it('六個系列都在，而且張數合理', () => {
     const expected: Record<string, number> = {
-      OGN: 352, OGS: 24, RAD: 183, SFD: 288, UNL: 286, VEN: 237,
+      // RAD 還在預覽期，官方陸續追加公開（10-13 是 183 張，10-15 是 206 張）
+      OGN: 352, OGS: 24, RAD: 206, SFD: 288, UNL: 286, VEN: 237,
     };
     for (const [set, count] of Object.entries(expected)) {
       const actual = list.filter((c) => c.set === set).length;
       expect(actual, `${set} 張數`).toBeGreaterThanOrEqual(count - 2);
       expect(actual, `${set} 張數`).toBeLessThanOrEqual(count);
     }
-    expect(list.length).toBeGreaterThanOrEqual(1360);
+    expect(list.length).toBeGreaterThanOrEqual(1385);
   });
 
   it('每張卡的 id 都唯一，且只含網址安全的字元', () => {
@@ -205,18 +206,62 @@ describe('中文資料', () => {
     }
   });
 
+  /*
+   * 2026-10-15 起有兩個簡中來源：中國大陸發行商只有段落，
+   * Riot 官方 zh_CN 跟英文同格式、會有條列（「選一項 ——」底下的選項）。兩種都要驗。
+   */
   it('中文能力文字的 token 型別與符號都在允許清單內', () => {
+    const check = (tokens: Record<string, unknown>[]) => {
+      for (const token of tokens) {
+        expect(['text', 'break', 'glyph', 'keyword']).toContain(token.type);
+        if (token.type === 'glyph') expect(GLYPH_IDS).toContain(token.id);
+        if (token.type === 'keyword') expect(KEYWORDS).toContain(token.name);
+      }
+    };
     for (const card of list) {
-      const zh = card.zh as { cn: { text: Record<string, unknown>[] } | null };
-      for (const block of zh.cn?.text ?? []) {
-        expect(block.kind).toBe('paragraph');
-        for (const token of block.tokens as Record<string, unknown>[]) {
-          expect(['text', 'break', 'glyph', 'keyword']).toContain(token.type);
-          if (token.type === 'glyph') expect(GLYPH_IDS).toContain(token.id);
-          if (token.type === 'keyword') expect(KEYWORDS).toContain(token.name);
-        }
+      const zh = card.zh as {
+        cn: { text: Record<string, unknown>[] } | null;
+        tw: { text: Record<string, unknown>[] } | null;
+      };
+      for (const block of [...(zh.cn?.text ?? []), ...(zh.tw?.text ?? [])]) {
+        expect(['paragraph', 'list']).toContain(block.kind);
+        if (block.kind === 'paragraph') check(block.tokens as Record<string, unknown>[]);
+        else for (const item of block.items as Record<string, unknown>[][]) check(item);
       }
     }
+  });
+
+  it('每一份簡中都標明來源', () => {
+    for (const card of list) {
+      const cn = (card.zh as { cn: { source: string } | null }).cn;
+      if (cn === null) continue;
+      expect(['publisher', 'riot'], card.code as string).toContain(cn.source);
+    }
+  });
+
+  /*
+   * 使用者回饋「有些地方還是英文」之後補上 Riot 官方 zh_CN。
+   * 這條確認補缺真的有效：只剩極少數兩個來源都還沒翻譯的卡。
+   * 門檻刻意寬鬆（官方預覽期會一直追加新卡），真正要守的是「不會退回到一大片英文」。
+   */
+  it('幾乎每張卡都有中文', () => {
+    const english = list.filter((c) => (c.zh as { cn: unknown }).cn === null);
+    expect(english.length).toBeLessThan(list.length * 0.02);
+  });
+
+  /*
+   * 2026-10-15 查出：社群繁中卡名原本只用「系列＋號碼」對應，沒算字母前綴，
+   * VEN-R01（狂怒符文）因此拿到 VEN-001「巴凱旋沙者」的名字。
+   * 抓取腳本現在會拿社群資料附的英文名核對；這裡用幾張實際出過事的卡釘住結果。
+   */
+  it('符文、衍生物、特別卡不會拿到同號一般卡的繁中名', () => {
+    const tw = (code: string) =>
+      (list.find((c) => c.code === code)?.zh as { tw: { name: string } | null } | undefined)?.tw
+        ?.name;
+    expect(tw('VEN-R01')).toBe('狂怒符文');
+    expect(tw('UNL-T01')).not.toBe(tw('UNL-001/219'));
+    expect(tw('SFD-T03')).not.toBe(tw('SFD-003/221'));
+    expect(tw('VEN-SP1/006')).not.toBe(tw('VEN-001/166'));
   });
 
   /*

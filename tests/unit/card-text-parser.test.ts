@@ -16,6 +16,7 @@ import {
   ALLOWED_KEYWORDS,
   CardTextError,
 } from '../../scripts/lib/card-text-parser.mjs';
+import { CN_TAG_TOKENS, KEYWORD_BY_CN } from '../../scripts/lib/taxonomy-map.mjs';
 import { GLYPH_IDS, KEYWORDS } from '../../src/lib/types';
 
 describe('紅隊：惡意輸入必須讓建置失敗', () => {
@@ -136,5 +137,55 @@ describe('允許清單本身', () => {
    */
   it('兩份關鍵字清單完全一致（抓取腳本 vs 網站）', () => {
     expect([...ALLOWED_KEYWORDS].sort()).toEqual([...KEYWORDS].sort());
+  });
+});
+
+/**
+ * Riot 官方 zh_CN（2026-10-15 起用來補新系列的中文）。
+ *
+ * 跟英文同一支解析器、同一套防線，只是方括號裡換成簡中關鍵字。
+ * 這組確認兩件事：認得的要認對，認不得的照樣要爆炸 —— 換語言不能變成換規則。
+ */
+describe('官方 zh_CN 的能力文字', () => {
+  const cn = { keywords: KEYWORD_BY_CN, tags: CN_TAG_TOKENS };
+  const tokensOf = (html: string) => {
+    const [block] = parseCardText(html, cn);
+    return block?.kind === 'paragraph' ? block.tokens : [];
+  };
+
+  it('簡中關鍵字換回英文代碼，並保留簡中原字', () => {
+    expect(tokensOf('<p>[伏击]</p>')).toEqual([{ type: 'keyword', name: 'Ambush', cn: '伏击' }]);
+  });
+
+  it('數值緊貼在後面也認得（[强攻2]，英文是 [Assault 2]）', () => {
+    expect(tokensOf('<p>[强攻2]</p>')).toEqual([
+      { type: 'keyword', name: 'Assault', value: 2, cn: '强攻' },
+    ]);
+  });
+
+  it('官方沒翻譯、留著英文的關鍵字照英文認', () => {
+    expect(tokensOf('<p>[Hidden]</p>')).toEqual([{ type: 'keyword', name: 'Hidden' }]);
+  });
+
+  it('「无文本」是沒有能力文字的佔位，不是關鍵字', () => {
+    expect(tokensOf('<p>[无文本]</p>')).toEqual([]);
+  });
+
+  it('被括起來的標籤當成一般文字', () => {
+    expect(tokensOf('<p>[机械]</p>')).toEqual([{ type: 'text', value: '机械' }]);
+  });
+
+  it('認不得的簡中詞照樣中止 —— 不會被靜靜吞掉', () => {
+    expect(() => parseCardText('<p>[不存在的关键字]</p>', cn)).toThrow(CardTextError);
+  });
+
+  it('惡意 HTML 一樣擋得下來（換語言不換防線）', () => {
+    expect(() => parseCardText('<p>[伏击]<img src=x onerror=alert(1)></p>', cn)).toThrow(
+      CardTextError,
+    );
+  });
+
+  it('沒傳簡中設定時，簡中關鍵字不會被當成合法（英文路徑行為完全不變）', () => {
+    expect(() => parseCardText('<p>[伏击]</p>')).toThrow(CardTextError);
   });
 });

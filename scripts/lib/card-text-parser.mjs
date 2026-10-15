@@ -134,8 +134,14 @@ function decodeEntities(text) {
   return text.replace(/&[#a-zA-Z0-9]+;/g, (m) => ALLOWED_ENTITIES[m]);
 }
 
-/** 把一段純文字（已確認不含任何標籤）切成 text / glyph / keyword token。 */
-function tokenizeSegment(segment, out) {
+/**
+ * 把一段純文字（已確認不含任何標籤）切成 text / glyph / keyword token。
+ *
+ * @param {object} [cn] 解析 Riot 官方 zh_CN 時才傳：
+ *   keywords  簡中關鍵字 → 英文關鍵字（taxonomy-map.mjs 的 KEYWORD_BY_CN）
+ *   tags      被括起來、但其實是標籤的字（CN_TAG_TOKENS）
+ */
+function tokenizeSegment(segment, out, cn) {
   const pattern = /:([a-zA-Z0-9_]+):|\[([^\]]*)\]/g;
   let cursor = 0;
   let match;
@@ -193,6 +199,41 @@ function tokenizeSegment(segment, out) {
         cursor = pattern.lastIndex;
         continue;
       }
+      /*
+       * Riot 官方 zh_CN（2026-10-15 起用來補新系列的中文）。
+       *
+       * 格式跟英文一模一樣，只是方括號裡換成簡中關鍵字，而且數值緊貼在後面
+       *（[强攻2]，英文是 [Assault 2]）。逐一對照 KEYWORD_BY_CN 換回英文代碼，
+       * 同時保留簡中原字（cn 欄位）—— 跟中國大陸發行商資料的輸出完全同一種形狀，
+       * 介面不必分辨來源。
+       *
+       * 對不到的一律交給下面的英文規則：官方 zh_CN 偶爾會留幾個沒翻譯的英文關鍵字
+       *（實測 [Hidden]、[Action] 等），那些本來就該照英文認；
+       * 兩邊都對不到就照常中止建置，不會靜靜吞掉。
+       */
+      if (cn) {
+        if (inner === '无文本') {
+          cursor = pattern.lastIndex;
+          continue;
+        }
+        if (cn.tags.has(inner)) {
+          out.push({ type: 'text', value: inner });
+          cursor = pattern.lastIndex;
+          continue;
+        }
+        const zh = /^(.+?)\s*(\d+)?$/.exec(inner);
+        if (zh && Object.hasOwn(cn.keywords, zh[1])) {
+          const name = cn.keywords[zh[1]];
+          out.push(
+            zh[2] === undefined
+              ? { type: 'keyword', name, cn: zh[1] }
+              : { type: 'keyword', name, value: Number(zh[2]), cn: zh[1] },
+          );
+          cursor = pattern.lastIndex;
+          continue;
+        }
+      }
+
       const normalized = inner === 'ADD' ? 'Add' : inner;
 
       const kw = /^([A-Z][A-Za-z]*(?:[- ][A-Z][A-Za-z]*)?)(?: (\d+))?$/.exec(normalized);
@@ -225,7 +266,7 @@ function tokenizeSegment(segment, out) {
  * 解析一段行內內容（<p> 或 <li> 的內層）。
  * 這是整個解析器的核心防線。
  */
-function parseInline(inner) {
+function parseInline(inner, cn) {
   // 唯一允許的行內標籤是 <br>。先把它切開⋯⋯
   const segments = inner.split(/<br\s*\/?>/);
 
@@ -241,7 +282,7 @@ function parseInline(inner) {
   const tokens = [];
   segments.forEach((segment, index) => {
     if (index > 0) tokens.push({ type: 'break' });
-    tokenizeSegment(decodeEntities(segment), tokens);
+    tokenizeSegment(decodeEntities(segment), tokens, cn);
   });
 
   // 去掉空的文字 token，讓輸出乾淨一點。
@@ -262,10 +303,12 @@ function takeBlock(rest, tag) {
  * 解析一整段卡牌能力文字 HTML。
  *
  * @param {string | null | undefined} html 官方 API 的 text.richText.body
+ * @param {{ keywords: Record<string, string>, tags: Set<string> }} [cn]
+ *   解析 Riot 官方 zh_CN 時才傳（見 tokenizeSegment）。英文不傳，行為完全不變。
  * @returns {Array<{kind: 'paragraph', tokens: object[]} | {kind: 'list', items: object[][]}>}
  * @throws {CardTextError} 遇到任何非預期的標籤、屬性、實體、符號或關鍵字
  */
-export function parseCardText(html) {
+export function parseCardText(html, cn) {
   if (html === null || html === undefined || html === '') return [];
   if (typeof html !== 'string') {
     throw new CardTextError(`能力文字必須是字串，收到 ${typeof html}`);
@@ -278,7 +321,7 @@ export function parseCardText(html) {
   while (rest.length > 0) {
     const paragraph = takeBlock(rest, 'p');
     if (paragraph) {
-      blocks.push({ kind: 'paragraph', tokens: parseInline(paragraph.inner) });
+      blocks.push({ kind: 'paragraph', tokens: parseInline(paragraph.inner, cn) });
       rest = paragraph.rest;
       continue;
     }
@@ -292,7 +335,7 @@ export function parseCardText(html) {
         if (!item) {
           throw new CardTextError('<ul> 內只允許 <li> 項目', listRest.slice(0, 120));
         }
-        items.push(parseInline(item.inner));
+        items.push(parseInline(item.inner, cn));
         listRest = item.rest;
       }
       if (items.length === 0) throw new CardTextError('<ul> 內沒有任何 <li> 項目');

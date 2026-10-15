@@ -77,6 +77,17 @@ export const RARITY_BY_CN = Object.freeze({
   异画: 'showcase',
 });
 
+/**
+ * 簡中能力文字裡被括起來、但其實是**標籤**而不是關鍵字的字。
+ *
+ * 簡中會把標籤也括起來（SFD-182「让你的[机械]属性单位…」），
+ * 英文版同一句卻寫成一般文字（"your Mech units"）。
+ * 逐個列舉而不是「不認得就當文字」—— 後者會讓真正的新關鍵字被靜靜吞掉。
+ *
+ * 中國大陸發行商的資料（cn-text-parser）與 Riot 官方 zh_CN（card-text-parser）共用這一份。
+ */
+export const CN_TAG_TOKENS = Object.freeze(new Set(['机械']));
+
 /** 能力文字裡的關鍵字：簡中 token → 英文關鍵字。 */
 export const KEYWORD_BY_CN = Object.freeze({
   急速: 'Accelerate',

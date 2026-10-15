@@ -13,7 +13,7 @@
  * 不需要為了中文再寫一套。
  */
 
-import { GLYPH_BY_CN_TOKEN, KEYWORD_BY_CN } from './taxonomy-map.mjs';
+import { CN_TAG_TOKENS, GLYPH_BY_CN_TOKEN, KEYWORD_BY_CN } from './taxonomy-map.mjs';
 
 export class CnTextError extends Error {
   constructor(message, context) {
@@ -129,14 +129,7 @@ function parseToken(raw, context) {
     return { type: 'text', value: '' };
   }
 
-  /*
-   * 標籤，不是關鍵字。
-   *
-   * 簡中會把標籤也括起來（SFD-182「让你的[机械]属性单位…」），
-   * 但英文版同一句寫成一般文字（"your Mech units"）。
-   * 逐個列舉而不是「不認得就當文字」—— 後者會讓真正的新關鍵字被靜靜吞掉。
-   */
-  const CN_TAG_TOKENS = new Set(['机械']);
+  // 標籤，不是關鍵字（說明見 taxonomy-map.mjs 的 CN_TAG_TOKENS）
   if (CN_TAG_TOKENS.has(raw)) {
     return { type: 'text', value: raw };
   }
@@ -219,10 +212,17 @@ export function parseCnText(text, card = {}) {
  * @param {(s: string) => string} convert 簡轉繁函式
  */
 export function convertBlocksToTraditional(blocks, convert) {
-  return blocks.map((block) => ({
-    kind: block.kind,
-    tokens: block.tokens.map((token) =>
+  const convertTokens = (tokens) =>
+    tokens.map((token) =>
       token.type === 'text' ? { type: 'text', value: convert(token.value) } : token,
-    ),
-  }));
+    );
+  /*
+   * 中國大陸發行商的資料只有段落；Riot 官方 zh_CN 跟英文同格式，會有條列（<ul>）。
+   * 兩種都要轉，漏了條列的話「選一項 ——」底下的選項會整段留在簡體。
+   */
+  return blocks.map((block) =>
+    block.kind === 'list'
+      ? { kind: 'list', items: block.items.map(convertTokens) }
+      : { kind: block.kind, tokens: convertTokens(block.tokens) },
+  );
 }

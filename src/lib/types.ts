@@ -131,6 +131,13 @@ export type SimplifiedLocale = {
   flavor: string | null;
   /** 官方簡中卡面圖（Tencent COS），沒有的話為 null。 */
   image: string | null;
+  /**
+   * 這份簡中是從哪來的：
+   *   'publisher'  中國大陸官方發行商的網站（主要來源，有背景敘述與卡面圖）
+   *   'riot'       Riot 官方卡牌 API 的 zh_CN（2026-10-15 起用來補發行商還沒收錄的卡）
+   * 兩者都是官方簡中；分開記是為了日後查證時知道每一張的出處。
+   */
+  source: 'publisher' | 'riot';
 };
 
 export type TraditionalLocale = {
