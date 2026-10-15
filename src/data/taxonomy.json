@@ -13,7 +13,7 @@
   {
    "id": "SFD",
    "name": "Spiritforged",
-   "count": 288
+   "count": 287
   },
   {
    "id": "UNL",
@@ -28,7 +28,7 @@
   {
    "id": "RAD",
    "name": "Radiance",
-   "count": 183
+   "count": 206
   }
  ],
  "types": [
@@ -938,9 +938,9 @@
  ],
  "keywords": {
   "Accelerate": {
-   "en": "You may pay {energy_1}{rune_chaos} as an additional cost to have me enter ready.",
-   "cn": "你可以选择额外支付{energy_1}和{rune_chaos}，让我以活跃状态进场。",
-   "tw": "你可以選擇額外支付{energy_1}和{rune_chaos}，讓我以活躍狀態進場。",
+   "en": "You may pay {energy_1}{rune_fury} as an additional cost to have me enter ready.",
+   "cn": "你可以选择额外支付{energy_1}和{rune_fury}，让我以活跃状态进场。",
+   "tw": "你可以選擇額外支付{energy_1}和{rune_fury}，讓我以活躍狀態進場。",
    "source": "official-card-text"
   },
   "Action": {
@@ -962,9 +962,9 @@
    "source": "official-card-text"
   },
   "Assault": {
-   "en": "+1 {might} while they're attackers.",
-   "cn": "只要他们是进攻方，便{might}+1。",
-   "tw": "只要他們是進攻方，便{might}+1。",
+   "en": "+1 {might} while I'm an attacker.",
+   "cn": "如果我是进攻方，则{might}+1。",
+   "tw": "如果我是進攻方，則{might}+1。",
    "source": "official-card-text"
   },
   "Backline": {
@@ -980,10 +980,10 @@
    "source": "official-card-text"
   },
   "Burn": {
-   "en": "They put the top card of their Main Deck into their trash.",
-   "cn": null,
-   "tw": null,
-   "source": "official-card-text-en-only"
+   "en": "Put the top 2 cards of your Main Deck into your trash.",
+   "cn": "将你主牌堆顶部的两张牌放入你的废牌堆。",
+   "tw": "將你主牌堆頂部的兩張牌放入你的廢牌堆。",
+   "source": "official-card-text"
   },
   "Deathknell": {
    "en": "When I die, get the effect.",
@@ -993,8 +993,8 @@
   },
   "Deflect": {
    "en": "Opponents must pay {rune_rainbow} to choose me with a spell or ability.",
-   "cn": "对手必须支付{rune_rainbow}才能将我选作法术或技能的目标。",
-   "tw": "對手必須支付{rune_rainbow}才能將我選作法術或技能的目標。",
+   "cn": "对手必须支付{rune_rainbow}才能将我选作法术或技能的目标",
+   "tw": "對手必須支付{rune_rainbow}才能將我選作法術或技能的目標",
    "source": "official-card-text"
   },
   "Deploy": {
@@ -1010,7 +1010,7 @@
    "source": "official-card-text"
   },
   "Empower": {
-   "en": "Use only if not Empowered.",
+   "en": "Pay the cost: Empower me. Use only if not Empowered.",
    "cn": null,
    "tw": null,
    "source": "official-card-text-en-only"
@@ -1046,9 +1046,9 @@
    "source": "official-card-text"
   },
   "Hunt": {
-   "en": "When I conquer or hold, gain 2 XP.",
-   "cn": "当我征服或据守一处战场时，获得2经验。",
-   "tw": "當我征服或據守一處戰場時，獲得2經驗。",
+   "en": "When I conquer or hold, gain 1 XP.",
+   "cn": "当我征服或据守一处战场时，获得1经验。",
+   "tw": "當我征服或據守一處戰場時，獲得1經驗。",
    "source": "official-card-text"
   },
   "Legion": {
@@ -1077,8 +1077,8 @@
   },
   "Quick-Draw": {
    "en": "This has [Reaction]. When you play it, attach it to a unit you control.",
-   "cn": "此牌获得{反应}。当你打出此牌时，将它贴附到你控制的一名单位上。",
-   "tw": "此牌獲得{反應}。當你打出此牌時，將它貼附到你控制的一名單位上。",
+   "cn": "此牌获得{反应}。当你打出此牌时,将它贴附到你控制的一名单位上。",
+   "tw": "此牌獲得{反應}。當你打出此牌時,將它貼附到你控制的一名單位上。",
    "source": "official-card-text"
   },
   "Reaction": {
@@ -1088,21 +1088,21 @@
    "source": "official-card-text"
   },
   "Repeat": {
-   "en": "You may pay each additional cost to repeat this spell's effect.",
-   "cn": "你可以选择支付各额外费用一次，以重复多次此法术效果。",
-   "tw": "你可以選擇支付各額外費用一次，以重複多次此法術效果。",
+   "en": "You may pay the additional cost to repeat this spell's effect.",
+   "cn": "你可以选择支付此额外费用，以重复此法术效果。",
+   "tw": "你可以選擇支付此額外費用，以重複此法術效果。",
    "source": "official-card-text"
   },
   "Shield": {
-   "en": "+1 {might} while they're defenders.",
-   "cn": "如果它们是防守方，则{might}+1。",
-   "tw": "如果它們是防守方，則{might}+1。",
+   "en": "+1 {might} while I'm a defender.",
+   "cn": "如果我是防守方，则{might}+1。",
+   "tw": "如果我是防守方，則{might}+1。",
    "source": "official-card-text"
   },
   "Show Off": {
-   "en": "As you play this, you may reveal a unit from hand or pick a friendly unit.",
-   "cn": "打出此牌时，你可以选择从手牌中展示一名单位，或挑选一名友方单位。",
-   "tw": "打出此牌時，你可以選擇從手牌中展示一名單位，或挑選一名友方單位。",
+   "en": "As you play me, you may reveal a Mech from hand or pick another friendly Mech.",
+   "cn": "打出我时，你可以选择从手牌中展示一个“机械”，或挑选另一个友方“机械”。",
+   "tw": "打出我時，你可以選擇從手牌中展示一個“機械”，或挑選另一個友方“機械”。",
    "source": "official-card-text"
   },
   "Stun": {
@@ -1119,8 +1119,8 @@
   },
   "Temporary": {
    "en": "Kill it at the start of its controller's Beginning Phase, before scoring.",
-   "cn": "在其控制者的下个回合开始阶段，结算得分之前将其摧毁。",
-   "tw": "在其控制者的下個回合開始階段，結算得分之前將其摧毀。",
+   "cn": "在你下个回合开始阶段，结算得分之前将其摧毁。",
+   "tw": "在你下個回合開始階段，結算得分之前將其摧毀。",
    "source": "official-card-text"
   },
   "Unique": {
@@ -1130,9 +1130,9 @@
    "source": "official-card-text"
   },
   "Vision": {
-   "en": "When you play this, look at the top card of your Main Deck. You may recycle it.",
-   "cn": "当你打出此牌时，查看主牌堆顶部的一张牌。你可以选择将其回收。",
-   "tw": "當你打出此牌時，查看主牌堆頂部的一張牌。你可以選擇將其回收。",
+   "en": "When you play me, look at the top card of your Main Deck. You may recycle it.",
+   "cn": "当你打出我时，查看主牌堆顶部的一张牌，你可以选择将其回收。",
+   "tw": "當你打出我時，查看主牌堆頂部的一張牌，你可以選擇將其回收。",
    "source": "official-card-text"
   },
   "Weaponmaster": {

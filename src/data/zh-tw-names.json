@@ -8845,5 +8845,151 @@
    "凱能-萬雷傾瀉",
    "凯南"
   ]
+ },
+ "RAD-010": null,
+ "RAD-011": null,
+ "RAD-031": null,
+ "RAD-032": null,
+ "RAD-042": null,
+ "RAD-044": null,
+ "RAD-053": null,
+ "RAD-054": null,
+ "RAD-065": null,
+ "RAD-066": null,
+ "RAD-078": null,
+ "RAD-080": null,
+ "RAD-092": null,
+ "RAD-094": null,
+ "RAD-103": null,
+ "RAD-113": null,
+ "RAD-124": null,
+ "RAD-135": null,
+ "RAD-149": null,
+ "RAD-173": null,
+ "RAD-177": null,
+ "RAD-R01": null,
+ "RAD-R02": {
+  "name": "翠意符文",
+  "alternates": []
+ },
+ "RAD-R03": {
+  "name": "靈光符文",
+  "alternates": [
+   "灵光符文"
+  ]
+ },
+ "RAD-R04": {
+  "name": "摧破符文",
+  "alternates": []
+ },
+ "RAD-R05": null,
+ "RAD-R06": null,
+ "RAD-SP01": null,
+ "RAD-SP02": null,
+ "RAD-SP03": null,
+ "RAD-SP04": null,
+ "RAD-SP05": null,
+ "SFD-T03": {
+  "name": "金幣",
+  "alternates": [
+   "Gold",
+   "金币"
+  ]
+ },
+ "UNL-T01": {
+  "name": "男爵巢穴",
+  "alternates": [
+   "Baron Pit"
+  ]
+ },
+ "UNL-T02": {
+  "name": "戰鷹",
+  "alternates": [
+   "Bird",
+   "战鹰"
+  ]
+ },
+ "UNL-T03": {
+  "name": "草叢",
+  "alternates": [
+   "Brush",
+   "草丛"
+  ]
+ },
+ "UNL-T05": {
+  "name": "金幣",
+  "alternates": [
+   "Gold",
+   "金币"
+  ]
+ },
+ "UNL-T06": {
+  "name": "映像",
+  "alternates": [
+   "Reflection"
+  ]
+ },
+ "UNL-T07": {
+  "name": "精靈",
+  "alternates": [
+   "Sprite",
+   "精灵"
+  ]
+ },
+ "VEN-R01": {
+  "name": "狂怒符文",
+  "alternates": [
+   "Fury Rune",
+   "炽烈符文",
+   "熾烈符文"
+  ]
+ },
+ "VEN-R02": {
+  "name": "止靜符文",
+  "alternates": [
+   "Calm Rune",
+   "翠意符文"
+  ]
+ },
+ "VEN-R03": {
+  "name": "心智符文",
+  "alternates": [
+   "Mind Rune",
+   "灵光符文",
+   "靈光符文"
+  ]
+ },
+ "VEN-R04": {
+  "name": "身軀符文",
+  "alternates": [
+   "Body Rune",
+   "摧破符文"
+  ]
+ },
+ "VEN-R05": {
+  "name": "渾沌符文",
+  "alternates": [
+   "Chaos Rune",
+   "混沌符文"
+  ]
+ },
+ "VEN-R06": {
+  "name": "秩序符文",
+  "alternates": [
+   "Order Rune",
+   "序理符文"
+  ]
+ },
+ "VEN-SP01": null,
+ "VEN-SP02": null,
+ "VEN-SP03": null,
+ "VEN-SP04": null,
+ "VEN-SP05": null,
+ "VEN-SP06": null,
+ "VEN-T04": {
+  "name": "隨從",
+  "alternates": [
+   "随从"
+  ]
  }
 }

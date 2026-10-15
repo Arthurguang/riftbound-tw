@@ -25,8 +25,12 @@ test.describe('規則頁', () => {
   test('關鍵字說明與官方卡面原文一致', async ({ page }) => {
     await page.goto('/rules?lang=en');
 
+    /*
+     * 2026-10-15：Shield 的範例改成「最多張卡印的說法」（14 張），原本是隨 API
+     * 回傳順序挑到的「while they're defenders」（只有 3 張）。兩者都是官方原文。
+     */
     const expected: [string, string][] = [
-      ['shield', "+1 {might} while they're defenders."],
+      ['shield', "+1 {might} while I'm a defender."],
       ['tank', 'I must be assigned combat damage first.'],
       ['ganking', 'I can move from battlefield to battlefield.'],
       ['deathknell', 'When I die, get the effect.'],
@@ -49,12 +53,24 @@ test.describe('規則頁', () => {
    * 這種時候要說「中文尚未收錄，以下為英文原文」並附上官方英文，
    * 不能自己翻一段，也不能套用「官方沒提供說明」那句 —— 官方有提供。
    */
+  /*
+   * 例子從資料挑，不寫死：官方中文一收錄，那個關鍵字就不再屬於這一類
+   *（2026-10-15 Burn 就是這樣畢業的，原本寫死它的測試當場紅燈）。
+   * 等到全部都有中文，這條就沒有東西可驗，直接略過。
+   */
   test('只有英文說明的關鍵字會誠實標示，而不是自己翻一段', async ({ page }) => {
+    const englishOnly = Object.entries(taxonomy.keywords).find(
+      ([, entry]) => entry.source === 'official-card-text-en-only',
+    );
+    test.skip(!englishOnly, '目前每個關鍵字都有官方中文說明了');
+    const [name, entry] = englishOnly!;
+
     await page.goto('/rules');
-    const burn = page.locator('#keyword-burn');
-    await expect(burn).toContainText('官方中文版尚未收錄');
-    // 官方英文卡面原文，照抄
-    await expect(burn).toContainText('put the top card of their Main Deck into their trash');
+    const card = page.locator(`#keyword-${name.toLowerCase()}`);
+    await expect(card).toContainText('官方中文版尚未收錄');
+    // 官方英文卡面原文，照抄（符號在畫面上是圖示，比對時拿掉）
+    const plain = (entry.en ?? '').replace(/\{[a-z0-9_]+\}/g, '').replace(/\s+/g, ' ').trim();
+    await expect(card).toContainText(plain.slice(0, 30));
   });
 
   test('三種語言都能顯示', async ({ page }) => {
@@ -64,7 +80,7 @@ test.describe('規則頁', () => {
 
     await page.goto('/rules?lang=en');
     await expect(page.getByRole('heading', { name: 'Rules', level: 1 })).toBeVisible();
-    await expect(page.locator('#keyword-shield')).toContainText('defenders');
+    await expect(page.locator('#keyword-shield')).toContainText('defender');
   });
 
   /*

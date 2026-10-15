@@ -47,16 +47,17 @@ describe('傳奇清單', () => {
 
   /*
    * 數量快照：資料變了會先紅燈，提醒看一下首頁是否需要調整說明文字。
-   * 2026-10-13 收錄六個系列後從 16 位變成 57 位。
+   * 2026-10-13 收錄六個系列後從 16 位變成 57 位；
+   * 2026-10-15 官方又公開一批熠耀光彩（RAD）的預覽卡，多了 1 位。
    */
-  it('目前是 57 位，六個系列都有', () => {
+  it('目前是 58 位，六個系列都有', () => {
     const bySet: Record<string, number> = {
-      OGN: 12, OGS: 4, RAD: 8, SFD: 12, UNL: 12, VEN: 9,
+      OGN: 12, OGS: 4, RAD: 9, SFD: 12, UNL: 12, VEN: 9,
     };
     for (const [set, count] of Object.entries(bySet)) {
       expect(legends.filter((l) => l.set === set), `${set} 傳奇數`).toHaveLength(count);
     }
-    expect(legends).toHaveLength(57);
+    expect(legends).toHaveLength(58);
   });
 
   it('依系列的官方順序排列，同系列依卡號', () => {
