@@ -358,23 +358,44 @@ const toTraditional = OpenCC.Converter({ from: 'cn', to: 'tw' });
  * 而不是默默產生錯誤的中文標籤。
  */
 /**
- * 兩個官方來源對不上的卡。由 assertTaxonomyAgrees 累積，main() 最後一起判斷。
+ * 兩個官方來源對不上的卡，以及最後採用的值。由 reconcileWithPublisher 累積，main() 最後一起判斷。
  *
- * 2026-10-13 的情況：RAD（Radiance）有 26 張卡，英文與簡中的流派不同
- * （例如 RAD-001「Amateur Demolitionist／业余爆破狂」英文 chaos、簡中 fury）。
- * 名稱與費用都對得上，所以不是對錯號，而是**兩邊官方資料本身不一致** ——
- * 推測是英文版調整過，簡中還沒跟上。
+ * ── 2026-10-16 改成「對不上時以發行商為準」────────────────────────
+ * 原本的規則是以英文（Riot）為準。使用者回報「有些卡明明是紅色，卻顯示成紫色」，
+ * 逐張對照**官方印刷卡圖**之後發現，對不上的時候錯的幾乎都是 Riot：
  *
- * 本站的原則是「以官方英文為準」（卡片頁也一律並列英文原文），所以採用英文、
- * 把差異記下來。但如果**大量**對不上，那代表我們的對照表壞了，不是官方不一致，
- * 那種情況要中斷 —— 判斷寫在 main()。
+ *   流派  19 張（全在 RAD）  卡圖顏色 19/19 跟發行商一致
+ *         例：RAD-001 業餘爆破狂，卡圖紅色，Riot 寫渾沌（紫）
+ *   卡種  23 張（全在 RAD）  卡圖印的類型 23/23 跟發行商一致
+ *         例：RAD-007 Rally for War 卡上印 SPELL，Riot 寫裝備；
+ *         Riot 寫「單位」的卡有好幾張沒有戰力（單位一定有戰力）
+ *   費用   1 張（OGN-187）   卡圖印 4，Riot 寫 3
+ *   標籤  多張                見 reconcileTags 的說明
+ *
+ * RAD 在 10/23 才發售，Riot 的資料是預覽期的，分類欄位顯然還沒整理好；
+ * 但 OGN-187 是起源的卡，所以這不只是預覽期的問題。
+ *
+ * 比例過高（> 5%）仍然中斷 —— 那通常代表我們的對照表壞了，不是官方資料不一致。
  */
 const domainDisagreements = [];
-
-/** 卡種對不上的卡，處理方式同 domainDisagreements。 */
 const typeDisagreements = [];
+const statDisagreements = [];
+const tagCorrections = [];
 
-function assertTaxonomyAgrees(card, cn) {
+/** 發行商的數值欄位：數字或數字字串才算有值，其餘當作沒有。 */
+function publisherNumber(value) {
+  if (typeof value === 'number' && Number.isInteger(value)) return value;
+  if (typeof value === 'string' && /^\d{1,2}$/.test(value)) return Number(value);
+  return null;
+}
+
+/**
+ * 跟中國大陸發行商的資料對照；對不上時改用發行商的值（理由見上方說明）。
+ *
+ * 只改「卡片屬性」：流派、卡種、費用、戰力、標籤。
+ * 卡名、能力文字、稀有度、卡圖仍然以 Riot 為準 —— 那些兩邊沒有對不上的情況。
+ */
+function reconcileWithPublisher(card, cn, tagContext) {
   const code = card.code;
 
   const cnDomains = (cn.cardColorList ?? []).map((color) => {
@@ -383,8 +404,9 @@ function assertTaxonomyAgrees(card, cn) {
     }
     return DOMAIN_BY_CN_COLOR[color];
   });
-  if ([...cnDomains].sort().join() !== [...card.domains].sort().join()) {
+  if (cnDomains.length > 0 && [...cnDomains].sort().join() !== [...card.domains].sort().join()) {
     domainDisagreements.push({ code, en: [...card.domains], cn: cnDomains });
+    card.domains = ALLOWED_DOMAINS.filter((d) => cnDomains.includes(d));
   }
 
   const cnTypes = new Set(
@@ -395,12 +417,23 @@ function assertTaxonomyAgrees(card, cn) {
       return TYPE_BY_CN_CATEGORY[category];
     }),
   );
-  for (const type of card.types) {
-    // 與流派同樣的處理：兩個官方來源不一致時採用英文並記錄，比例過高才中斷（見 main()）
-    if (!cnTypes.has(type)) {
-      typeDisagreements.push({ code, en: type, cn: [...cnTypes] });
+  if (cnTypes.size > 0 && card.types.some((type) => !cnTypes.has(type))) {
+    typeDisagreements.push({ code, en: [...card.types], cn: [...cnTypes] });
+    card.types = ALLOWED_CARD_TYPES.filter((t) => cnTypes.has(t));
+  }
+
+  // 費用與戰力：兩邊都有值、而且不同時才改（發行商的 power 就是戰力）
+  for (const [field, value] of [
+    ['energy', publisherNumber(cn.energy)],
+    ['might', publisherNumber(cn.power)],
+  ]) {
+    if (value !== null && card[field] !== null && card[field] !== value) {
+      statDisagreements.push({ code, field, en: card[field], cn: value });
+      card[field] = value;
     }
   }
+
+  reconcileTags(card, cn, tagContext);
 
   if (!Object.hasOwn(RARITY_BY_CN, cn.rarityName)) {
     fail(`未知的簡中稀有度 "${cn.rarityName}"，請更新 taxonomy-map.mjs`, code);
@@ -409,6 +442,114 @@ function assertTaxonomyAgrees(card, cn) {
   if (RARITY_BY_CN[cn.rarityName] !== card.rarity) {
     console.warn(`    ! ${code} 稀有度差異：英文 ${card.rarity} / 簡中 ${cn.rarityName}`);
   }
+}
+
+/** 簡中標籤 → 英文標籤代碼。比對時拿掉空白（「烈娜塔·戈拉斯克」有時中間有空格、有時沒有）。 */
+const TAG_BY_CN = new Map(
+  Object.entries(TAGS).map(([en, label]) => [label.cn.replace(/\s+/g, ''), en]),
+);
+
+/**
+ * 發行商資料本身的筆誤，逐筆對照卡圖確認過（2026-10-16）。
+ *
+ *   精锐鸟类  RAD-075 卡上印「DEMACIA • ELITE • BIRD」——兩個標籤被合寫成一個
+ *   巨神峰龙  RAD-092 卡上印「MOUNT TARGON • DRAGON」——地區欄位多打了「龙」
+ *             （「龙」另外寫在標籤欄位，所以這裡只對應到巨神峰）
+ *
+ * 逐筆列舉而不是寫成模糊比對：新的筆誤要讓建置停下來，由人看過卡圖再加進來。
+ */
+const PUBLISHER_TAG_FIXES = Object.freeze({
+  精锐鸟类: ['Elite', 'Bird'],
+  巨神峰龙: ['Mount Targon'],
+});
+
+/**
+ * Riot 資料裡已確認是錯的標籤：卡片上根本沒印。
+ * 「Device」出現在 17 張 RAD 的裝備卡上，對照卡圖（例如 RAD-017 卡上只印 GEAR）全都沒有。
+ */
+const RIOT_BOGUS_TAGS = new Set(['Device']);
+
+/**
+ * 發行商的英雄／地區／其他標籤欄位，攤成英文標籤代碼。
+ *
+ * strict（預設）：認不得就中止建置 —— 用在本站實際收錄的卡上。
+ * 非 strict：認不得就略過 —— 只用在 publisherTagContext 掃描**全部**發行商資料時，
+ * 那裡面有本站沒收錄的卡（例如官方資料不全而跳過的 RAD-009，標籤寫成黏在一起的「约德尔人机械」），
+ * 不該因為一張不會上站的卡讓整個建置停下來。
+ */
+function publisherTags(cn, code, strict = true) {
+  const field = (value) =>
+    typeof value === 'string'
+      ? value
+          .split('|')
+          .map((s) => s.replace(/\s+/g, ''))
+          .filter(Boolean)
+          .flatMap((s) => {
+            if (Object.hasOwn(PUBLISHER_TAG_FIXES, s)) return PUBLISHER_TAG_FIXES[s];
+            const en = TAG_BY_CN.get(s);
+            if (en) return [en];
+            if (strict) {
+              fail(`發行商標籤「${s}」不在對照表裡，請確認卡圖後補進 taxonomy-map.mjs 的 TAGS`, code);
+            }
+            return [];
+          })
+      : [];
+  return { hero: field(cn.hero), region: field(cn.region), other: field(cn.tag) };
+}
+
+/**
+ * 標籤（英雄名、地區、種族等）的合併規則。
+ *
+ * 標籤不能整個照搬某一邊 —— 對照卡圖之後，**兩邊各有錯**：
+ *
+ *   Riot 錯   RAD 大多數卡的標籤是空的；17 張多出卡上沒印的「Device」；
+ *             OGN-235 卡瑪被標成「菲艾」；RAD-112 希格斯的地區寫成班德爾城（卡上印佐恩）；
+ *             RAD 傳奇多了種族標籤（卡上只印英雄名）；SFD 一批英雄卡漏了地區
+ *   發行商錯  SFD-086 世界地圖集漏了「裝備」（卡上印 GEAR • EQUIPMENT）
+ *
+ * 所以規則是**以發行商為主、補上 Riot 不衝突的部分**：
+ *   英雄名  發行商有就用發行商的（取代 Riot 的），沒有才用 Riot 的
+ *   地區    同上
+ *   其他    兩邊合併，但傳奇只留發行商的（傳奇卡上只印英雄名），
+ *           並拿掉已確認是錯的 Riot 標籤
+ * 順序照卡面印的順序：英雄名 → 地區 → 其他。
+ */
+function reconcileTags(card, cn, { heroTags, regionTags }) {
+  const pub = publisherTags(cn, card.code);
+  const riotHero = card.tags.filter((t) => heroTags.has(t));
+  const riotRegion = card.tags.filter((t) => regionTags.has(t) && !heroTags.has(t));
+  const riotOther = card.tags.filter(
+    (t) => !heroTags.has(t) && !regionTags.has(t) && !RIOT_BOGUS_TAGS.has(t),
+  );
+
+  const merged = [
+    ...new Set([
+      ...(pub.hero.length > 0 ? pub.hero : riotHero),
+      ...(pub.region.length > 0 ? pub.region : riotRegion),
+      ...pub.other,
+      ...(card.types.includes('legend') ? [] : riotOther),
+    ]),
+  ];
+
+  if ([...merged].sort().join() !== [...card.tags].sort().join()) {
+    tagCorrections.push({ code: card.code, from: [...card.tags], to: merged });
+  }
+  card.tags = merged;
+}
+
+/**
+ * 發行商資料裡出現過的英雄名與地區（攤成英文代碼）。
+ * reconcileTags 靠它判斷 Riot 的某個標籤屬於哪一類 —— 從資料推出來，不另外維護名單。
+ */
+function publisherTagContext(publisherCards) {
+  const heroTags = new Set();
+  const regionTags = new Set();
+  for (const cn of publisherCards) {
+    const { hero, region } = publisherTags(cn, cn.cardNo ?? '?', false);
+    for (const t of hero) heroTags.add(t);
+    for (const t of region) regionTags.add(t);
+  }
+  return { heroTags, regionTags };
 }
 
 /** 產生簡中卡圖網址，並確認網域是官方 CDN。 */
@@ -463,7 +604,7 @@ function attachChampionTags(cards) {
 }
 
 /** 把中文資料掛到卡片上。 */
-function attachLocales(card, cn, twNames) {
+function attachLocales(card, cn, twNames, tagContext) {
   /*
    * 沒有簡中資料時，subtype 要明確給 null，不能漏掉這個欄位
    * （漏掉會讓 JSON 裡整個鍵不見，型別上說好一定有）。
@@ -474,7 +615,7 @@ function attachLocales(card, cn, twNames) {
    */
   if (!cn) return { cn: null, tw: null, subtype: null };
 
-  assertTaxonomyAgrees(card, cn);
+  reconcileWithPublisher(card, cn, tagContext);
 
   const cnText = parseCnText(cn.cardEffect, card);
   const cnName = requireString(cn.cardName, 'cardName', card.code);
@@ -1318,6 +1459,8 @@ async function main() {
   console.log('  · 簡體中文：中國大陸官方發行商 API（lol-api.playloltcg.com）');
   const { wanted: cnMap, all: cnAll } = await fetchSimplifiedChinese(Object.keys(WANTED_SETS));
   console.log(`  ✓ 取得官方簡中卡牌 ${cnMap.size} 張（全系列 ${cnAll.length} 張）`);
+  // 標籤合併時用來判斷「這個標籤是英雄名還是地區」（見 reconcileTags）
+  const tagContext = publisherTagContext(cnMap.values());
 
   // 鍵要含字母前綴（見 communityKey 的說明），否則符文、衍生物會對到同號的一般卡
   const baseCodes = [...new Set(cards.map(communityKey))].sort();
@@ -1338,7 +1481,7 @@ async function main() {
   for (const card of cards) {
     const cn = cnMap.get(card.code) ?? null;
     if (cn) cnMatched += 1;
-    let locales = attachLocales(card, cn, twNames);
+    let locales = attachLocales(card, cn, twNames, tagContext);
     if (locales.cn === null) {
       const riot = attachRiotLocales(card, riotZh.get(card.code), twNames);
       if (riot) {
@@ -1410,42 +1553,60 @@ async function main() {
   }
 
   /*
-   * 兩個官方來源對流派的說法不一致時：採用英文，把差異列出來。
+   * 兩個官方來源對不上時：以發行商為準（理由見 reconcileWithPublisher 上方的說明），
+   * 把每一筆改動列出來，日後查證時知道改了什麼。
    * 但如果對不上的比例過高，那不是官方不一致，是我們的對照表壞了 —— 中斷。
    */
-  if (domainDisagreements.length > 0) {
-    const ratio = domainDisagreements.length / Math.max(1, cnMatched);
-    const sample = domainDisagreements
-      .slice(0, 8)
-      .map((d) => `${d.code} 英[${d.en}]≠簡[${d.cn}]`)
-      .join('、');
+  const reportCorrections = (label, list, describe) => {
+    if (list.length === 0) return;
+    const ratio = list.length / Math.max(1, cnMatched);
+    const sample = list.slice(0, 8).map(describe).join('、');
     if (ratio > 0.05) {
       fail(
-        `有 ${domainDisagreements.length} 張卡（${(ratio * 100).toFixed(1)}%）英文與簡中的流派對不上：${sample}` +
-          `\n  比例這麼高通常代表 taxonomy-map.mjs 的顏色對照壞了，而不是官方資料不一致。`,
+        `有 ${list.length} 張卡（${(ratio * 100).toFixed(1)}%）的${label}兩邊對不上：${sample}` +
+          `\n  比例這麼高通常代表 taxonomy-map.mjs 的對照壞了，而不是官方資料不一致。`,
       );
     }
     console.log(
-      `  ⚠ ${domainDisagreements.length} 張卡的流派兩邊官方說法不同，採用英文：${sample}` +
-        (domainDisagreements.length > 8 ? ` …等 ${domainDisagreements.length} 張` : ''),
+      `  ⚠ ${list.length} 張卡的${label}兩邊不同，以發行商為準（已對照官方卡圖）：${sample}` +
+        (list.length > 8 ? ` …等 ${list.length} 張` : ''),
+    );
+  };
+  reportCorrections('流派', domainDisagreements, (d) => `${d.code} ${d.en}→${d.cn}`);
+  reportCorrections('卡種', typeDisagreements, (d) => `${d.code} ${d.en}→${d.cn}`);
+  reportCorrections('費用／戰力', statDisagreements, (d) => `${d.code} ${d.field} ${d.en}→${d.cn}`);
+  // 標籤的修正比例本來就高（RAD 的 Riot 標籤大多是空的），不套用 5% 的門檻，只列出來
+  if (tagCorrections.length > 0) {
+    console.log(
+      `  ℹ ${tagCorrections.length} 張卡的標籤以發行商補正：` +
+        tagCorrections
+          .slice(0, 6)
+          .map((d) => `${d.code} [${d.from}]→[${d.to}]`)
+          .join('、') +
+        (tagCorrections.length > 6 ? ' …' : ''),
     );
   }
 
-  if (typeDisagreements.length > 0) {
-    const ratio = typeDisagreements.length / Math.max(1, cnMatched);
-    const sample = typeDisagreements
-      .slice(0, 8)
-      .map((d) => `${d.code} 英[${d.en}]≠簡[${d.cn}]`)
-      .join('、');
-    if (ratio > 0.05) {
-      fail(
-        `有 ${typeDisagreements.length} 張卡（${(ratio * 100).toFixed(1)}%）英文與簡中的卡種對不上：${sample}` +
-          `\n  比例這麼高通常代表 taxonomy-map.mjs 的卡種對照壞了，而不是官方資料不一致。`,
-      );
-    }
-    console.log(
-      `  ⚠ ${typeDisagreements.length} 張卡的卡種兩邊官方說法不同，採用英文：${sample}` +
-        (typeDisagreements.length > 8 ? ` …等 ${typeDisagreements.length} 張` : ''),
+  /*
+   * 卡片屬性的基本一致性 —— 不靠第二個來源也查得出來的錯。
+   *
+   * 單位一定有戰力、法術一定沒有。2026-10-16 查 RAD 的時候，Riot 寫成「單位」的卡
+   * 有好幾張沒有戰力，寫成「法術」的卡卻有戰力 —— 這條檢查當時就會直接抓到。
+   * 發行商還沒收錄的卡（只有 Riot 一個來源）全靠這一道把關。
+   */
+  const inconsistent = cards.filter(
+    (c) =>
+      (c.types.includes('unit') && c.might === null) ||
+      (c.types.includes('spell') && c.might !== null),
+  );
+  if (inconsistent.length > 0) {
+    fail(
+      `${inconsistent.length} 張卡的卡種與戰力矛盾（單位沒有戰力，或法術有戰力）：` +
+        inconsistent
+          .slice(0, 10)
+          .map((c) => `${c.code} ${c.types} 戰力=${c.might}`)
+          .join('、') +
+        `\n  請對照官方卡圖確認是哪一邊的資料錯了。`,
     );
   }
 

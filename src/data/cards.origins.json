@@ -16,8 +16,8 @@
    "fury"
   ],
   "tags": [
-   "Dragon",
-   "Noxus"
+   "Noxus",
+   "Dragon"
   ],
   "energy": 5,
   "might": 5,
@@ -159,8 +159,8 @@
    "fury"
   ],
   "tags": [
-   "Pirate",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 6,
   "might": 5,
@@ -1167,8 +1167,8 @@
    "fury"
   ],
   "tags": [
-   "Trifarian",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 2,
   "might": 2,
@@ -1394,8 +1394,8 @@
    "fury"
   ],
   "tags": [
-   "Trifarian",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 4,
   "might": 4,
@@ -1785,8 +1785,8 @@
    "fury"
   ],
   "tags": [
-   "Trifarian",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 4,
   "might": 5,
@@ -1920,8 +1920,8 @@
    "fury"
   ],
   "tags": [
-   "Mech",
-   "Bandle City"
+   "Bandle City",
+   "Mech"
   ],
   "energy": 3,
   "might": 3,
@@ -2162,8 +2162,8 @@
    "fury"
   ],
   "tags": [
-   "Trifarian",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 3,
   "might": 3,
@@ -2273,8 +2273,8 @@
    "fury"
   ],
   "tags": [
-   "Spirit",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Spirit"
   ],
   "energy": 4,
   "might": 4,
@@ -2434,8 +2434,8 @@
    "fury"
   ],
   "tags": [
-   "Mech",
-   "Bandle City"
+   "Bandle City",
+   "Mech"
   ],
   "energy": 5,
   "might": 5,
@@ -3230,9 +3230,9 @@
    "fury"
   ],
   "tags": [
-   "Trifarian",
    "Darius",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 5,
   "might": 5,
@@ -3340,9 +3340,9 @@
    "fury"
   ],
   "tags": [
-   "Trifarian",
    "Darius",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 5,
   "might": 5,
@@ -4110,8 +4110,8 @@
    "fury"
   ],
   "tags": [
-   "Dragon",
-   "Mount Targon"
+   "Mount Targon",
+   "Dragon"
   ],
   "energy": 6,
   "might": 4,
@@ -5043,8 +5043,8 @@
    "fury"
   ],
   "tags": [
-   "Dragon",
-   "Demacia"
+   "Demacia",
+   "Dragon"
   ],
   "energy": 9,
   "might": 9,
@@ -6909,8 +6909,8 @@
    "calm"
   ],
   "tags": [
-   "Spirit",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Spirit"
   ],
   "energy": 5,
   "might": 5,
@@ -7834,8 +7834,8 @@
    "calm"
   ],
   "tags": [
-   "Mech",
-   "Piltover"
+   "Piltover",
+   "Mech"
   ],
   "energy": 4,
   "might": 3,
@@ -8375,8 +8375,8 @@
    "calm"
   ],
   "tags": [
-   "Bird",
-   "Mount Targon"
+   "Mount Targon",
+   "Bird"
   ],
   "energy": 7,
   "might": 7,
@@ -9402,9 +9402,9 @@
    "calm"
   ],
   "tags": [
-   "Mech",
    "Blitzcrank",
-   "Zaun"
+   "Zaun",
+   "Mech"
   ],
   "energy": 5,
   "might": 5,
@@ -11966,8 +11966,8 @@
    "calm"
   ],
   "tags": [
-   "Dragon",
-   "Mount Targon"
+   "Mount Targon",
+   "Dragon"
   ],
   "energy": 8,
   "might": 8,
@@ -12697,8 +12697,8 @@
    "mind"
   ],
   "tags": [
-   "Yordle",
-   "Bandle City"
+   "Bandle City",
+   "Yordle"
   ],
   "energy": 3,
   "might": 2,
@@ -12821,8 +12821,8 @@
    "mind"
   ],
   "tags": [
-   "Mech",
-   "Bandle City"
+   "Bandle City",
+   "Mech"
   ],
   "energy": 7,
   "might": 8,
@@ -13206,8 +13206,8 @@
    "mind"
   ],
   "tags": [
-   "Pirate",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 6,
   "might": 6,
@@ -15294,6 +15294,7 @@
    "mind"
   ],
   "tags": [
+   "Bandle City",
    "Yordle"
   ],
   "energy": 5,
@@ -15841,9 +15842,9 @@
    "mind"
   ],
   "tags": [
-   "Yordle",
    "Heimerdinger",
-   "Piltover"
+   "Piltover",
+   "Yordle"
   ],
   "energy": 3,
   "might": 3,
@@ -16985,8 +16986,8 @@
    "mind"
   ],
   "tags": [
-   "Spirit",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Spirit"
   ],
   "energy": 6,
   "might": 5,
@@ -17498,9 +17499,9 @@
    "mind"
   ],
   "tags": [
-   "Yordle",
    "Teemo",
-   "Bandle City"
+   "Bandle City",
+   "Yordle"
   ],
   "energy": 2,
   "might": 2,
@@ -17723,9 +17724,9 @@
    "mind"
   ],
   "tags": [
-   "Yordle",
    "Teemo",
-   "Bandle City"
+   "Bandle City",
+   "Yordle"
   ],
   "energy": 2,
   "might": 2,
@@ -18807,8 +18808,8 @@
    "body"
   ],
   "tags": [
-   "Pirate",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 3,
   "might": 3,
@@ -18892,8 +18893,8 @@
    "body"
   ],
   "tags": [
-   "Dragon",
-   "Shurima"
+   "Shurima",
+   "Dragon"
   ],
   "energy": 5,
   "might": 5,
@@ -19001,8 +19002,8 @@
    "body"
   ],
   "tags": [
-   "Pirate",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 3,
   "might": 3,
@@ -19289,8 +19290,8 @@
    "body"
   ],
   "tags": [
-   "Cat",
-   "Ixtal"
+   "Ixtal",
+   "Cat"
   ],
   "energy": 3,
   "might": 3,
@@ -19749,8 +19750,8 @@
    "body"
   ],
   "tags": [
-   "Elite",
-   "Demacia"
+   "Demacia",
+   "Elite"
   ],
   "energy": 2,
   "might": 1,
@@ -20803,9 +20804,9 @@
    "body"
   ],
   "tags": [
-   "Bird",
    "Anivia",
-   "Freljord"
+   "Freljord",
+   "Bird"
   ],
   "energy": 7,
   "might": 8,
@@ -20973,8 +20974,8 @@
    "body"
   ],
   "tags": [
-   "Pirate",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 3,
   "might": 5,
@@ -22830,9 +22831,9 @@
    "body"
   ],
   "tags": [
-   "Dog",
    "Warwick",
-   "Zaun"
+   "Zaun",
+   "Dog"
   ],
   "energy": 6,
   "might": 5,
@@ -23170,9 +23171,9 @@
    "body"
   ],
   "tags": [
-   "Pirate",
    "Miss Fortune",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 5,
   "might": 5,
@@ -23378,9 +23379,9 @@
    "body"
   ],
   "tags": [
-   "Pirate",
    "Miss Fortune",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 5,
   "might": 5,
@@ -24064,8 +24065,8 @@
    "chaos"
   ],
   "tags": [
-   "Dog",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Dog"
   ],
   "energy": 3,
   "might": 3,
@@ -25324,8 +25325,8 @@
    "chaos"
   ],
   "tags": [
-   "Pirate",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 3,
   "might": 3,
@@ -25379,8 +25380,8 @@
    "chaos"
   ],
   "tags": [
-   "Pirate",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 3,
   "might": 2,
@@ -26557,7 +26558,7 @@
    "chaos"
   ],
   "tags": [],
-  "energy": 3,
+  "energy": 4,
   "might": null,
   "power": 1,
   "orientation": "portrait",
@@ -26946,8 +26947,8 @@
    "chaos"
   ],
   "tags": [
-   "Pirate",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 5,
   "might": 4,
@@ -27070,8 +27071,8 @@
    "chaos"
   ],
   "tags": [
-   "Dragon",
-   "Mount Targon"
+   "Mount Targon",
+   "Dragon"
   ],
   "energy": 7,
   "might": 7,
@@ -27155,9 +27156,9 @@
    "chaos"
   ],
   "tags": [
-   "Pirate",
    "Miss Fortune",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 4,
   "might": 4,
@@ -27266,9 +27267,9 @@
    "chaos"
   ],
   "tags": [
-   "Pirate",
    "Miss Fortune",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 4,
   "might": 4,
@@ -27524,8 +27525,8 @@
    "chaos"
   ],
   "tags": [
-   "Spirit",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Spirit"
   ],
   "energy": 10,
   "might": 6,
@@ -27633,8 +27634,8 @@
    "chaos"
   ],
   "tags": [
-   "Spirit",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Spirit"
   ],
   "energy": 8,
   "might": 5,
@@ -27718,9 +27719,9 @@
    "chaos"
   ],
   "tags": [
-   "Yordle",
    "Teemo",
-   "Bandle City"
+   "Bandle City",
+   "Yordle"
   ],
   "energy": 2,
   "might": 1,
@@ -27915,9 +27916,9 @@
    "chaos"
   ],
   "tags": [
-   "Yordle",
    "Teemo",
-   "Bandle City"
+   "Bandle City",
+   "Yordle"
   ],
   "energy": 2,
   "might": 1,
@@ -30530,8 +30531,8 @@
    "order"
   ],
   "tags": [
-   "Pirate",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 5,
   "might": 5,
@@ -30653,8 +30654,8 @@
    "order"
   ],
   "tags": [
-   "Bird",
-   "Freljord"
+   "Freljord",
+   "Bird"
   ],
   "energy": 2,
   "might": 1,
@@ -30752,8 +30753,8 @@
    "order"
   ],
   "tags": [
-   "Trifarian",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 2,
   "might": 2,
@@ -30875,8 +30876,8 @@
    "order"
   ],
   "tags": [
-   "Elite",
-   "Demacia"
+   "Demacia",
+   "Elite"
   ],
   "energy": 3,
   "might": 3,
@@ -30998,8 +30999,8 @@
    "order"
   ],
   "tags": [
-   "Elite",
-   "Demacia"
+   "Demacia",
+   "Elite"
   ],
   "energy": 4,
   "might": 4,
@@ -31382,8 +31383,8 @@
    "order"
   ],
   "tags": [
-   "Trifarian",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 3,
   "might": 3,
@@ -31804,8 +31805,8 @@
    "order"
   ],
   "tags": [
-   "Spirit",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Spirit"
   ],
   "energy": 4,
   "might": 4,
@@ -32291,8 +32292,8 @@
    "order"
   ],
   "tags": [
-   "Spirit",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Spirit"
   ],
   "energy": 6,
   "might": 8,
@@ -32844,8 +32845,8 @@
    "order"
   ],
   "tags": [
-   "Dragon",
-   "Demacia"
+   "Demacia",
+   "Dragon"
   ],
   "energy": 8,
   "might": 6,
@@ -32929,7 +32930,7 @@
    "order"
   ],
   "tags": [
-   "Vi",
+   "Karma",
    "Ionia"
   ],
   "energy": 6,
@@ -33058,7 +33059,7 @@
     "flavor": "“心神合一。”"
    }
   },
-  "championTag": "Vi"
+  "championTag": "Karma"
  },
  {
   "id": "ogn-236-298",
@@ -33077,9 +33078,9 @@
    "order"
   ],
   "tags": [
-   "Spirit",
    "Karthus",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Spirit"
   ],
   "energy": 3,
   "might": 3,
@@ -34335,9 +34336,9 @@
    "order"
   ],
   "tags": [
-   "Trifarian",
    "Darius",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 6,
   "might": 6,
@@ -34484,9 +34485,9 @@
    "order"
   ],
   "tags": [
-   "Trifarian",
    "Darius",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 6,
   "might": 6,
@@ -44939,9 +44940,9 @@
    "body"
   ],
   "tags": [
-   "Elite",
    "Garen",
-   "Demacia"
+   "Demacia",
+   "Elite"
   ],
   "energy": 6,
   "might": 5,
@@ -45717,9 +45718,9 @@
    "order"
   ],
   "tags": [
-   "Elite",
    "Garen",
-   "Demacia"
+   "Demacia",
+   "Elite"
   ],
   "energy": 6,
   "might": 5,
@@ -46137,8 +46138,8 @@
    "order"
   ],
   "tags": [
-   "Elite",
-   "Demacia"
+   "Demacia",
+   "Elite"
   ],
   "energy": 6,
   "might": 5,
@@ -48115,9 +48116,9 @@
    "fury"
   ],
   "tags": [
+   "Noxus",
    "Dog",
-   "Dragon",
-   "Noxus"
+   "Dragon"
   ],
   "energy": 3,
   "might": 3,
@@ -48201,8 +48202,8 @@
    "fury"
   ],
   "tags": [
-   "Mech",
-   "Bandle City"
+   "Bandle City",
+   "Mech"
   ],
   "energy": 2,
   "might": 2,
@@ -48828,8 +48829,8 @@
    "fury"
   ],
   "tags": [
-   "Trifarian",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 5,
   "might": 5,
@@ -49198,8 +49199,8 @@
    "fury"
   ],
   "tags": [
-   "Dragon",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Dragon"
   ],
   "energy": 4,
   "might": 5,
@@ -50199,9 +50200,9 @@
    "fury"
   ],
   "tags": [
-   "Mech",
+   "Bandle City",
    "Yordle",
-   "Bandle City"
+   "Mech"
   ],
   "energy": 6,
   "might": 6,
@@ -50817,9 +50818,9 @@
    "fury"
   ],
   "tags": [
-   "Cat",
    "Rengar",
-   "Ixtal"
+   "Ixtal",
+   "Cat"
   ],
   "energy": 3,
   "might": 3,
@@ -51008,10 +51009,10 @@
    "fury"
   ],
   "tags": [
-   "Mech",
-   "Yordle",
    "Rumble",
-   "Bandle City"
+   "Bandle City",
+   "Yordle",
+   "Mech"
   ],
   "energy": 4,
   "might": 4,
@@ -51170,10 +51171,10 @@
    "fury"
   ],
   "tags": [
-   "Mech",
-   "Yordle",
    "Rumble",
-   "Bandle City"
+   "Bandle City",
+   "Yordle",
+   "Mech"
   ],
   "energy": 4,
   "might": 4,
@@ -53040,8 +53041,8 @@
    "calm"
   ],
   "tags": [
-   "Spirit",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Spirit"
   ],
   "energy": 6,
   "might": 6,
@@ -53125,8 +53126,8 @@
    "calm"
   ],
   "tags": [
-   "Poro",
-   "Freljord"
+   "Freljord",
+   "Poro"
   ],
   "energy": 2,
   "might": 2,
@@ -53224,8 +53225,8 @@
    "calm"
   ],
   "tags": [
-   "Yordle",
-   "Ionia"
+   "Ionia",
+   "Yordle"
   ],
   "energy": 4,
   "might": 4,
@@ -54139,8 +54140,8 @@
    "calm"
   ],
   "tags": [
-   "Trifarian",
-   "Noxus"
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 3,
   "might": 4,
@@ -54846,9 +54847,9 @@
    "calm"
   ],
   "tags": [
-   "Bird",
    "Azir",
-   "Shurima"
+   "Shurima",
+   "Bird"
   ],
   "energy": 6,
   "might": 6,
@@ -54978,9 +54979,9 @@
    "calm"
   ],
   "tags": [
-   "Bird",
    "Azir",
-   "Shurima"
+   "Shurima",
+   "Bird"
   ],
   "energy": 6,
   "might": 6,
@@ -55474,206 +55475,6 @@
   "championTag": "Janna"
  },
  {
-  "id": "sfd-054-221",
-  "code": "SFD-054/221",
-  "number": 54,
-  "codePrefix": null,
-  "variant": null,
-  "name": "Jax",
-  "subtitle": "Unmatched",
-  "set": "SFD",
-  "types": [
-   "unit"
-  ],
-  "rarity": "rare",
-  "domains": [
-   "calm"
-  ],
-  "tags": [
-   "Jax",
-   "Icathia"
-  ],
-  "energy": 5,
-  "might": 5,
-  "power": 1,
-  "orientation": "portrait",
-  "text": [
-   {
-    "kind": "paragraph",
-    "tokens": [
-     {
-      "type": "keyword",
-      "name": "Deflect"
-     },
-     {
-      "type": "text",
-      "value": " (Opponents must pay "
-     },
-     {
-      "type": "glyph",
-      "id": "rune_rainbow"
-     },
-     {
-      "type": "text",
-      "value": " to choose me with a spell or ability.)"
-     },
-     {
-      "type": "break"
-     },
-     {
-      "type": "text",
-      "value": "Each Equipment in your hand has "
-     },
-     {
-      "type": "keyword",
-      "name": "Quick-Draw"
-     },
-     {
-      "type": "text",
-      "value": ". (It gains "
-     },
-     {
-      "type": "keyword",
-      "name": "Reaction"
-     },
-     {
-      "type": "text",
-      "value": ". When you play it, attach it to a unit you control.)"
-     }
-    ]
-   }
-  ],
-  "artists": [
-   "Envar Studio"
-  ],
-  "image": {
-   "url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/3d425589c74dbff818fa09db134fdd8bb7136420-744x1039.png?accountingTag=RB",
-   "width": 744,
-   "height": 1039,
-   "alt": "Riftbound Unit: Jax, Unmatched. [Deflect] (Opponents must pay [A] to choose me with a spell or ability.)\nEach Equipment in your hand has [Quick-Draw]. (It gains [Reaction]. When you play it, attach it to a unit you control.)"
-  },
-  "subtype": "champion",
-  "zh": {
-   "cn": {
-    "name": "贾克斯",
-    "subtitle": "万般皆武",
-    "text": [
-     {
-      "kind": "paragraph",
-      "tokens": [
-       {
-        "type": "keyword",
-        "name": "Deflect",
-        "cn": "法盾"
-       },
-       {
-        "type": "text",
-        "value": "（对手必须支付"
-       },
-       {
-        "type": "glyph",
-        "id": "rune_rainbow"
-       },
-       {
-        "type": "text",
-        "value": "才能将我选作法术或技能的目标。）"
-       }
-      ]
-     },
-     {
-      "kind": "paragraph",
-      "tokens": [
-       {
-        "type": "text",
-        "value": "你手牌中的每一件武装都获得"
-       },
-       {
-        "type": "keyword",
-        "name": "Quick-Draw",
-        "cn": "灵便"
-       },
-       {
-        "type": "text",
-        "value": "。（此牌获得"
-       },
-       {
-        "type": "keyword",
-        "name": "Reaction",
-        "cn": "反应"
-       },
-       {
-        "type": "text",
-        "value": "。当你打出此牌时，将它贴附到你控制的一名单位上。）"
-       }
-      ]
-     }
-    ],
-    "flavor": null,
-    "image": "https://cdn.playloltcg.com/lol/card/20251217/0552acde3f6d49cc87d53fbb0b88d2e6.png",
-    "source": "publisher"
-   },
-   "tw": {
-    "name": "賈克斯",
-    "subtitle": "萬般皆武",
-    "nameSource": "community",
-    "text": [
-     {
-      "kind": "paragraph",
-      "tokens": [
-       {
-        "type": "keyword",
-        "name": "Deflect",
-        "cn": "法盾"
-       },
-       {
-        "type": "text",
-        "value": "（對手必須支付"
-       },
-       {
-        "type": "glyph",
-        "id": "rune_rainbow"
-       },
-       {
-        "type": "text",
-        "value": "才能將我選作法術或技能的目標。）"
-       }
-      ]
-     },
-     {
-      "kind": "paragraph",
-      "tokens": [
-       {
-        "type": "text",
-        "value": "你手牌中的每一件武裝都獲得"
-       },
-       {
-        "type": "keyword",
-        "name": "Quick-Draw",
-        "cn": "灵便"
-       },
-       {
-        "type": "text",
-        "value": "。（此牌獲得"
-       },
-       {
-        "type": "keyword",
-        "name": "Reaction",
-        "cn": "反应"
-       },
-       {
-        "type": "text",
-        "value": "。當你打出此牌時，將它貼附到你控制的一名單位上。）"
-       }
-      ]
-     }
-    ],
-    "textSource": "converted",
-    "flavor": null
-   }
-  },
-  "championTag": "Jax"
- },
- {
   "id": "sfd-054a-221",
   "code": "SFD-054a/221",
   "number": 54,
@@ -55890,8 +55691,8 @@
    "calm"
   ],
   "tags": [
-   "Yordle",
-   "Bandle City"
+   "Bandle City",
+   "Yordle"
   ],
   "energy": 10,
   "might": 5,
@@ -57036,8 +56837,8 @@
    "calm"
   ],
   "tags": [
-   "Elite",
-   "Demacia"
+   "Demacia",
+   "Elite"
   ],
   "energy": 7,
   "might": 4,
@@ -57268,9 +57069,9 @@
    "mind"
   ],
   "tags": [
-   "Mech",
+   "Bandle City",
    "Yordle",
-   "Bandle City"
+   "Mech"
   ],
   "energy": 3,
   "might": 3,
@@ -57639,9 +57440,9 @@
    "mind"
   ],
   "tags": [
-   "Mech",
+   "Bandle City",
    "Yordle",
-   "Bandle City"
+   "Mech"
   ],
   "energy": 2,
   "might": 2,
@@ -57945,8 +57746,8 @@
    "mind"
   ],
   "tags": [
-   "Dog",
-   "Freljord"
+   "Freljord",
+   "Dog"
   ],
   "energy": 3,
   "might": 3,
@@ -58270,9 +58071,9 @@
    "mind"
   ],
   "tags": [
+   "Bilgewater",
    "Poro",
-   "Pirate",
-   "Bilgewater"
+   "Pirate"
   ],
   "energy": 2,
   "might": 2,
@@ -58564,9 +58365,9 @@
    "mind"
   ],
   "tags": [
-   "Mech",
+   "Bandle City",
    "Yordle",
-   "Bandle City"
+   "Mech"
   ],
   "energy": 8,
   "might": 7,
@@ -59081,8 +58882,8 @@
    "mind"
   ],
   "tags": [
-   "Mech",
-   "Piltover"
+   "Piltover",
+   "Mech"
   ],
   "energy": 4,
   "might": 3,
@@ -62095,10 +61896,10 @@
    "mind"
   ],
   "tags": [
-   "Mech",
-   "Yordle",
    "Rumble",
-   "Bandle City"
+   "Bandle City",
+   "Yordle",
+   "Mech"
   ],
   "energy": 5,
   "might": 4,
@@ -62255,10 +62056,10 @@
    "mind"
   ],
   "tags": [
-   "Mech",
-   "Yordle",
    "Rumble",
-   "Bandle City"
+   "Bandle City",
+   "Yordle",
+   "Mech"
   ],
   "energy": 5,
   "might": 4,
@@ -62900,8 +62701,8 @@
    "body"
   ],
   "tags": [
-   "Elite",
-   "Demacia"
+   "Demacia",
+   "Elite"
   ],
   "energy": 4,
   "might": 4,
@@ -62985,8 +62786,8 @@
    "body"
   ],
   "tags": [
-   "Dragon",
-   "Demacia"
+   "Demacia",
+   "Dragon"
   ],
   "energy": 7,
   "might": 7,
@@ -63447,8 +63248,8 @@
    "body"
   ],
   "tags": [
-   "Pirate",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 2,
   "might": 2,
@@ -63605,8 +63406,8 @@
    "body"
   ],
   "tags": [
-   "Poro",
-   "Freljord"
+   "Freljord",
+   "Poro"
   ],
   "energy": 2,
   "might": 2,
@@ -63754,8 +63555,8 @@
    "body"
   ],
   "tags": [
-   "Yordle",
-   "Bandle City"
+   "Bandle City",
+   "Yordle"
   ],
   "energy": 4,
   "might": 4,
@@ -63876,8 +63677,8 @@
   ],
   "tags": [
    "Fae",
-   "Dragon",
-   "Bandle City"
+   "Bandle City",
+   "Dragon"
   ],
   "energy": 7,
   "might": 7,
@@ -67099,6 +66900,204 @@
   "championTag": "Jax"
  },
  {
+  "id": "sfd-119a-221",
+  "code": "SFD-119a/221",
+  "number": 119,
+  "codePrefix": null,
+  "variant": "a",
+  "name": "Jax",
+  "subtitle": "Unrelenting",
+  "set": "SFD",
+  "types": [
+   "unit"
+  ],
+  "rarity": "showcase",
+  "domains": [
+   "body"
+  ],
+  "tags": [
+   "Jax",
+   "Icathia"
+  ],
+  "energy": 4,
+  "might": 3,
+  "power": 1,
+  "orientation": "portrait",
+  "text": [
+   {
+    "kind": "paragraph",
+    "tokens": [
+     {
+      "type": "keyword",
+      "name": "Weaponmaster"
+     },
+     {
+      "type": "text",
+      "value": " (When you play me, you may "
+     },
+     {
+      "type": "keyword",
+      "name": "Equip"
+     },
+     {
+      "type": "text",
+      "value": " one of your Equipment to me for "
+     },
+     {
+      "type": "glyph",
+      "id": "rune_rainbow"
+     },
+     {
+      "type": "text",
+      "value": " less, even if it's already attached.)"
+     },
+     {
+      "type": "break"
+     },
+     {
+      "type": "text",
+      "value": "When you attach an Equipment to me, you may pay "
+     },
+     {
+      "type": "glyph",
+      "id": "energy_1"
+     },
+     {
+      "type": "text",
+      "value": " to draw 1."
+     }
+    ]
+   }
+  ],
+  "artists": [
+   "League Splash Team"
+  ],
+  "image": {
+   "url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/a5796125bdb0af8ceb60cd0c5c273c6417e0f7da-744x1039.png?accountingTag=RB",
+   "width": 744,
+   "height": 1039,
+   "alt": "Riftbound Unit: Jax, Unrelenting. [Weaponmaster] (When you play me, you may [Equip] one of your Equipment to me for [A] less, even if it's already attached.)\nWhen you attach an Equipment to me, you may pay [1] to draw 1."
+  },
+  "subtype": "champion",
+  "zh": {
+   "cn": {
+    "name": "贾克斯",
+    "subtitle": "无情攻势",
+    "text": [
+     {
+      "kind": "paragraph",
+      "tokens": [
+       {
+        "type": "keyword",
+        "name": "Weaponmaster",
+        "cn": "百炼"
+       },
+       {
+        "type": "text",
+        "value": "（当你打出我时，你可以选择为我"
+       },
+       {
+        "type": "keyword",
+        "name": "Equip",
+        "cn": "装配"
+       },
+       {
+        "type": "text",
+        "value": "你的一件武装，其装配费用减少"
+       },
+       {
+        "type": "glyph",
+        "id": "rune_rainbow"
+       },
+       {
+        "type": "text",
+        "value": "。可选择已贴附的武装。）"
+       }
+      ]
+     },
+     {
+      "kind": "paragraph",
+      "tokens": [
+       {
+        "type": "text",
+        "value": "当你为我贴附武装时，可以选择支付"
+       },
+       {
+        "type": "glyph",
+        "id": "energy_1"
+       },
+       {
+        "type": "text",
+        "value": "，以此抽一张牌。"
+       }
+      ]
+     }
+    ],
+    "flavor": null,
+    "image": "https://cdn.playloltcg.com/lol/card/20251217/c1d6baa913f445a8a6d178ed136680f3.png",
+    "source": "publisher"
+   },
+   "tw": {
+    "name": "賈克斯",
+    "subtitle": "無情攻勢",
+    "nameSource": "community",
+    "text": [
+     {
+      "kind": "paragraph",
+      "tokens": [
+       {
+        "type": "keyword",
+        "name": "Weaponmaster",
+        "cn": "百炼"
+       },
+       {
+        "type": "text",
+        "value": "（當你打出我時，你可以選擇為我"
+       },
+       {
+        "type": "keyword",
+        "name": "Equip",
+        "cn": "装配"
+       },
+       {
+        "type": "text",
+        "value": "你的一件武裝，其裝配費用減少"
+       },
+       {
+        "type": "glyph",
+        "id": "rune_rainbow"
+       },
+       {
+        "type": "text",
+        "value": "。可選擇已貼附的武裝。）"
+       }
+      ]
+     },
+     {
+      "kind": "paragraph",
+      "tokens": [
+       {
+        "type": "text",
+        "value": "當你為我貼附武裝時，可以選擇支付"
+       },
+       {
+        "type": "glyph",
+        "id": "energy_1"
+       },
+       {
+        "type": "text",
+        "value": "，以此抽一張牌。"
+       }
+      ]
+     }
+    ],
+    "textSource": "converted",
+    "flavor": null
+   }
+  },
+  "championTag": "Jax"
+ },
+ {
   "id": "sfd-120-221",
   "code": "SFD-120/221",
   "number": 120,
@@ -68057,8 +68056,8 @@
    "chaos"
   ],
   "tags": [
-   "Dog",
-   "Bandle City"
+   "Bandle City",
+   "Dog"
   ],
   "energy": 3,
   "might": 3,
@@ -68589,8 +68588,8 @@
    "chaos"
   ],
   "tags": [
-   "Spirit",
-   "Noxus"
+   "Noxus",
+   "Spirit"
   ],
   "energy": 5,
   "might": 4,
@@ -69482,8 +69481,8 @@
    "chaos"
   ],
   "tags": [
-   "Pirate",
-   "Bilgewater"
+   "Bilgewater",
+   "Pirate"
   ],
   "energy": 4,
   "might": 4,
@@ -70032,9 +70031,9 @@
    "chaos"
   ],
   "tags": [
-   "Yordle",
    "Fizz",
-   "Bilgewater"
+   "Bilgewater",
+   "Yordle"
   ],
   "energy": 3,
   "might": 3,
@@ -71314,9 +71313,9 @@
    "chaos"
   ],
   "tags": [
-   "Yordle",
    "Vex",
-   "Shadow Isles"
+   "Shadow Isles",
+   "Yordle"
   ],
   "energy": 5,
   "might": 5,
@@ -73450,9 +73449,9 @@
    "order"
   ],
   "tags": [
-   "Dog",
+   "Demacia",
    "Elite",
-   "Demacia"
+   "Dog"
   ],
   "energy": 2,
   "might": 2,
@@ -74583,8 +74582,8 @@
    "order"
   ],
   "tags": [
-   "Elite",
-   "Demacia"
+   "Demacia",
+   "Elite"
   ],
   "energy": 2,
   "might": 2,
@@ -75763,8 +75762,8 @@
    "order"
   ],
   "tags": [
-   "Demacia",
-   "Xin Zhao"
+   "Xin Zhao",
+   "Demacia"
   ],
   "energy": 3,
   "might": 4,
@@ -75887,9 +75886,9 @@
    "order"
   ],
   "tags": [
-   "Bird",
    "Azir",
-   "Shurima"
+   "Shurima",
+   "Bird"
   ],
   "energy": 4,
   "might": 4,
@@ -76056,9 +76055,9 @@
    "order"
   ],
   "tags": [
-   "Bird",
    "Azir",
-   "Shurima"
+   "Shurima",
+   "Bird"
   ],
   "energy": 4,
   "might": 4,
@@ -83600,7 +83599,8 @@
    "mind"
   ],
   "tags": [
-   "Ahri"
+   "Ahri",
+   "Ionia"
   ],
   "energy": 3,
   "might": 3,
@@ -83732,7 +83732,8 @@
    "mind"
   ],
   "tags": [
-   "Ahri"
+   "Ahri",
+   "Ionia"
   ],
   "energy": 3,
   "might": 3,
@@ -84244,8 +84245,9 @@
    "mind"
   ],
   "tags": [
-   "Yordle",
-   "Teemo"
+   "Teemo",
+   "Bandle City",
+   "Yordle"
   ],
   "energy": 2,
   "might": 2,
@@ -84468,8 +84470,9 @@
    "mind"
   ],
   "tags": [
-   "Yordle",
-   "Teemo"
+   "Teemo",
+   "Bandle City",
+   "Yordle"
   ],
   "energy": 2,
   "might": 2,
@@ -84854,7 +84857,8 @@
    "body"
   ],
   "tags": [
-   "Sett"
+   "Sett",
+   "Ionia"
   ],
   "energy": 5,
   "might": 4,
@@ -85011,7 +85015,8 @@
    "body"
   ],
   "tags": [
-   "Sett"
+   "Sett",
+   "Ionia"
   ],
   "energy": 5,
   "might": 4,
@@ -85680,7 +85685,8 @@
    "chaos"
   ],
   "tags": [
-   "Yasuo"
+   "Yasuo",
+   "Ionia"
   ],
   "energy": 5,
   "might": 4,
@@ -85803,7 +85809,8 @@
    "chaos"
   ],
   "tags": [
-   "Yasuo"
+   "Yasuo",
+   "Ionia"
   ],
   "energy": 5,
   "might": 4,
@@ -85926,8 +85933,9 @@
    "order"
   ],
   "tags": [
-   "Trifarian",
-   "Darius"
+   "Darius",
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 6,
   "might": 6,
@@ -86074,8 +86082,9 @@
    "order"
   ],
   "tags": [
-   "Trifarian",
-   "Darius"
+   "Darius",
+   "Noxus",
+   "Trifarian"
   ],
   "energy": 6,
   "might": 6,
@@ -86222,7 +86231,8 @@
    "order"
   ],
   "tags": [
-   "Karma"
+   "Karma",
+   "Ionia"
   ],
   "energy": 6,
   "might": 6,
@@ -86369,7 +86379,8 @@
    "order"
   ],
   "tags": [
-   "Karma"
+   "Karma",
+   "Ionia"
   ],
   "energy": 6,
   "might": 6,
@@ -126312,92 +126323,6 @@
   "championTag": null
  },
  {
-  "id": "unl-224-219",
-  "code": "UNL-224/219",
-  "number": 224,
-  "codePrefix": null,
-  "variant": null,
-  "name": "Mystic Poro",
-  "subtitle": null,
-  "set": "UNL",
-  "types": [
-   "unit"
-  ],
-  "rarity": "common",
-  "domains": [
-   "chaos"
-  ],
-  "tags": [
-   "Poro"
-  ],
-  "energy": 2,
-  "might": 2,
-  "power": null,
-  "orientation": "portrait",
-  "text": [
-   {
-    "kind": "paragraph",
-    "tokens": [
-     {
-      "type": "keyword",
-      "name": "Vision"
-     }
-    ]
-   }
-  ],
-  "artists": [
-   "FOREDAWN"
-  ],
-  "image": {
-   "url": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/2fdb5e1ff9aae4137910fa59065b69ef17144752-744x1039.png?accountingTag=RB",
-   "width": 744,
-   "height": 1039,
-   "alt": "Riftbound Unit: Mystic Poro. [Vision]"
-  },
-  "subtype": null,
-  "zh": {
-   "cn": {
-    "name": "叨叨魄罗",
-    "subtitle": null,
-    "text": [
-     {
-      "kind": "paragraph",
-      "tokens": [
-       {
-        "type": "keyword",
-        "name": "Vision",
-        "cn": "预知"
-       }
-      ]
-     }
-    ],
-    "flavor": null,
-    "image": null,
-    "source": "riot"
-   },
-   "tw": {
-    "name": "秘術普羅",
-    "subtitle": null,
-    "nameSource": "community",
-    "text": [
-     {
-      "kind": "paragraph",
-      "tokens": [
-       {
-        "type": "keyword",
-        "name": "Vision",
-        "cn": "预知"
-       }
-      ]
-     }
-    ],
-    "textSource": "converted",
-    "flavor": null
-   }
-  },
-  "championTag": null
- },
- {
   "id": "unl-225-219",
   "code": "UNL-225/219",
   "number": 225,
@@ -161167,8 +161092,58 @@
   },
   "subtype": null,
   "zh": {
-   "cn": null,
-   "tw": null
+   "cn": {
+    "name": "斯维因",
+    "subtitle": "远谋卓识",
+    "text": [
+     {
+      "kind": "paragraph",
+      "tokens": [
+       {
+        "type": "keyword",
+        "name": "Vision",
+        "cn": "预知"
+       },
+       {
+        "type": "break"
+       },
+       {
+        "type": "text",
+        "value": "当我征服一处战场时，如果你在本回合内打出了一名非指示物单位、一件非指示物装备和一个法术，则你获得1分。"
+       }
+      ]
+     }
+    ],
+    "flavor": null,
+    "image": null,
+    "source": "riot"
+   },
+   "tw": {
+    "name": "斯溫",
+    "subtitle": "遠謀卓識",
+    "nameSource": "community",
+    "text": [
+     {
+      "kind": "paragraph",
+      "tokens": [
+       {
+        "type": "keyword",
+        "name": "Vision",
+        "cn": "预知"
+       },
+       {
+        "type": "break"
+       },
+       {
+        "type": "text",
+        "value": "當我征服一處戰場時，如果你在本回合內打出了一名非指示物單位、一件非指示物裝備和一個法術，則你獲得1分。"
+       }
+      ]
+     }
+    ],
+    "textSource": "converted",
+    "flavor": null
+   }
   },
   "championTag": "Swain"
  },
@@ -166821,9 +166796,12 @@
   ],
   "rarity": "common",
   "domains": [
-   "chaos"
+   "fury"
   ],
-  "tags": [],
+  "tags": [
+   "Bandle City",
+   "Yordle"
+  ],
   "energy": 2,
   "might": 1,
   "power": null,
@@ -167039,8 +167017,8 @@
    "fury"
   ],
   "tags": [
-   "Ionia",
-   "Akali"
+   "Akali",
+   "Ionia"
   ],
   "energy": 5,
   "might": 5,
@@ -167208,9 +167186,7 @@
   "domains": [
    "fury"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 1,
   "might": null,
   "power": 1,
@@ -167486,9 +167462,11 @@
   ],
   "rarity": "common",
   "domains": [
-   "body"
+   "fury"
   ],
-  "tags": [],
+  "tags": [
+   "Bilgewater"
+  ],
   "energy": 3,
   "might": 3,
   "power": null,
@@ -167571,7 +167549,8 @@
    "chaos"
   ],
   "tags": [
-   "Evelynn"
+   "Evelynn",
+   "Demon"
   ],
   "energy": 4,
   "might": 4,
@@ -167874,7 +167853,7 @@
   ],
   "rarity": "common",
   "domains": [
-   "chaos"
+   "fury"
   ],
   "tags": [],
   "energy": 3,
@@ -168292,7 +168271,10 @@
   "domains": [
    "fury"
   ],
-  "tags": [],
+  "tags": [
+   "Shadow Isles",
+   "Spirit"
+  ],
   "energy": 2,
   "might": 2,
   "power": null,
@@ -168375,8 +168357,8 @@
    "order"
   ],
   "tags": [
-   "Piltover",
-   "Seraphine"
+   "Seraphine",
+   "Piltover"
   ],
   "energy": 5,
   "might": 1,
@@ -168686,7 +168668,7 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "gear"
+   "spell"
   ],
   "rarity": "common",
   "domains": [
@@ -168798,7 +168780,10 @@
   "domains": [
    "fury"
   ],
-  "tags": [],
+  "tags": [
+   "Demacia",
+   "Yordle"
+  ],
   "energy": 3,
   "might": 2,
   "power": null,
@@ -169174,7 +169159,10 @@
   "domains": [
    "fury"
   ],
-  "tags": [],
+  "tags": [
+   "Piltover",
+   "Mech"
+  ],
   "energy": 4,
   "might": 4,
   "power": null,
@@ -169289,11 +169277,11 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "unit"
+   "gear"
   ],
   "rarity": "uncommon",
   "domains": [
-   "chaos"
+   "fury"
   ],
   "tags": [],
   "energy": 1,
@@ -169375,7 +169363,7 @@
        },
        {
         "type": "glyph",
-        "id": "rune_chaos"
+        "id": "rune_fury"
        },
        {
         "type": "text",
@@ -169427,7 +169415,7 @@
        },
        {
         "type": "glyph",
-        "id": "rune_chaos"
+        "id": "rune_fury"
        },
        {
         "type": "text",
@@ -169640,7 +169628,9 @@
   "domains": [
    "fury"
   ],
-  "tags": [],
+  "tags": [
+   "Bilgewater"
+  ],
   "energy": 3,
   "might": 3,
   "power": null,
@@ -169748,8 +169738,8 @@
    "fury"
   ],
   "tags": [
-   "Ionia",
-   "Akali"
+   "Akali",
+   "Ionia"
   ],
   "energy": 5,
   "might": 5,
@@ -169913,13 +169903,15 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "spell"
+   "unit"
   ],
   "rarity": "rare",
   "domains": [
-   "mind"
+   "fury"
   ],
-  "tags": [],
+  "tags": [
+   "Shurima"
+  ],
   "energy": 4,
   "might": 4,
   "power": 2,
@@ -169999,11 +169991,9 @@
   ],
   "rarity": "rare",
   "domains": [
-   "chaos"
+   "fury"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 4,
   "might": null,
   "power": 1,
@@ -170175,7 +170165,9 @@
   "domains": [
    "fury"
   ],
-  "tags": [],
+  "tags": [
+   "Noxus"
+  ],
   "energy": 9,
   "might": 9,
   "power": 2,
@@ -170257,7 +170249,9 @@
   "domains": [
    "fury"
   ],
-  "tags": [],
+  "tags": [
+   "Freljord"
+  ],
   "energy": 6,
   "might": 6,
   "power": 1,
@@ -170415,8 +170409,9 @@
    "fury"
   ],
   "tags": [
+   "Mordekaiser",
    "Noxus",
-   "Mordekaiser"
+   "Spirit"
   ],
   "energy": 7,
   "might": 5,
@@ -170647,8 +170642,9 @@
    "fury"
   ],
   "tags": [
+   "Mordekaiser",
    "Noxus",
-   "Mordekaiser"
+   "Spirit"
   ],
   "energy": 7,
   "might": 5,
@@ -171235,8 +171231,9 @@
    "fury"
   ],
   "tags": [
-   "Bandle City",
-   "Ziggs"
+   "Ziggs",
+   "Zaun",
+   "Yordle"
   ],
   "energy": 5,
   "might": 5,
@@ -171369,8 +171366,9 @@
    "fury"
   ],
   "tags": [
-   "Bandle City",
-   "Ziggs"
+   "Ziggs",
+   "Zaun",
+   "Yordle"
   ],
   "energy": 5,
   "might": 5,
@@ -171476,11 +171474,9 @@
   ],
   "rarity": "common",
   "domains": [
-   "chaos"
+   "calm"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 2,
   "might": null,
   "power": null,
@@ -171595,7 +171591,7 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "unit"
+   "spell"
   ],
   "rarity": "common",
   "domains": [
@@ -171814,7 +171810,10 @@
   "domains": [
    "calm"
   ],
-  "tags": [],
+  "tags": [
+   "Ixtal",
+   "Bird"
+  ],
   "energy": 3,
   "might": 3,
   "power": null,
@@ -172286,7 +172285,9 @@
   "domains": [
    "calm"
   ],
-  "tags": [],
+  "tags": [
+   "Shurima"
+  ],
   "energy": 5,
   "might": 5,
   "power": null,
@@ -172392,7 +172393,10 @@
   "domains": [
    "calm"
   ],
-  "tags": [],
+  "tags": [
+   "Bilgewater",
+   "Sentinel"
+  ],
   "energy": 4,
   "might": 2,
   "power": null,
@@ -172718,7 +172722,7 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "gear"
+   "spell"
   ],
   "rarity": "uncommon",
   "domains": [
@@ -172877,7 +172881,7 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "unit"
+   "gear"
   ],
   "rarity": "uncommon",
   "domains": [
@@ -173072,7 +173076,10 @@
   "domains": [
    "calm"
   ],
-  "tags": [],
+  "tags": [
+   "Freljord",
+   "Bird"
+  ],
   "energy": 6,
   "might": 6,
   "power": null,
@@ -173217,7 +173224,9 @@
   "domains": [
    "calm"
   ],
-  "tags": [],
+  "tags": [
+   "Piltover"
+  ],
   "energy": 3,
   "might": 4,
   "power": 1,
@@ -173515,7 +173524,7 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "unit"
+   "gear"
   ],
   "rarity": "rare",
   "domains": [
@@ -173652,7 +173661,10 @@
   "domains": [
    "calm"
   ],
-  "tags": [],
+  "tags": [
+   "Shadow Isles",
+   "Spirit"
+  ],
   "energy": 7,
   "might": 7,
   "power": 1,
@@ -173808,8 +173820,8 @@
    "calm"
   ],
   "tags": [
-   "Piltover",
-   "Orianna"
+   "Orianna",
+   "Piltover"
   ],
   "energy": 3,
   "might": 4,
@@ -173954,8 +173966,8 @@
    "calm"
   ],
   "tags": [
-   "Piltover",
-   "Orianna"
+   "Orianna",
+   "Piltover"
   ],
   "energy": 3,
   "might": 4,
@@ -174064,7 +174076,8 @@
    "calm"
   ],
   "tags": [
-   "Riven"
+   "Riven",
+   "Noxus"
   ],
   "energy": 4,
   "might": 4,
@@ -174297,7 +174310,8 @@
    "calm"
   ],
   "tags": [
-   "Riven"
+   "Riven",
+   "Noxus"
   ],
   "energy": 4,
   "might": 4,
@@ -174499,15 +174513,13 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "unit"
+   "gear"
   ],
   "rarity": "epic",
   "domains": [
    "calm"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 4,
   "might": null,
   "power": 2,
@@ -174705,8 +174717,8 @@
    "calm"
   ],
   "tags": [
-   "Shurima",
-   "K'Sante"
+   "K'Sante",
+   "Shurima"
   ],
   "energy": 4,
   "might": 4,
@@ -174877,8 +174889,8 @@
    "calm"
   ],
   "tags": [
-   "Shurima",
-   "K'Sante"
+   "K'Sante",
+   "Shurima"
   ],
   "energy": 4,
   "might": 4,
@@ -175008,7 +175020,7 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "spell"
+   "gear"
   ],
   "rarity": "epic",
   "domains": [
@@ -175302,7 +175314,9 @@
   "domains": [
    "mind"
   ],
-  "tags": [],
+  "tags": [
+   "Shurima"
+  ],
   "energy": 5,
   "might": 4,
   "power": null,
@@ -175586,9 +175600,7 @@
   "domains": [
    "mind"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 1,
   "might": null,
   "power": null,
@@ -175813,7 +175825,10 @@
   "domains": [
    "mind"
   ],
-  "tags": [],
+  "tags": [
+   "Freljord",
+   "Bird"
+  ],
   "energy": 2,
   "might": 2,
   "power": null,
@@ -175921,7 +175936,10 @@
   "domains": [
    "mind"
   ],
-  "tags": [],
+  "tags": [
+   "Bandle City",
+   "Yordle"
+  ],
   "energy": 3,
   "might": 3,
   "power": null,
@@ -176041,7 +176059,10 @@
   "domains": [
    "mind"
   ],
-  "tags": [],
+  "tags": [
+   "Piltover",
+   "Mech"
+  ],
   "energy": 3,
   "might": 2,
   "power": null,
@@ -176167,7 +176188,7 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "gear"
+   "spell"
   ],
   "rarity": "uncommon",
   "domains": [
@@ -176294,7 +176315,10 @@
   "domains": [
    "mind"
   ],
-  "tags": [],
+  "tags": [
+   "Piltover",
+   "Mech"
+  ],
   "energy": 4,
   "might": 3,
   "power": null,
@@ -176376,7 +176400,9 @@
   "domains": [
    "mind"
   ],
-  "tags": [],
+  "tags": [
+   "Bilgewater"
+  ],
   "energy": 4,
   "might": 3,
   "power": 1,
@@ -176559,11 +176585,11 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "unit"
+   "spell"
   ],
   "rarity": "uncommon",
   "domains": [
-   "order"
+   "mind"
   ],
   "tags": [],
   "energy": 9,
@@ -176648,6 +176674,7 @@
    "mind"
   ],
   "tags": [
+   "Ionia",
    "Dragon"
   ],
   "energy": 8,
@@ -177030,11 +177057,9 @@
   ],
   "rarity": "rare",
   "domains": [
-   "calm"
+   "mind"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 5,
   "might": null,
   "power": 1,
@@ -177418,7 +177443,7 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "spell"
+   "gear"
   ],
   "rarity": "rare",
   "domains": [
@@ -177551,8 +177576,8 @@
    "mind"
   ],
   "tags": [
-   "Piltover",
-   "Seraphine"
+   "Seraphine",
+   "Piltover"
   ],
   "energy": 4,
   "might": 3,
@@ -177702,8 +177727,8 @@
    "mind"
   ],
   "tags": [
-   "Piltover",
-   "Seraphine"
+   "Seraphine",
+   "Piltover"
   ],
   "energy": 4,
   "might": 3,
@@ -177814,7 +177839,10 @@
   "domains": [
    "mind"
   ],
-  "tags": [],
+  "tags": [
+   "Freljord",
+   "Spirit"
+  ],
   "energy": 6,
   "might": 4,
   "power": 1,
@@ -177943,9 +177971,10 @@
   ],
   "rarity": "epic",
   "domains": [
-   "fury"
+   "mind"
   ],
   "tags": [
+   "Shurima",
    "Mech"
   ],
   "energy": 8,
@@ -178110,8 +178139,8 @@
    "mind"
   ],
   "tags": [
-   "Piltover",
-   "Orianna"
+   "Orianna",
+   "Piltover"
   ],
   "energy": 5,
   "might": 5,
@@ -178239,8 +178268,8 @@
    "mind"
   ],
   "tags": [
-   "Piltover",
-   "Orianna"
+   "Orianna",
+   "Piltover"
   ],
   "energy": 5,
   "might": 5,
@@ -178359,7 +178388,7 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "spell"
+   "gear"
   ],
   "rarity": "epic",
   "domains": [
@@ -178664,9 +178693,11 @@
   ],
   "rarity": "common",
   "domains": [
-   "order"
+   "body"
   ],
-  "tags": [],
+  "tags": [
+   "Equipment"
+  ],
   "energy": 1,
   "might": 0,
   "power": null,
@@ -178788,13 +178819,16 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "spell"
+   "unit"
   ],
   "rarity": "common",
   "domains": [
    "body"
   ],
-  "tags": [],
+  "tags": [
+   "Bandle City",
+   "Yordle"
+  ],
   "energy": 2,
   "might": 2,
   "power": null,
@@ -178924,11 +178958,9 @@
   ],
   "rarity": "common",
   "domains": [
-   "calm"
+   "body"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 1,
   "might": null,
   "power": null,
@@ -179097,7 +179129,9 @@
   "domains": [
    "body"
   ],
-  "tags": [],
+  "tags": [
+   "Freljord"
+  ],
   "energy": 3,
   "might": 3,
   "power": null,
@@ -179213,7 +179247,11 @@
   "domains": [
    "body"
   ],
-  "tags": [],
+  "tags": [
+   "Demacia",
+   "Elite",
+   "Bird"
+  ],
   "energy": 5,
   "might": 4,
   "power": null,
@@ -179382,7 +179420,9 @@
   "domains": [
    "body"
   ],
-  "tags": [],
+  "tags": [
+   "Mount Targon"
+  ],
   "energy": 2,
   "might": 1,
   "power": null,
@@ -179506,7 +179546,10 @@
   "domains": [
    "body"
   ],
-  "tags": [],
+  "tags": [
+   "Freljord",
+   "Spirit"
+  ],
   "energy": 9,
   "might": 7,
   "power": null,
@@ -179654,7 +179697,9 @@
   "domains": [
    "body"
   ],
-  "tags": [],
+  "tags": [
+   "Noxus"
+  ],
   "energy": 6,
   "might": 4,
   "power": 1,
@@ -179949,7 +179994,9 @@
   "domains": [
    "body"
   ],
-  "tags": [],
+  "tags": [
+   "Shurima"
+  ],
   "energy": 8,
   "might": 8,
   "power": 2,
@@ -180053,9 +180100,11 @@
   ],
   "rarity": "uncommon",
   "domains": [
-   "fury"
+   "body"
   ],
-  "tags": [],
+  "tags": [
+   "Freljord"
+  ],
   "energy": 6,
   "might": 5,
   "power": null,
@@ -180369,7 +180418,9 @@
   "domains": [
    "body"
   ],
-  "tags": [],
+  "tags": [
+   "Mount Targon"
+  ],
   "energy": 4,
   "might": 2,
   "power": null,
@@ -180649,8 +180700,8 @@
    "body"
   ],
   "tags": [
-   "Bilgewater",
-   "Graves"
+   "Graves",
+   "Bilgewater"
   ],
   "energy": 5,
   "might": 4,
@@ -180757,8 +180808,8 @@
    "body"
   ],
   "tags": [
-   "Shurima",
-   "K'Sante"
+   "K'Sante",
+   "Shurima"
   ],
   "energy": 5,
   "might": 4,
@@ -180989,8 +181040,8 @@
    "body"
   ],
   "tags": [
-   "Shurima",
-   "K'Sante"
+   "K'Sante",
+   "Shurima"
   ],
   "energy": 5,
   "might": 4,
@@ -181124,15 +181175,13 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "unit"
+   "gear"
   ],
   "rarity": "rare",
   "domains": [
    "body"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 2,
   "might": null,
   "power": null,
@@ -181326,7 +181375,9 @@
   "domains": [
    "body"
   ],
-  "tags": [],
+  "tags": [
+   "Freljord"
+  ],
   "energy": 2,
   "might": 2,
   "power": 1,
@@ -181478,9 +181529,7 @@
   "domains": [
    "body"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 3,
   "might": null,
   "power": null,
@@ -181563,7 +181612,8 @@
    "body"
   ],
   "tags": [
-   "Evelynn"
+   "Evelynn",
+   "Demon"
   ],
   "energy": 5,
   "might": 5,
@@ -181736,7 +181786,8 @@
    "body"
   ],
   "tags": [
-   "Evelynn"
+   "Evelynn",
+   "Demon"
   ],
   "energy": 5,
   "might": 5,
@@ -181871,8 +181922,8 @@
    "body"
   ],
   "tags": [
-   "Demacia",
-   "Jarvan IV"
+   "Jarvan IV",
+   "Demacia"
   ],
   "energy": 4,
   "might": 4,
@@ -182059,8 +182110,8 @@
    "body"
   ],
   "tags": [
-   "Demacia",
-   "Jarvan IV"
+   "Jarvan IV",
+   "Demacia"
   ],
   "energy": 4,
   "might": 4,
@@ -182247,6 +182298,7 @@
    "body"
   ],
   "tags": [
+   "Mount Targon",
    "Dragon"
   ],
   "energy": 7,
@@ -182326,9 +182378,12 @@
   ],
   "rarity": "common",
   "domains": [
-   "fury"
+   "chaos"
   ],
-  "tags": [],
+  "tags": [
+   "Bandle City",
+   "Yordle"
+  ],
   "energy": 4,
   "might": 3,
   "power": null,
@@ -182476,7 +182531,9 @@
   "domains": [
    "chaos"
   ],
-  "tags": [],
+  "tags": [
+   "Zaun"
+  ],
   "energy": 6,
   "might": 6,
   "power": null,
@@ -182584,7 +182641,10 @@
   "domains": [
    "chaos"
   ],
-  "tags": [],
+  "tags": [
+   "Shadow Isles",
+   "Demon"
+  ],
   "energy": 4,
   "might": 4,
   "power": null,
@@ -182920,13 +182980,15 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "spell"
+   "unit"
   ],
   "rarity": "common",
   "domains": [
    "chaos"
   ],
-  "tags": [],
+  "tags": [
+   "Bilgewater"
+  ],
   "energy": 2,
   "might": 1,
   "power": null,
@@ -183206,7 +183268,10 @@
   "domains": [
    "chaos"
   ],
-  "tags": [],
+  "tags": [
+   "Bilgewater",
+   "Demon"
+  ],
   "energy": 3,
   "might": 3,
   "power": null,
@@ -183555,7 +183620,7 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "gear"
+   "spell"
   ],
   "rarity": "uncommon",
   "domains": [
@@ -183784,7 +183849,7 @@
   ],
   "rarity": "uncommon",
   "domains": [
-   "fury"
+   "chaos"
   ],
   "tags": [],
   "energy": 3,
@@ -184034,7 +184099,9 @@
   "domains": [
    "chaos"
   ],
-  "tags": [],
+  "tags": [
+   "Zaun"
+  ],
   "energy": 3,
   "might": 3,
   "power": null,
@@ -184310,7 +184377,9 @@
   "domains": [
    "chaos"
   ],
-  "tags": [],
+  "tags": [
+   "Piltover"
+  ],
   "energy": 3,
   "might": 3,
   "power": null,
@@ -184654,11 +184723,9 @@
   ],
   "rarity": "uncommon",
   "domains": [
-   "body"
+   "chaos"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 3,
   "might": null,
   "power": 1,
@@ -184802,7 +184869,10 @@
   "domains": [
    "chaos"
   ],
-  "tags": [],
+  "tags": [
+   "Shadow Isles",
+   "Demon"
+  ],
   "energy": 2,
   "might": 2,
   "power": null,
@@ -184965,15 +185035,13 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "unit"
+   "gear"
   ],
   "rarity": "rare",
   "domains": [
-   "fury"
+   "chaos"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 1,
   "might": null,
   "power": null,
@@ -185113,7 +185181,8 @@
    "chaos"
   ],
   "tags": [
-   "Evelynn"
+   "Evelynn",
+   "Demon"
   ],
   "energy": 4,
   "might": 4,
@@ -185260,7 +185329,8 @@
    "chaos"
   ],
   "tags": [
-   "Evelynn"
+   "Evelynn",
+   "Demon"
   ],
   "energy": 4,
   "might": 4,
@@ -185371,9 +185441,9 @@
    "chaos"
   ],
   "tags": [
-   "Yordle",
+   "Lulu",
    "Bandle City",
-   "Lulu"
+   "Yordle"
   ],
   "energy": 3,
   "might": 3,
@@ -185454,11 +185524,9 @@
   ],
   "rarity": "rare",
   "domains": [
-   "fury"
+   "chaos"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 4,
   "might": null,
   "power": 1,
@@ -185541,8 +185609,9 @@
    "chaos"
   ],
   "tags": [
-   "Bandle City",
-   "Ziggs"
+   "Ziggs",
+   "Zaun",
+   "Yordle"
   ],
   "energy": 4,
   "might": 4,
@@ -185743,8 +185812,9 @@
    "chaos"
   ],
   "tags": [
-   "Bandle City",
-   "Ziggs"
+   "Ziggs",
+   "Zaun",
+   "Yordle"
   ],
   "energy": 4,
   "might": 4,
@@ -185920,7 +185990,10 @@
   "domains": [
    "chaos"
   ],
-  "tags": [],
+  "tags": [
+   "Bilgewater",
+   "Dragon"
+  ],
   "energy": 8,
   "might": 8,
   "power": null,
@@ -186078,7 +186151,8 @@
    "chaos"
   ],
   "tags": [
-   "Riven"
+   "Riven",
+   "Noxus"
   ],
   "energy": 5,
   "might": 5,
@@ -186209,7 +186283,8 @@
    "chaos"
   ],
   "tags": [
-   "Riven"
+   "Riven",
+   "Noxus"
   ],
   "energy": 5,
   "might": 5,
@@ -186341,7 +186416,9 @@
   "domains": [
    "chaos"
   ],
-  "tags": [],
+  "tags": [
+   "Bilgewater"
+  ],
   "energy": 6,
   "might": 4,
   "power": null,
@@ -186467,9 +186544,7 @@
   "domains": [
    "order"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 1,
   "might": null,
   "power": null,
@@ -186810,7 +186885,9 @@
   "domains": [
    "order"
   ],
-  "tags": [],
+  "tags": [
+   "Shurima"
+  ],
   "energy": 5,
   "might": 3,
   "power": null,
@@ -186892,7 +186969,10 @@
   "domains": [
    "order"
   ],
-  "tags": [],
+  "tags": [
+   "Demacia",
+   "Dog"
+  ],
   "energy": 3,
   "might": 3,
   "power": null,
@@ -187094,14 +187174,14 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "gear"
+   "unit"
   ],
   "rarity": "common",
   "domains": [
    "order"
   ],
   "tags": [
-   "Device"
+   "Piltover"
   ],
   "energy": 2,
   "might": 2,
@@ -187232,7 +187312,9 @@
   "domains": [
    "order"
   ],
-  "tags": [],
+  "tags": [
+   "Zaun"
+  ],
   "energy": 9,
   "might": 6,
   "power": 1,
@@ -187371,11 +187453,11 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "gear"
+   "spell"
   ],
   "rarity": "uncommon",
   "domains": [
-   "body"
+   "order"
   ],
   "tags": [],
   "energy": 3,
@@ -187512,7 +187594,9 @@
   "domains": [
    "order"
   ],
-  "tags": [],
+  "tags": [
+   "The Void"
+  ],
   "energy": 7,
   "might": 7,
   "power": 1,
@@ -187682,6 +187766,7 @@
    "order"
   ],
   "tags": [
+   "Shadow Isles",
    "Spirit"
   ],
   "energy": 4,
@@ -187791,7 +187876,9 @@
   "domains": [
    "order"
   ],
-  "tags": [],
+  "tags": [
+   "Demacia"
+  ],
   "energy": 4,
   "might": 3,
   "power": null,
@@ -187936,7 +188023,10 @@
   "domains": [
    "order"
   ],
-  "tags": [],
+  "tags": [
+   "Noxus",
+   "Trifarian"
+  ],
   "energy": 2,
   "might": 1,
   "power": null,
@@ -188060,13 +188150,15 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "spell"
+   "unit"
   ],
   "rarity": "rare",
   "domains": [
    "order"
   ],
-  "tags": [],
+  "tags": [
+   "Demacia"
+  ],
   "energy": 3,
   "might": 3,
   "power": null,
@@ -188166,13 +188258,15 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "spell"
+   "unit"
   ],
   "rarity": "rare",
   "domains": [
    "order"
   ],
-  "tags": [],
+  "tags": [
+   "Demacia"
+  ],
   "energy": 3,
   "might": 3,
   "power": 1,
@@ -188305,9 +188399,9 @@
    "order"
   ],
   "tags": [
-   "Yordle",
    "Heimerdinger",
-   "Piltover"
+   "Piltover",
+   "Yordle"
   ],
   "energy": 6,
   "might": 5,
@@ -188415,8 +188509,8 @@
    "order"
   ],
   "tags": [
-   "Demacia",
-   "Jarvan IV"
+   "Jarvan IV",
+   "Demacia"
   ],
   "energy": 7,
   "might": 7,
@@ -188602,8 +188696,8 @@
    "order"
   ],
   "tags": [
-   "Demacia",
-   "Jarvan IV"
+   "Jarvan IV",
+   "Demacia"
   ],
   "energy": 7,
   "might": 7,
@@ -188864,15 +188958,13 @@
   "subtitle": null,
   "set": "RAD",
   "types": [
-   "unit"
+   "gear"
   ],
   "rarity": "epic",
   "domains": [
    "order"
   ],
-  "tags": [
-   "Device"
-  ],
+  "tags": [],
   "energy": 6,
   "might": null,
   "power": 2,
@@ -189017,8 +189109,9 @@
    "order"
   ],
   "tags": [
+   "Mordekaiser",
    "Noxus",
-   "Mordekaiser"
+   "Spirit"
   ],
   "energy": 9,
   "might": 8,
@@ -189102,8 +189195,9 @@
    "order"
   ],
   "tags": [
+   "Mordekaiser",
    "Noxus",
-   "Mordekaiser"
+   "Spirit"
   ],
   "energy": 9,
   "might": 8,
@@ -189187,8 +189281,8 @@
    "order"
   ],
   "tags": [
-   "Piltover",
-   "Seraphine"
+   "Seraphine",
+   "Piltover"
   ],
   "energy": 5,
   "might": 1,
@@ -189343,8 +189437,8 @@
    "order"
   ],
   "tags": [
-   "Piltover",
-   "Seraphine"
+   "Seraphine",
+   "Piltover"
   ],
   "energy": 5,
   "might": 1,
@@ -189850,7 +189944,6 @@
    "chaos"
   ],
   "tags": [
-   "Yordle",
    "Ziggs"
   ],
   "energy": null,
@@ -190567,7 +190660,6 @@
    "mind"
   ],
   "tags": [
-   "Device",
    "Orianna"
   ],
   "energy": 5,
@@ -191275,8 +191367,8 @@
    "chaos"
   ],
   "tags": [
-   "Equipment",
-   "Riven"
+   "Riven",
+   "Equipment"
   ],
   "energy": 3,
   "might": 3,
@@ -192136,7 +192228,6 @@
    "order"
   ],
   "tags": [
-   "Device",
    "Jarvan IV"
   ],
   "energy": 2,
@@ -193457,8 +193548,8 @@
    "colorless"
   ],
   "tags": [
-   "Ixtal",
-   "Neeko"
+   "Neeko",
+   "Ixtal"
   ],
   "energy": 6,
   "might": 4,
@@ -193821,7 +193912,6 @@
    "chaos"
   ],
   "tags": [
-   "Yordle",
    "Ziggs"
   ],
   "energy": null,
@@ -195048,8 +195138,8 @@
    "body"
   ],
   "tags": [
-   "Shurima",
-   "K'Sante"
+   "K'Sante",
+   "Shurima"
   ],
   "energy": 5,
   "might": 4,

@@ -154,13 +154,23 @@ describe('完整卡名', () => {
   });
 
   /*
-   * 2026-10-13 的新系列出現同時帶種族標籤的傳奇。
-   * 以前取 tags[0] 就對了，現在那樣會組出「Yordle, Hexplosives Expert」。
+   * 2026-10-13 收新系列時，Riot 資料裡的 RAD-141 傳奇帶了兩個標籤 ["Yordle","Ziggs"]，
+   * 取 tags[0] 會組出「Yordle, Hexplosives Expert」，所以改用建置時標定的 championTag。
+   *
+   * 2026-10-16 對照官方卡圖才知道：那個「Yordle」是 Riot 預覽資料的錯，
+   * 卡上只印「LEGEND • ZIGGS」。資料修正後這張只剩一個標籤 ——
+   * 但 championTag 的保護要留著：下次資料再出錯，匯出的卡名也不會跟著錯。
    */
-  it('傳奇帶兩個標籤時，取的是英雄而不是種族', () => {
+  it('傳奇的標籤跟卡面一致，完整卡名用的是英雄名', () => {
     const ziggs = ALL_CARDS.find((c) => c.code === 'RAD-141/167')!;
-    expect(ziggs.tags).toEqual(['Yordle', 'Ziggs']);
+    expect(ziggs.tags).toEqual(['Ziggs']);
     expect(fullCardName(ziggs)).toBe('Ziggs, Hexplosives Expert');
+  });
+
+  it('就算傳奇多帶了種族標籤，完整卡名照樣取英雄名', () => {
+    const ziggs = ALL_CARDS.find((c) => c.code === 'RAD-141/167')!;
+    const withExtraTag = { ...ziggs, tags: ['Yordle', 'Ziggs'] };
+    expect(fullCardName(withExtraTag)).toBe('Ziggs, Hexplosives Expert');
   });
 
   it('匯出時補上英雄名前綴', () => {
