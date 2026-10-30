@@ -56,6 +56,25 @@ test.describe('安全標頭', () => {
       expect(headers['server']).not.toMatch(/next/i);
     }
   });
+
+  /*
+   * 本站不用 next/image，圖片最佳化端點已在 next.config.ts 關掉（2026-10-30）。
+   * 開著的時候，任何人都能拿本站卡圖叫伺服器用 sharp 重新壓縮 ——
+   * 2026-10 的兩次嚴重漏洞（sharp CVE-2026-96889、GHSA-2464-fhr4-w9xw）都出在這條路上。
+   * 關掉之後它回的是 404 的 HTML 頁，那一頁也要跟其他頁一樣有 CSP 與安全標頭。
+   */
+  test('用不到的圖片最佳化端點已關閉，它回的 404 頁一樣受 CSP 保護', async ({ request }) => {
+    for (const url of ['/cards/en/ogn-001-298-160.webp', '/glyphs/energy_0.svg']) {
+      const response = await request.get(`/_next/image?url=${encodeURIComponent(url)}&w=64&q=75`);
+      expect(response.status(), url).toBe(404);
+      const headers = response.headers();
+      expect(headers['content-type']).toContain('text/html');
+      expect(headers['content-security-policy']).toMatch(/'nonce-[a-f0-9]{32}'/);
+      for (const { key, value } of STATIC_SECURITY_HEADERS) {
+        expect(headers[key.toLowerCase()], `缺少或不符：${key}`).toBe(value);
+      }
+    }
+  });
 });
 
 test.describe('Content-Security-Policy', () => {

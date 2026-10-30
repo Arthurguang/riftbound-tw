@@ -12,7 +12,14 @@ const nextConfig: NextConfig = {
 
   // 卡圖自 2026-09-12 起由本站代管，頁面不再載入任何外部圖片。
   // 白名單清空 = Next.js 的圖片最佳化端點不能被拿來代理任何外部網址。
+  //
+  // unoptimized：直接關掉圖片最佳化端點（/_next/image 一律回 404）。
+  // 本站從來不用 next/image（見 CardTile.tsx），但這個端點預設是開著的，
+  // 任何人都能拿本站卡圖叫伺服器用 sharp 重新壓縮。2026-10 三週內
+  // 兩次嚴重漏洞都出在這條路上（sharp CVE-2026-96889、GHSA-2464-fhr4-w9xw），
+  // 用不到的功能就不該開著等下一個漏洞。
   images: {
+    unoptimized: true,
     remotePatterns: [],
   },
 
