@@ -59,12 +59,15 @@ export const config = {
     /*
      * 套用到所有頁面請求，但排除：
      *   _next/static  — 建置產物（已由 next.config.ts 的 headers() 保護）
-     *   _next/image   — 圖片最佳化端點
      *   favicon 等根目錄靜態檔
      * 另外排除預取（prefetch）請求，避免瀏覽器拿到與實際頁面不同的 nonce。
+     *
+     * _next/image 刻意「不」排除：圖片最佳化端點已在 next.config.ts 關掉，
+     * 它現在回的是 404 的 HTML 頁。排除的話，那一頁就會變成全站唯一沒有 CSP 的頁面
+     * （2026-10-30 實測）。
      */
     {
-      source: '/((?!_next/static|_next/image|favicon.ico|robots.txt|glyphs/|trusted-types-policy.js).*)',
+      source: '/((?!_next/static|favicon.ico|robots.txt|glyphs/|trusted-types-policy.js).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },
