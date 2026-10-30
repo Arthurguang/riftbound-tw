@@ -10,6 +10,17 @@ updates:
       # 把例行的小版本更新併成一個 PR，安全性更新才單獨開
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # 只跳過三個確定有問題的 Playwright 版本，詳見 PROGRESS.md 問題 77：
+      #   1.64.0、1.64.1：內建的 WebKit 27.2 會把頁面上每一個 <select> 誤報成 CSP style-src-attr 違規
+      #                   （本站程式碼沒有任何行內樣式）。WebKit 已修好（bugs.webkit.org/show_bug.cgi?id=327212），
+      #                   但這兩版還沒帶進來。
+      #   1.63.0：內建的 WebKit 26.6 在開發用的 Windows 電腦上啟動不了（回報缺 crypto-57.dll，重新下載也一樣），
+      #           本機就沒辦法跑 WebKit 測試。
+      # 下一版一出來 Dependabot 照樣會提；CI 全綠、而且本機 WebKit 啟動得了，就可以合併並拿掉這條規則。
+      # 這是暫時不用那幾版，不是放寬 CSP 或讓測試忽略違規。
+      - dependency-name: '@playwright/test'
+        versions: ['1.63.0', '1.64.0', '1.64.1']
 
   # GitHub Actions 本身也要更新（供應鏈風險常被忽略的一環）
   - package-ecosystem: github-actions
