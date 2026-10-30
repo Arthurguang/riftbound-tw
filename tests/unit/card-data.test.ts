@@ -284,3 +284,65 @@ describe('中文資料', () => {
     }
   });
 });
+
+/**
+ * 卡片屬性跟**官方印刷卡圖**一致。
+ *
+ * 2026-10-16 使用者回報「有些卡明明是紅色，卻顯示成紫色」。查下去是 Riot 資料庫的分類欄位
+ * 在 RAD（預覽期）大量填錯，起源也有零星錯誤。抓取腳本改成對不上時以發行商為準，
+ * 每一筆都對照過卡圖。下面每一條就是一張實際看過卡圖的卡 —— 資料再被改壞，這裡會先紅。
+ */
+describe('卡片屬性跟官方卡圖一致', () => {
+  const card = (code: string) => {
+    const found = list.find((c) => c.code === code);
+    expect(found, `${code} 不在資料裡`).toBeDefined();
+    return found as unknown as Card;
+  };
+
+  it('流派：RAD-001 業餘爆破狂是紅色（狂怒），不是紫色', () => {
+    expect(card('RAD-001/167').domains).toEqual(['fury']);
+    expect(card('RAD-124/167').domains).toEqual(['order']);
+  });
+
+  it('卡種：卡上印 SPELL 的是法術、印 GEAR 的是裝備', () => {
+    expect(card('RAD-007/167').types).toEqual(['spell']); // Rally for War
+    expect(card('RAD-046/167').types).toEqual(['gear']); // Resplendent Rostrum
+  });
+
+  it('費用：OGN-187 旋風卡上印 4', () => {
+    expect(card('OGN-187/298').energy).toBe(4);
+  });
+
+  it('標籤：OGN-235 卡瑪是卡瑪，不是菲艾', () => {
+    expect(card('OGN-235/298').tags).toContain('Karma');
+    expect(card('OGN-235/298').tags).not.toContain('Vi');
+  });
+
+  it('標籤：RAD-112 希格斯是佐恩的約德爾人，不是班德爾城', () => {
+    expect([...card('RAD-112/167').tags].sort()).toEqual(['Yordle', 'Zaun', 'Ziggs']);
+  });
+
+  it('標籤：發行商合寫或打錯的標籤被正確拆開', () => {
+    expect([...card('RAD-075/167').tags].sort()).toEqual(['Bird', 'Demacia', 'Elite']);
+    expect([...card('RAD-092/167').tags].sort()).toEqual(['Dragon', 'Mount Targon']);
+  });
+
+  it('標籤：發行商漏掉、Riot 有的正確標籤保留下來', () => {
+    expect(card('SFD-086/221').tags).toContain('Equipment');
+  });
+
+  it('標籤：卡上沒印的「Device」不會出現', () => {
+    expect(list.filter((c) => (c.tags as string[]).includes('Device'))).toEqual([]);
+  });
+
+  /*
+   * 不靠第二個來源也查得出來的錯：單位一定有戰力、法術一定沒有。
+   * 發行商還沒收錄的卡（只有 Riot 一個來源）全靠這一道把關。
+   */
+  it('單位都有戰力，法術都沒有', () => {
+    for (const c of list as unknown as Card[]) {
+      if (c.types.includes('unit')) expect(c.might, c.code).not.toBeNull();
+      if (c.types.includes('spell')) expect(c.might, c.code).toBeNull();
+    }
+  });
+});

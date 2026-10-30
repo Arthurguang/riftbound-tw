@@ -18,7 +18,7 @@
   {
    "id": "UNL",
    "name": "Unleashed",
-   "count": 286
+   "count": 285
   },
   {
    "id": "VEN",
@@ -75,7 +75,6 @@
   "Darius",
   "Demacia",
   "Demon",
-  "Device",
   "Diana",
   "Dog",
   "Dr. Mundo",
@@ -289,11 +288,6 @@
    "cn": "恶魔",
    "tw": "惡魔",
    "src": "converted"
-  },
-  "Device": {
-   "cn": "Device",
-   "tw": "Device",
-   "src": "english"
   },
   "Diana": {
    "cn": "黛安娜",
